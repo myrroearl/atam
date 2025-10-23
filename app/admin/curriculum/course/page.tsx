@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Search, Download, Plus, ArrowDownAZ, ArrowDownZA } from "lucide-react";
 import { CoursesTable } from "@/components/admin/courses-table";
 import { AddCourseModal } from "@/components/admin/add-course-modal";
-import { EditCourseModal } from "@/components/admin/edit-course-modal";
+import EditCourseModal from "@/components/admin/edit-course-modal-simple";
 import { toast } from "@/components/ui/use-toast";
 
 interface Course {
