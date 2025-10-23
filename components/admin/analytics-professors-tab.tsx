@@ -17,9 +17,6 @@ import {
   Line,
 } from "recharts";
 import { useRef, useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
 
 const ProfessorPerformanceChart = dynamic(
   () => import("@/components/admin/professor-performance-chart"),
@@ -166,53 +163,69 @@ export default function AnalyticsProfessorsTab() {
   ];
 
   // Export handlers
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Professor Performance Report", 14, 16);
-    autoTable(doc, {
-      startY: 24,
-      head: [
-        [
-          "Professor",
-          "Department",
-          "Teaching Effectiveness",
-          "Clarity",
-          "Engagement",
-          "Workload (units)",
-          "Subjects Handled",
-          "Sections Assigned",
+  const handleExportPDF = async () => {
+    try {
+      const jsPDFModule = await import("jspdf");
+      const autoTableModule = await import("jspdf-autotable");
+      const jsPDF = jsPDFModule.default;
+      const autoTable = autoTableModule.default;
+      
+      const doc = new jsPDF();
+      doc.text("Professor Performance Report", 14, 16);
+      autoTable(doc, {
+        startY: 24,
+        head: [
+          [
+            "Professor",
+            "Department",
+            "Teaching Effectiveness",
+            "Clarity",
+            "Engagement",
+            "Workload (units)",
+            "Subjects Handled",
+            "Sections Assigned",
+          ],
         ],
-      ],
-      body: professors.map((prof) => [
-        prof.name,
-        prof.department,
-        prof.feedback.effectiveness.toFixed(1),
-        prof.feedback.clarity.toFixed(1),
-        prof.feedback.engagement.toFixed(1),
-        prof.workload,
-        prof.subjects.join(", "),
-        prof.sections.join(", "),
-      ]),
-    });
-    doc.save("professor_performance_report.pdf");
+        body: professors.map((prof) => [
+          prof.name,
+          prof.department,
+          prof.feedback.effectiveness.toFixed(1),
+          prof.feedback.clarity.toFixed(1),
+          prof.feedback.engagement.toFixed(1),
+          prof.workload,
+          prof.subjects.join(", "),
+          prof.sections.join(", "),
+        ]),
+      });
+      doc.save("professor_performance_report.pdf");
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+    }
   };
 
-  const handleExportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(
-      professors.map((prof) => ({
-        Professor: prof.name,
-        Department: prof.department,
-        "Teaching Effectiveness": prof.feedback.effectiveness.toFixed(1),
-        Clarity: prof.feedback.clarity.toFixed(1),
-        Engagement: prof.feedback.engagement.toFixed(1),
-        "Workload (units)": prof.workload,
-        "Subjects Handled": prof.subjects.join(", "),
-        "Sections Assigned": prof.sections.join(", "),
-      }))
-    );
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Professors");
-    XLSX.writeFile(wb, "professor_performance_report.xlsx");
+  const handleExportExcel = async () => {
+    try {
+      const XLSXModule = await import("xlsx");
+      const XLSX = XLSXModule.default;
+      
+      const ws = XLSX.utils.json_to_sheet(
+        professors.map((prof) => ({
+          Professor: prof.name,
+          Department: prof.department,
+          "Teaching Effectiveness": prof.feedback.effectiveness.toFixed(1),
+          Clarity: prof.feedback.clarity.toFixed(1),
+          Engagement: prof.feedback.engagement.toFixed(1),
+          "Workload (units)": prof.workload,
+          "Subjects Handled": prof.subjects.join(", "),
+          "Sections Assigned": prof.sections.join(", "),
+        }))
+      );
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Professors");
+      XLSX.writeFile(wb, "professor_performance_report.xlsx");
+    } catch (error) {
+      console.error("Error exporting Excel:", error);
+    }
   };
 
   return (
