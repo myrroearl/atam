@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,19 +22,26 @@ export default function LoginPage() {
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null)
   const recaptchaRef = useRef<ReCAPTCHARef>(null)
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   // Show message if redirected back with an AccessDenied error
   useEffect(() => {
-    const err = searchParams.get("error")
-    if (err === "AccessDenied") {
-      setError("Your account is invalid or not permitted to sign in here.")
-      setIsLoading(false)
+    // Safe access to search params
+    try {
+      const params = new URLSearchParams(window.location.search);
+      setSearchParams(params);
+      const err = params.get("error");
+      if (err === "AccessDenied") {
+        setError("Your account is invalid or not permitted to sign in here.");
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.warn('Error accessing search params:', error);
     }
-  }, [searchParams])
+  }, [])
 
   const handleRecaptchaChange = (token: string | null) => {
     setRecaptchaToken(token)
