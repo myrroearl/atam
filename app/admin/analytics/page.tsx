@@ -8,11 +8,7 @@ import dynamic from "next/dynamic";
 import AnalyticsProfessorsTab from "@/components/admin/analytics-professors-tab";
 import { ChartContainer, ChartTooltip, ChartLegend } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from "recharts";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
 import AnalyticsGraduationTab from "@/components/admin/analytics-graduation-tab";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnalyticsPageSkeleton } from "@/components/admin/page-skeletons";
 
@@ -213,7 +209,7 @@ const bottomStudents = [
 ]
 
 export default function AnalyticsPage() {
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("professors");
   const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
@@ -225,11 +221,18 @@ export default function AnalyticsPage() {
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
 
   useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam) {
-      setActiveTab(tabParam);
+    // Safe access to search params
+    try {
+      const params = new URLSearchParams(window.location.search);
+      setSearchParams(params);
+      const tabParam = params.get('tab');
+      if (tabParam) {
+        setActiveTab(tabParam);
+      }
+    } catch (error) {
+      console.warn('Error accessing search params:', error);
     }
-  }, [searchParams]);
+  }, []);
 
   if (loading) {
     return <AnalyticsPageSkeleton />
