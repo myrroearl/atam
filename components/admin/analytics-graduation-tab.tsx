@@ -1,9 +1,7 @@
 "use client";
 import { ChartContainer, ChartTooltip, ChartLegend } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from "recharts";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -558,31 +556,47 @@ export default function AnalyticsGraduationTab() {
   const lowestGwa = totalGraduates > 0 ? Math.max(...filteredGraduates.map(g => g.gwa)).toFixed(2) : "-";
 
   // Export handlers
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Graduation Rates Report", 14, 16);
-    autoTable(doc, {
-      startY: 24,
-      head: [["Year", "Program", "Graduation Rate (%)"]],
-      body: graduationTrendsData.flatMap((row: GraduationTrendsRow) =>
-        programKeys.map(program => [row.year, program, row[program]])
-      ),
-    });
-    doc.save("graduation_rates_report.pdf");
+  const handleExportPDF = async () => {
+    try {
+      const jsPDFModule = await import("jspdf");
+      const autoTableModule = await import("jspdf-autotable");
+      const jsPDF = jsPDFModule.default;
+      const autoTable = autoTableModule.default;
+      
+      const doc = new jsPDF();
+      doc.text("Graduation Rates Report", 14, 16);
+      autoTable(doc, {
+        startY: 24,
+        head: [["Year", "Program", "Graduation Rate (%)"]],
+        body: graduationTrendsData.flatMap((row: GraduationTrendsRow) =>
+          programKeys.map(program => [row.year, program, row[program]])
+        ),
+      });
+      doc.save("graduation_rates_report.pdf");
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+    }
   };
-  const handleExportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(
-      graduationTrendsData.flatMap((row: GraduationTrendsRow) =>
-        programKeys.map(program => ({
-          Year: row.year,
-          Program: program,
-          "Graduation Rate (%)": row[program],
-        }))
-      )
-    );
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Graduation Rates");
-    XLSX.writeFile(wb, "graduation_rates_report.xlsx");
+  const handleExportExcel = async () => {
+    try {
+      const XLSXModule = await import("xlsx");
+      const XLSX = XLSXModule.default;
+      
+      const ws = XLSX.utils.json_to_sheet(
+        graduationTrendsData.flatMap((row: GraduationTrendsRow) =>
+          programKeys.map(program => ({
+            Year: row.year,
+            Program: program,
+            "Graduation Rate (%)": row[program],
+          }))
+        )
+      );
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Graduation Rates");
+      XLSX.writeFile(wb, "graduation_rates_report.xlsx");
+    } catch (error) {
+      console.error("Error exporting Excel:", error);
+    }
   };
 
   const handleSort = (field: string) => {
