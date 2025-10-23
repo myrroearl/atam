@@ -1,0 +1,331 @@
+import { BarChart, Book, FileText, FlaskConical, Cpu, PenTool, Award, Users, Star, TrendingUp } from "lucide-react"
+
+export const subjects = [
+ 
+  {
+    id: 1,
+    name: "Rizal's Life and Works",
+    code: "GE 009",
+    instructor: "Dr. Santos",
+    units: 3,
+    progress: 80,
+    grade: 92,
+    target: 95,
+    color: "text-green-500",
+    icon: Book,
+    description: "Study of Rizal's life, works, and writings.",
+    studyHours: 42,
+    classRank: 3,
+    assignments: [
+      { name: "Essay on Noli Me Tangere", status: "Graded", score: 28, total: 30 },
+      { name: "Quiz 1", status: "Graded", score: 18, total: 20 },
+      { name: "Final Project", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Rizal's Life and Works", current: 92, target: 95, class_avg: 88 },
+    ]
+  },
+  {
+    id: 2,
+    name: "Systems Integration and Architecture 1",
+    code: "IT 106",
+    instructor: "Prof. Lim",
+    units: 3,
+    progress: 75,
+    grade: 85,
+    target: 90,
+    color: "text-blue-500",
+    icon: Cpu,
+    description: "Introduction to systems integration and architecture.",
+    studyHours: 38,
+    classRank: 5,
+    assignments: [
+      { name: "Lab 1: System Design", status: "Graded", score: 24, total: 30 },
+      { name: "Midterm Exam", status: "Graded", score: 40, total: 50 },
+      { name: "Integration Project", status: "Upcoming", score: null, total: 40 },
+    ],
+    comparisonData: [
+      { subject: "Systems Integration and Architecture 1", current: 85, target: 90, class_avg: 80 },
+    ]
+  },
+  {
+    id: 3,
+    name: "Networking II",
+    code: "IT 107",
+    instructor: "Engr. Cruz",
+    units: 3,
+    progress: 90,
+    grade: 95,
+    target: 97,
+    color: "text-purple-500",
+    icon: Users,
+    description: "Advanced networking concepts and practices.",
+    studyHours: 50,
+    classRank: 1,
+    assignments: [
+      { name: "Subnetting Lab", status: "Graded", score: 29, total: 30 },
+      { name: "Quiz 2", status: "Graded", score: 19, total: 20 },
+      { name: "Practical Exam", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Networking II", current: 95, target: 97, class_avg: 90 },
+    ]
+  },
+  {
+    id: 4,
+    name: "Software Engineering",
+    code: "IT 302",
+    instructor: "Dr. Reyes",
+    units: 3,
+    progress: 70,
+    grade: 80,
+    target: 85,
+    color: "text-yellow-500",
+    icon: PenTool,
+    description: "Principles and practices of software engineering.",
+    studyHours: 36,
+    classRank: 8,
+    assignments: [
+      { name: "Requirements Spec", status: "Graded", score: 25, total: 30 },
+      { name: "Design Patterns Quiz", status: "Graded", score: 15, total: 20 },
+      { name: "Group Project", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Software Engineering", current: 80, target: 85, class_avg: 78 },
+    ]
+  },
+  {
+    id: 5,
+    name: "Technopreneurship",
+    code: "IT 303",
+    instructor: "Ms. Dela Cruz",
+    units: 3,
+    progress: 60,
+    grade: 78,
+    target: 85,
+    color: "text-orange-500",
+    icon: Award,
+    description: "Entrepreneurship in technology.",
+    studyHours: 28,
+    classRank: 10,
+    assignments: [
+      { name: "Business Model Canvas", status: "Graded", score: 27, total: 35 },
+      { name: "Pitch Deck", status: "Graded", score: 30, total: 40 },
+      { name: "Final Pitch", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Technopreneurship", current: 78, target: 85, class_avg: 75 },
+    ]
+  },
+  {
+    id: 6,
+    name: "IT Professional Ethics",
+    code: "IT 304",
+    instructor: "Prof. Gomez",
+    units: 3,
+    progress: 85,
+    grade: 88,
+    target: 90,
+    color: "text-red-500",
+    icon: Star,
+    description: "Ethics in the IT profession.",
+    studyHours: 40,
+    classRank: 4,
+    assignments: [
+      { name: "Case Study 1", status: "Graded", score: 18, total: 20 },
+      { name: "Reflection Paper", status: "Graded", score: 28, total: 30 },
+      { name: "Ethics Debate", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "IT Professional Ethics", current: 88, target: 90, class_avg: 85 },
+    ]
+  },
+  {
+    id: 7,
+    name: "Web Development",
+    code: "IT 305",
+    instructor: "Ms. Tan",
+    units: 3,
+    progress: 95,
+    grade: 90,
+    target: 93,
+    color: "text-cyan-500",
+    icon: TrendingUp,
+    description: "Web development technologies and practices.",
+    studyHours: 55,
+    classRank: 2,
+    assignments: [
+      { name: "HTML/CSS Project", status: "Graded", score: 45, total: 50 },
+      { name: "JavaScript Quiz", status: "Graded", score: 18, total: 20 },
+      { name: "React App", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Web Development", current: 90, target: 93, class_avg: 87 },
+    ]
+  },
+
+  // SECOND SEMESTER, AY 2024-2025
+  {
+    id: 8,
+    name: "Information Assurance and Security I",
+    code: "IT 108",
+    instructor: "Dr. Villanueva",
+    units: 3,
+    progress: 60,
+    grade: 82,
+    target: 88,
+    color: "text-green-700",
+    icon: Book,
+    description: "Introduction to information assurance and security.",
+    studyHours: 30,
+    classRank: 7,
+    assignments: [
+      { name: "Security Audit", status: "Graded", score: 22, total: 30 },
+      { name: "Quiz 1", status: "Graded", score: 16, total: 20 },
+      { name: "Final Exam", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Information Assurance and Security I", current: 82, target: 88, class_avg: 80 },
+    ]
+  },
+  {
+    id: 9,
+    name: "Introduction to Human Computer Interaction",
+    code: "IT 109",
+    instructor: "Prof. Yu",
+    units: 3,
+    progress: 70,
+    grade: 84,
+    target: 90,
+    color: "text-blue-700",
+    icon: Cpu,
+    description: "Principles of human-computer interaction.",
+    studyHours: 32,
+    classRank: 6,
+    assignments: [
+      { name: "Usability Test", status: "Graded", score: 27, total: 30 },
+      { name: "Wireframe Project", status: "Graded", score: 35, total: 40 },
+      { name: "Final Presentation", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Introduction to HCI", current: 84, target: 90, class_avg: 82 },
+    ]
+  },
+  {
+    id: 10,
+    name: "Social and Professional Issues",
+    code: "IT 110",
+    instructor: "Dr. Ramos",
+    units: 3,
+    progress: 65,
+    grade: 80,
+    target: 85,
+    color: "text-purple-700",
+    icon: Users,
+    description: "Social and professional issues in IT.",
+    studyHours: 28,
+    classRank: 9,
+    assignments: [
+      { name: "Ethics Case", status: "Graded", score: 20, total: 25 },
+      { name: "Debate", status: "Graded", score: 18, total: 25 },
+      { name: "Research Paper", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Social and Professional Issues", current: 80, target: 85, class_avg: 78 },
+    ]
+  },
+  {
+    id: 11,
+    name: "IT Elective: Integrative Programming and Technologies II",
+    code: "IT 203",
+    instructor: "Prof. Lee",
+    units: 3,
+    progress: 55,
+    grade: 76,
+    target: 83,
+    color: "text-yellow-700",
+    icon: PenTool,
+    description: "Advanced integrative programming and technologies.",
+    studyHours: 24,
+    classRank: 12,
+    assignments: [
+      { name: "Integration Lab", status: "Graded", score: 22, total: 30 },
+      { name: "Quiz 1", status: "Graded", score: 14, total: 20 },
+      { name: "Final Project", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Integrative Programming II", current: 76, target: 83, class_avg: 74 },
+    ]
+  },
+  {
+    id: 12,
+    name: "Multimedia and Technologies",
+    code: "IT 306",
+    instructor: "Ms. Rivera",
+    units: 3,
+    progress: 80,
+    grade: 89,
+    target: 92,
+    color: "text-orange-700",
+    icon: Award,
+    description: "Multimedia systems and technologies.",
+    studyHours: 40,
+    classRank: 4,
+    assignments: [
+      { name: "Video Project", status: "Graded", score: 45, total: 50 },
+      { name: "Animation Quiz", status: "Graded", score: 18, total: 20 },
+      { name: "Portfolio", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Multimedia and Technologies", current: 89, target: 92, class_avg: 86 },
+    ]
+  },
+
+  // SUMMER, AY 2024-2025
+  {
+    id: 13,
+    name: "IT Capstone Project I",
+    code: "IT 111",
+    instructor: "Dr. Mendoza",
+    units: 3,
+    progress: 50,
+    grade: 75,
+    target: 85,
+    color: "text-pink-700",
+    icon: Star,
+    description: "First phase of IT Capstone Project.",
+    studyHours: 20,
+    classRank: 13,
+    assignments: [
+      { name: "Proposal", status: "Graded", score: 20, total: 25 },
+      { name: "Progress Report", status: "Graded", score: 15, total: 25 },
+      { name: "Final Defense", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "IT Capstone Project I", current: 75, target: 85, class_avg: 70 },
+    ]
+  },
+  {
+    id: 14,
+    name: "Information Assurance and Security II",
+    code: "IT 112",
+    instructor: "Dr. Villanueva",
+    units: 3,
+    progress: 65,
+    grade: 82,
+    target: 88,
+    color: "text-cyan-700",
+    icon: TrendingUp,
+    description: "Advanced information assurance and security.",
+    studyHours: 28,
+    classRank: 8,
+    assignments: [
+      { name: "Security Audit 2", status: "Graded", score: 24, total: 30 },
+      { name: "Quiz 2", status: "Graded", score: 17, total: 20 },
+      { name: "Final Exam 2", status: "Upcoming", score: null, total: 50 },
+    ],
+    comparisonData: [
+      { subject: "Information Assurance and Security II", current: 82, target: 88, class_avg: 80 },
+    ]
+  },
+]

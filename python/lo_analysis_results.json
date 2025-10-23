@@ -1,0 +1,201 @@
+{
+  "class_analysis": {
+    "overall_stats": {
+      "total_students": 9,
+      "total_tasks": 10,
+      "overall_achievement_rate": 0.9019607843137255,
+      "average_score": 81.12418300653594
+    },
+    "lo_performance": {
+      "LO1": {
+        "achievement_rate": 0.911,
+        "total_attempts": 45,
+        "avg_score": 80.711,
+        "score_std": 7.884
+      },
+      "LO2": {
+        "achievement_rate": 0.815,
+        "total_attempts": 27,
+        "avg_score": 77.889,
+        "score_std": 8.4
+      },
+      "LO3": {
+        "achievement_rate": 0.917,
+        "total_attempts": 36,
+        "avg_score": 80.5,
+        "score_std": 8.279
+      },
+      "LO4": {
+        "achievement_rate": 0.933,
+        "total_attempts": 45,
+        "avg_score": 83.978,
+        "score_std": 8.943
+      }
+    },
+    "performance_distribution": {
+      "high_achievers": 6,
+      "average_performers": 3,
+      "needs_support": 0
+    }
+  },
+  "student_groups": {
+    "Group_1": {
+      "student_count": 4,
+      "avg_score_range": "84.6-90.7%",
+      "avg_achievement_rate": 1.0,
+      "characteristics": "High Achievers - Consistently meeting learning outcomes",
+      "student_ids": [
+        3,
+        5,
+        8,
+        10
+      ],
+      "recommendations": "Provide advanced challenges and leadership opportunities"
+    },
+    "Group_2": {
+      "student_count": 3,
+      "avg_score_range": "70.0-75.2%",
+      "avg_achievement_rate": 0.6819444444444445,
+      "characteristics": "Average Performers - Meeting most learning outcomes with room for improvement",
+      "student_ids": [
+        4,
+        7,
+        9
+      ],
+      "recommendations": "Focus on consistency and targeted skill development"
+    },
+    "Group_3": {
+      "student_count": 2,
+      "avg_score_range": "78.3-80.0%",
+      "avg_achievement_rate": 1.0,
+      "characteristics": "High Achievers - Consistently meeting learning outcomes",
+      "student_ids": [
+        2,
+        6
+      ],
+      "recommendations": "Provide advanced challenges and leadership opportunities"
+    }
+  },
+  "sample_report": {
+    "student_info": {
+      "student_id": "2",
+      "student_name": "Renzel R. Lagasca",
+      "total_tasks_completed": 10
+    },
+    "overall_performance": {
+      "average_score": 81.3,
+      "highest_score": 92.0,
+      "lowest_score": 70.0,
+      "tasks_above_threshold": 10
+    },
+    "lo_predictions": {
+      "LO1": {
+        "current_achievement_rate": 1.0,
+        "current_status": "Achieved",
+        "current_avg_score": 78.6,
+        "task_count": 5,
+        "predictions": {
+          "random_forest": {
+            "prediction": "Will Achieve",
+            "probability": 0.98
+          },
+          "logistic_regression": {
+            "prediction": "Will Achieve",
+            "probability": 0.8882936036331823
+          }
+        },
+        "ensemble_probability": 0.9341468018165912,
+        "recommendation": "\ud83c\udf89 Excellent progress in LO1! Continue current study approach."
+      },
+      "LO2": {
+        "current_achievement_rate": 1.0,
+        "current_status": "Achieved",
+        "current_avg_score": 74.33333333333333,
+        "task_count": 3,
+        "predictions": {
+          "random_forest": {
+            "prediction": "Will Achieve",
+            "probability": 0.98
+          },
+          "logistic_regression": {
+            "prediction": "Will Achieve",
+            "probability": 0.7308892631368203
+          }
+        },
+        "ensemble_probability": 0.8554446315684101,
+        "recommendation": "\ud83c\udf89 Excellent progress in LO2! Continue current study approach."
+      },
+      "LO3": {
+        "current_achievement_rate": 1.0,
+        "current_status": "Achieved",
+        "current_avg_score": 77.5,
+        "task_count": 4,
+        "predictions": {
+          "random_forest": {
+            "prediction": "Will Achieve",
+            "probability": 0.99
+          },
+          "logistic_regression": {
+            "prediction": "Will Achieve",
+            "probability": 0.9345644999028623
+          }
+        },
+        "ensemble_probability": 0.9622822499514312,
+        "recommendation": "\ud83c\udf89 Excellent progress in LO3! Continue current study approach."
+      },
+      "LO4": {
+        "current_achievement_rate": 1.0,
+        "current_status": "Achieved",
+        "current_avg_score": 82.6,
+        "task_count": 5,
+        "predictions": {
+          "random_forest": {
+            "prediction": "Will Achieve",
+            "probability": 1.0
+          },
+          "logistic_regression": {
+            "prediction": "Will Achieve",
+            "probability": 0.9852893356418931
+          }
+        },
+        "ensemble_probability": 0.9926446678209466,
+        "recommendation": "\ud83c\udf89 Excellent progress in LO4! Continue current study approach."
+      }
+    },
+    "recent_performance": [
+      {
+        "task_title": "Programming Implementation",
+        "percentage_score": 92.0,
+        "date_submitted": "2025-03-19 00:00:00",
+        "learning_outcomes": "LO4"
+      },
+      {
+        "task_title": "Midterm Examination",
+        "percentage_score": 78.0,
+        "date_submitted": "2025-03-12 00:00:00",
+        "learning_outcomes": "LO1;LO2;LO3;LO4"
+      },
+      {
+        "task_title": "Final Proposal Defense",
+        "percentage_score": 85.0,
+        "date_submitted": "2025-03-05 00:00:00",
+        "learning_outcomes": "LO4"
+      },
+      {
+        "task_title": "Peer Review Quiz",
+        "percentage_score": 70.0,
+        "date_submitted": "2025-02-26 00:00:00",
+        "learning_outcomes": "LO1;LO2;LO3;LO4"
+      },
+      {
+        "task_title": "Methodology Outline",
+        "percentage_score": 88.0,
+        "date_submitted": "2025-02-19 00:00:00",
+        "learning_outcomes": "LO4"
+      }
+    ],
+    "improvement_areas": [],
+    "generated_at": "2025-07-28T23:32:04.378817"
+  },
+  "generated_at": "2025-07-28T23:32:04.378817"
+}

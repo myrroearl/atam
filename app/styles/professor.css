@@ -1,0 +1,342 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* iOS System Colors - Light Mode */
+    --background: 0 0% 100%; /* systemBackground */
+    --foreground: 0 0% 0%; /* label */
+    --card: 0 0% 100%; /* systemBackground */
+    --card-foreground: 0 0% 0%; /* label */
+    --popover: 0 0% 100%; /* systemBackground */
+    --popover-foreground: 0 0% 0%; /* label */
+
+    /* iOS Blue as primary */
+    --primary: 211 100% 50%; /* systemBlue */
+    --primary-foreground: 0 0% 100%; /* white */
+
+    /* iOS Gray colors */
+    --secondary: 0 0% 96%; /* systemGray6 */
+    --secondary-foreground: 0 0% 0%; /* label */
+    --muted: 0 0% 96%; /* systemGray6 */
+    --muted-foreground: 240 4% 46%; /* secondaryLabel */
+    --accent: 0 0% 94%; /* systemGray5 */
+    --accent-foreground: 0 0% 0%; /* label */
+
+    /* iOS Red for destructive */
+    --destructive: 0 100% 50%; /* systemRed */
+    --destructive-foreground: 0 0% 100%; /* white */
+
+    /* iOS borders and inputs */
+    --border: 0 0% 90%; /* systemGray4 */
+    --input: 0 0% 90%; /* systemGray4 */
+    --ring: 211 100% 50%; /* systemBlue */
+    --radius: 0.5rem; /* iOS corner radius */
+
+    /* Chart colors using iOS system palette */
+    --chart-1: 211 100% 50%; /* systemBlue */
+    --chart-2: 120 100% 35%; /* systemGreen */
+    --chart-3: 35 100% 50%; /* systemOrange */
+    --chart-4: 300 100% 50%; /* systemPurple */
+    --chart-5: 0 100% 50%; /* systemRed */
+
+    /* iOS Sidebar variables - Light Mode */
+    --sidebar-background: 0 0% 97%; /* systemGroupedBackground */
+    --sidebar-foreground: 0 0% 0%; /* label */
+    --sidebar-primary: 211 100% 50%; /* systemBlue */
+    --sidebar-primary-foreground: 0 0% 100%; /* white */
+    --sidebar-accent: 0 0% 94%; /* systemGray5 */
+    --sidebar-accent-foreground: 0 0% 0%; /* label */
+    --sidebar-border: 0 0% 90%; /* systemGray4 */
+    --sidebar-ring: 211 100% 50%; /* systemBlue */
+
+    /* iOS System Colors - Additional */
+    --ios-blue: 211 100% 50%;
+    --ios-green: 120 100% 35%;
+    --ios-indigo: 225 100% 60%;
+    --ios-orange: 35 100% 50%;
+    --ios-pink: 315 100% 65%;
+    --ios-purple: 300 100% 50%;
+    --ios-red: 0 100% 50%;
+    --ios-teal: 180 100% 40%;
+    --ios-yellow: 48 100% 50%;
+    --ios-gray: 240 6% 50%;
+    --ios-gray2: 240 5% 64%;
+    --ios-gray3: 240 5% 76%;
+    --ios-gray4: 240 5% 84%;
+    --ios-gray5: 240 5% 92%;
+    --ios-gray6: 240 5% 96%;
+  }
+
+  .dark {
+    /* iOS System Colors - Dark Mode */
+    --background: 0 0% 0%; /* systemBackground (dark) */
+    --foreground: 0 0% 100%; /* label (dark) */
+    --card: 220 13% 9%; /* secondarySystemBackground */
+    --card-foreground: 0 0% 100%; /* label (dark) */
+    --popover: 220 13% 9%; /* secondarySystemBackground */
+    --popover-foreground: 0 0% 100%; /* label (dark) */
+
+    /* iOS Blue in dark mode */
+    --primary: 211 100% 65%; /* systemBlue (dark) */
+    --primary-foreground: 0 0% 0%; /* black */
+
+    /* iOS Gray colors (dark) */
+    --secondary: 220 13% 18%; /* systemGray5 (dark) */
+    --secondary-foreground: 0 0% 100%; /* label (dark) */
+    --muted: 220 13% 18%; /* systemGray5 (dark) */
+    --muted-foreground: 240 5% 64%; /* secondaryLabel (dark) */
+    --accent: 220 13% 15%; /* systemGray4 (dark) */
+    --accent-foreground: 0 0% 100%; /* label (dark) */
+
+    /* iOS Red in dark mode */
+    --destructive: 0 100% 65%; /* systemRed (dark) */
+    --destructive-foreground: 0 0% 100%; /* white */
+
+    /* iOS borders and inputs (dark) */
+    --border: 220 13% 15%; /* systemGray4 (dark) */
+    --input: 220 13% 15%; /* systemGray4 (dark) */
+    --ring: 211 100% 65%; /* systemBlue (dark) */
+
+    /* Chart colors in dark mode */
+    --chart-1: 211 100% 65%; /* systemBlue (dark) */
+    --chart-2: 120 100% 45%; /* systemGreen (dark) */
+    --chart-3: 35 100% 60%; /* systemOrange (dark) */
+    --chart-4: 300 100% 65%; /* systemPurple (dark) */
+    --chart-5: 0 100% 65%; /* systemRed (dark) */
+
+    /* iOS Sidebar variables - Dark Mode */
+    --sidebar-background: 220 13% 9%; /* secondarySystemGroupedBackground */
+    --sidebar-foreground: 0 0% 100%; /* label (dark) */
+    --sidebar-primary: 211 100% 65%; /* systemBlue (dark) */
+    --sidebar-primary-foreground: 0 0% 0%; /* black */
+    --sidebar-accent: 220 13% 15%; /* systemGray4 (dark) */
+    --sidebar-accent-foreground: 0 0% 100%; /* label (dark) */
+    --sidebar-border: 220 13% 15%; /* systemGray4 (dark) */
+    --sidebar-ring: 211 100% 65%; /* systemBlue (dark) */
+
+    /* iOS System Colors - Dark Mode Additional */
+    --ios-blue: 211 100% 65%;
+    --ios-green: 120 100% 45%;
+    --ios-indigo: 225 100% 70%;
+    --ios-orange: 35 100% 60%;
+    --ios-pink: 315 100% 75%;
+    --ios-purple: 300 100% 65%;
+    --ios-red: 0 100% 65%;
+    --ios-teal: 180 100% 50%;
+    --ios-yellow: 48 100% 60%;
+    --ios-gray: 240 6% 60%;
+    --ios-gray2: 240 5% 54%;
+    --ios-gray3: 240 5% 44%;
+    --ios-gray4: 240 5% 34%;
+    --ios-gray5: 240 5% 24%;
+    --ios-gray6: 240 5% 14%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    
+  }
+}
+
+/* iOS-style scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--ios-gray3));
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--ios-gray2));
+  background-clip: content-box;
+}
+
+/* iOS-inspired component styles */
+.ios-card {
+  @apply bg-card border border-border rounded-2xl shadow-sm;
+  backdrop-filter: blur(20px);
+}
+
+.ios-button {
+  @apply rounded-xl font-medium transition-all duration-200;
+}
+
+.ios-button-primary {
+  @apply bg-primary text-primary-foreground hover:opacity-90 active:scale-95;
+}
+
+.ios-button-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-accent;
+}
+
+.ios-input {
+  @apply rounded-xl border-input bg-background px-4 py-3 text-base;
+  
+}
+
+/* iOS System Color Utilities */
+.text-ios-blue {
+  color: hsl(var(--ios-blue));
+}
+.text-ios-green {
+  color: hsl(var(--ios-green));
+}
+.text-ios-indigo {
+  color: hsl(var(--ios-indigo));
+}
+.text-ios-orange {
+  color: hsl(var(--ios-orange));
+}
+.text-ios-pink {
+  color: hsl(var(--ios-pink));
+}
+.text-ios-purple {
+  color: hsl(var(--ios-purple));
+}
+.text-ios-red {
+  color: hsl(var(--ios-red));
+}
+.text-ios-teal {
+  color: hsl(var(--ios-teal));
+}
+.text-ios-yellow {
+  color: hsl(var(--ios-yellow));
+}
+
+.bg-ios-blue {
+  background-color: hsl(var(--ios-blue));
+}
+.bg-ios-green {
+  background-color: hsl(var(--ios-green));
+}
+.bg-ios-indigo {
+  background-color: hsl(var(--ios-indigo));
+}
+.bg-ios-orange {
+  background-color: hsl(var(--ios-orange));
+}
+.bg-ios-pink {
+  background-color: hsl(var(--ios-pink));
+}
+.bg-ios-purple {
+  background-color: hsl(var(--ios-purple));
+}
+.bg-ios-red {
+  background-color: hsl(var(--ios-red));
+}
+.bg-ios-teal {
+  background-color: hsl(var(--ios-teal));
+}
+.bg-ios-yellow {
+  background-color: hsl(var(--ios-yellow));
+}
+
+/* iOS-style grade colors */
+.grade-a {
+  @apply text-ios-green font-semibold;
+}
+
+.grade-b {
+  @apply text-ios-blue font-semibold;
+}
+
+.grade-c {
+  @apply text-ios-yellow font-semibold;
+}
+
+.grade-d {
+  @apply text-ios-orange font-semibold;
+}
+
+.grade-f {
+  @apply text-ios-red font-semibold;
+}
+
+/* iOS-style modern components */
+.ios-modern-card {
+  @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg;
+}
+
+.ios-stats-card {
+  @apply bg-gradient-to-br from-card to-card/80 border border-border/50 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200;
+}
+
+.ios-modern-button {
+  @apply bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 transition-all duration-200 rounded-xl;
+}
+
+/* iOS-style glass effect */
+.ios-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .ios-glass {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* iOS-style focus states */
+.ios-focus:focus {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+}
+
+/* iOS-style animations */
+.ios-bounce {
+  animation: ios-bounce 0.3s ease-in-out;
+}
+
+@keyframes ios-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+/* iOS-style shadows */
+.ios-shadow-sm {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ios-shadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ios-shadow-lg {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.dark .ios-shadow-sm {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.dark .ios-shadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .ios-shadow-lg {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}

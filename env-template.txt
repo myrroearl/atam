@@ -1,0 +1,20 @@
+# Copy this to .env.local and fill in your actual values
+
+# NextAuth Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-super-secret-jwt-secret-change-this
+
+# Supabase Configuration (REQUIRED)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+
+# Google OAuth (Optional - for student/professor login)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Google reCAPTCHA (REQUIRED - for login security)
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your-recaptcha-site-key
+RECAPTCHA_SECRET_KEY=your-recaptcha-secret-key
+
+# YouTube Data API (Optional - for learning resources data harvesting)
+YOUTUBE_API_KEY=your-youtube-api-key

@@ -1,0 +1,91 @@
+student_id,student_name,course,subject,task_id,task_title,score,total_score,date_submitted,learning_outcomes,topic
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,1,Course Orientation Essay,85,100,2025-01-15,LO1,Course Orientation and Capstone Overview
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,2,Problem Identification Lab,78,100,2025-01-22,LO1,Identifying Real-World Problems
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,3,Title Defense Presentation,82,100,2025-01-29,LO1;LO3,Project Title and Objectives
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,4,Literature Review Paper,75,100,2025-02-05,LO2,Review of Related Literature and Studies
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,5,Scope Definition Document,80,100,2025-02-12,LO3,Defining Scope Delimitation and Significance
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,6,Methodology Outline,88,100,2025-02-19,LO4,Methodology and System Design Overview
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,7,Peer Review Quiz,70,100,2025-02-26,LO1;LO2;LO3;LO4,Consultation and Proposal Refinement
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,8,Final Proposal Defense,85,100,2025-03-05,LO4,Final Proposal Submission and Presentation
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,9,Midterm Examination,78,100,2025-03-12,LO1;LO2;LO3;LO4,Comprehensive Assessment
+2,Renzel R. Lagasca,Capstone 1,BSIT3B,10,Programming Implementation,92,100,2025-03-19,LO4,System Development Phase
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,1,Course Orientation Essay,92,100,2025-01-15,LO1,Course Orientation and Capstone Overview
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,2,Problem Identification Lab,88,100,2025-01-22,LO1,Identifying Real-World Problems
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,3,Title Defense Presentation,95,100,2025-01-29,LO1;LO3,Project Title and Objectives
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,4,Literature Review Paper,90,100,2025-02-05,LO2,Review of Related Literature and Studies
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,5,Scope Definition Document,87,100,2025-02-12,LO3,Defining Scope Delimitation and Significance
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,6,Methodology Outline,93,100,2025-02-19,LO4,Methodology and System Design Overview
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,7,Peer Review Quiz,85,100,2025-02-26,LO1;LO2;LO3;LO4,Consultation and Proposal Refinement
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,8,Final Proposal Defense,96,100,2025-03-05,LO4,Final Proposal Submission and Presentation
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,9,Midterm Examination,88,100,2025-03-12,LO1;LO2;LO3;LO4,Comprehensive Assessment
+3,Vincen Lawrence F. Enriquez,Capstone 1,BSIT3B,10,Programming Implementation,98,100,2025-03-19,LO4,System Development Phase
+4,Maria Santos,Capstone 1,BSIT3B,1,Course Orientation Essay,78,100,2025-01-15,LO1,Course Orientation and Capstone Overview
+4,Maria Santos,Capstone 1,BSIT3B,2,Problem Identification Lab,72,100,2025-01-23,LO1,Identifying Real-World Problems
+4,Maria Santos,Capstone 1,BSIT3B,3,Title Defense Presentation,75,100,2025-01-30,LO1;LO3,Project Title and Objectives
+4,Maria Santos,Capstone 1,BSIT3B,4,Literature Review Paper,68,100,2025-02-07,LO2,Review of Related Literature and Studies
+4,Maria Santos,Capstone 1,BSIT3B,5,Scope Definition Document,74,100,2025-02-14,LO3,Defining Scope Delimitation and Significance
+4,Maria Santos,Capstone 1,BSIT3B,6,Methodology Outline,79,100,2025-02-21,LO4,Methodology and System Design Overview
+4,Maria Santos,Capstone 1,BSIT3B,7,Peer Review Quiz,65,100,2025-02-28,LO1;LO2;LO3;LO4,Consultation and Proposal Refinement
+4,Maria Santos,Capstone 1,BSIT3B,8,Final Proposal Defense,80,100,2025-03-07,LO4,Final Proposal Submission and Presentation
+4,Maria Santos,Capstone 1,BSIT3B,9,Midterm Examination,76,100,2025-03-14,LO1;LO2;LO3;LO4,Comprehensive Assessment
+4,Maria Santos,Capstone 1,BSIT3B,10,Programming Implementation,82,100,2025-03-21,LO4,System Development Phase
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,1,Course Orientation Essay,88,100,2025-01-15,LO1,Course Orientation and Capstone Overview
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,2,Problem Identification Lab,85,100,2025-01-22,LO1,Identifying Real-World Problems
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,3,Title Defense Presentation,90,100,2025-01-29,LO1;LO3,Project Title and Objectives
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,4,Literature Review Paper,82,100,2025-02-05,LO2,Review of Related Literature and Studies
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,5,Scope Definition Document,87,100,2025-02-12,LO3,Defining Scope Delimitation and Significance
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,6,Methodology Outline,91,100,2025-02-19,LO4,Methodology and System Design Overview
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,7,Peer Review Quiz,78,100,2025-02-26,LO1;LO2;LO3;LO4,Consultation and Proposal Refinement
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,8,Final Proposal Defense,89,100,2025-03-05,LO4,Final Proposal Submission and Presentation
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,9,Midterm Examination,84,100,2025-03-12,LO1;LO2;LO3;LO4,Comprehensive Assessment
+5,John Paul Dela Cruz,Capstone 1,BSIT3B,10,Programming Implementation,95,100,2025-03-19,LO4,System Development Phase
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,1,Course Orientation Essay,82,100,2025-01-16,LO1,Course Orientation and Capstone Overview
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,2,Problem Identification Lab,79,100,2025-01-24,LO1,Identifying Real-World Problems
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,3,Title Defense Presentation,86,100,2025-01-31,LO1;LO3,Project Title and Objectives
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,4,Literature Review Paper,77,100,2025-02-08,LO2,Review of Related Literature and Studies
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,5,Scope Definition Document,83,100,2025-02-15,LO3,Defining Scope Delimitation and Significance
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,6,Methodology Outline,88,100,2025-02-22,LO4,Methodology and System Design Overview
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,7,Peer Review Quiz,72,100,2025-03-01,LO1;LO2;LO3;LO4,Consultation and Proposal Refinement
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,8,Final Proposal Defense,85,100,2025-03-08,LO4,Final Proposal Submission and Presentation
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,9,Midterm Examination,81,100,2025-03-15,LO1;LO2;LO3;LO4,Comprehensive Assessment
+6,Anna Mae Rodriguez,Capstone 1,BSIT3B,10,Programming Implementation,89,100,2025-03-22,LO4,System Development Phase
+7,Miguel Angel Torres,Capstone 1,BSIT3B,1,Course Orientation Essay,75,100,2025-01-17,LO1,Course Orientation and Capstone Overview
+7,Miguel Angel Torres,Capstone 1,BSIT3B,2,Problem Identification Lab,69,100,2025-01-25,LO1,Identifying Real-World Problems
+7,Miguel Angel Torres,Capstone 1,BSIT3B,3,Title Defense Presentation,73,100,2025-02-01,LO1;LO3,Project Title and Objectives
+7,Miguel Angel Torres,Capstone 1,BSIT3B,4,Literature Review Paper,66,100,2025-02-09,LO2,Review of Related Literature and Studies
+7,Miguel Angel Torres,Capstone 1,BSIT3B,5,Scope Definition Document,71,100,2025-02-16,LO3,Defining Scope Delimitation and Significance
+7,Miguel Angel Torres,Capstone 1,BSIT3B,6,Methodology Outline,76,100,2025-02-23,LO4,Methodology and System Design Overview
+7,Miguel Angel Torres,Capstone 1,BSIT3B,7,Peer Review Quiz,62,100,2025-03-02,LO1;LO2;LO3;LO4,Consultation and Proposal Refinement
+7,Miguel Angel Torres,Capstone 1,BSIT3B,8,Final Proposal Defense,78,100,2025-03-09,LO4,Final Proposal Submission and Presentation
+7,Miguel Angel Torres,Capstone 1,BSIT3B,9,Midterm Examination,72,100,2025-03-16,LO1;LO2;LO3;LO4,Comprehensive Assessment
+7,Miguel Angel Torres,Capstone 1,BSIT3B,10,Programming Implementation,80,100,2025-03-23,LO4,System Development Phase
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,1,Course Orientation Essay,90,100,2025-01-15,LO1,Course Orientation and Capstone Overview
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,2,Problem Identification Lab,87,100,2025-01-22,LO1,Identifying Real-World Problems
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,3,Title Defense Presentation,93,100,2025-01-29,LO1;LO3,Project Title and Objectives
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,4,Literature Review Paper,89,100,2025-02-05,LO2,Review of Related Literature and Studies
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,5,Scope Definition Document,91,100,2025-02-12,LO3,Defining Scope Delimitation and Significance
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,6,Methodology Outline,94,100,2025-02-19,LO4,Methodology and System Design Overview
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,7,Peer Review Quiz,86,100,2025-02-26,LO1;LO2;LO3;LO4,Consultation and Proposal Refinement
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,8,Final Proposal Defense,97,100,2025-03-05,LO4,Final Proposal Submission and Presentation
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,9,Midterm Examination,92,100,2025-03-12,LO1;LO2;LO3;LO4,Comprehensive Assessment
+8,Sarah Jane Villamor,Capstone 1,BSIT3B,10,Programming Implementation,99,100,2025-03-19,LO4,System Development Phase
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,1,Course Orientation Essay,80,100,2025-01-18,LO1,Course Orientation and Capstone Overview
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,2,Problem Identification Lab,74,100,2025-01-26,LO1,Identifying Real-World Problems
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,3,Title Defense Presentation,78,100,2025-02-02,LO1;LO3,Project Title and Objectives
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,4,Literature Review Paper,71,100,2025-02-10,LO2,Review of Related Literature and Studies
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,5,Scope Definition Document,76,100,2025-02-17,LO3,Defining Scope Delimitation and Significance
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,6,Methodology Outline,82,100,2025-02-24,LO4,Methodology and System Design Overview
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,7,Peer Review Quiz,68,100,2025-03-03,LO1;LO2;LO3;LO4,Consultation and Proposal Refinement
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,8,Final Proposal Defense,81,100,2025-03-10,LO4,Final Proposal Submission and Presentation
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,9,Midterm Examination,77,100,2025-03-17,LO1;LO2;LO3;LO4,Comprehensive Assessment
+9,Kenneth Dave Morales,Capstone 1,BSIT3B,10,Programming Implementation,85,100,2025-03-24,LO4,System Development Phase
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,1,Course Orientation Essay,86,100,2025-01-15,LO1,Course Orientation and Capstone Overview
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,2,Problem Identification Lab,83,100,2025-01-22,LO1,Identifying Real-World Problems
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,3,Title Defense Presentation,89,100,2025-01-29,LO1;LO3,Project Title and Objectives
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,4,Literature Review Paper,85,100,2025-02-05,LO2,Review of Related Literature and Studies
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,5,Scope Definition Document,88,100,2025-02-12,LO3,Defining Scope Delimitation and Significance
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,6,Methodology Outline,92,100,2025-02-19,LO4,Methodology and System Design Overview
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,7,Peer Review Quiz,79,100,2025-02-26,LO1;LO2;LO3;LO4,Consultation and Proposal Refinement
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,8,Final Proposal Defense,91,100,2025-03-05,LO4,Final Proposal Submission and Presentation
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,9,Midterm Examination,87,100,2025-03-12,LO1;LO2;LO3;LO4,Comprehensive Assessment
+10,Chloe Mae Gonzales,Capstone 1,BSIT3B,10,Programming Implementation,94,100,2025-03-19,LO4,System Development Phase 

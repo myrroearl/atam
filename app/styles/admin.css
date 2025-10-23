@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Shimmer animation for skeleton loading */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 142 30% 90%;
+    --secondary-foreground: 142 76% 20%;
+    --muted: 142 30% 96%;
+    --muted-foreground: 142 30% 40%;
+    --accent: 142 50% 85%;
+    --accent-foreground: 142 76% 20%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 142 20% 90%;
+    --input: 142 20% 90%;
+    --ring: 142 76% 36%;
+    --chart-1: 142 76% 36%;
+    --chart-2: 142 60% 45%;
+    --chart-3: 142 45% 55%;
+    --chart-4: 142 30% 65%;
+    --chart-5: 142 20% 75%;
+    --radius: 0.5rem;
+    --sidebar-background: 142 30% 98%;
+    --sidebar-foreground: 142 30% 20%;
+    --sidebar-primary: 142 76% 36%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 142 30% 95%;
+    --sidebar-accent-foreground: 142 76% 20%;
+    --sidebar-border: 142 20% 91%;
+    --sidebar-ring: 142 76% 36%;
+  }
+  .dark {
+    --background: 142 30% 5%;
+    --foreground: 0 0% 98%;
+    --card: 142 30% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 142 30% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 142 30% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 142 30% 15%;
+    --muted-foreground: 142 20% 60%;
+    --accent: 142 30% 20%;
+    --accent-foreground: 142 76% 50%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 142 30% 15%;
+    --input: 142 30% 15%;
+    --ring: 142 76% 36%;
+    --chart-1: 142 76% 50%;
+    --chart-2: 142 60% 55%;
+    --chart-3: 142 45% 60%;
+    --chart-4: 142 30% 65%;
+    --chart-5: 142 20% 70%;
+    --sidebar-background: 142 30% 10%;
+    --sidebar-foreground: 142 20% 95%;
+    --sidebar-primary: 142 76% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 142 30% 15%;
+    --sidebar-accent-foreground: 142 20% 95%;
+    --sidebar-border: 142 30% 15%;
+    --sidebar-ring: 142 76% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+:root {
+  /* Academic Management System Custom Color Palette */
+  --customized-color-one: #1A5319;    /* Primary Green - Buttons, Icons, Accents */
+  --customized-color-two: #508D4E;    /* Secondary Green - Hover states, Secondary elements */
+  --customized-color-three: #80AF81;  /* Light Green - Subtle highlights, Success states */
+  --customized-color-four: #D6EFD8;   /* Very Light Green - Backgrounds, Subtle areas */
+  --customized-color-five: #f0f5f0;   /* Main Background - Page backgrounds, Cards */
+  
+  /* Dark Mode Colors */
+  --darkmode-color-one: #102812;      /* Dark Card Background */
+  --darkmode-color-two: #518151;      /* Dark Page Background */
+  --darkmode-color-three: #74b172;    /* Dark Element Background */
+  --darkmode-color-four: #ade6ad;     /* Dark Border/Separator */
+  --darkmode-color-five: #0a0f0a;
+  /* E9EDE9 */
+  /* Status Colors */
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
+
+  --try-one: #319d30;
+  --try-two: #69b766;
+  --try-three: #9ad39b;
+  --try-four: #D6EFD8;
+  --try-five: #0b0b0b;
+}
+
+/* For Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+html {
+  scrollbar-width: none; /* Hides scrollbar */
+}
+
+/* For IE and old Edge */
+html {
+  -ms-overflow-style: none;
+}
