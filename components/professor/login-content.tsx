@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,7 +24,7 @@ export function LoginContent() {
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null)
   const recaptchaRef = useRef<ReCAPTCHARef>(null)
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -146,13 +146,20 @@ export function LoginContent() {
 
   // Display invalid account if redirected back with AccessDenied
   useEffect(() => {
-    const err = searchParams.get("error")
-    if (err === "AccessDenied") {
-      setError("Your account is invalid or not permitted to sign in here.")
-      setIsGoogleLoading(false)
-      setIsLoading(false)
+    // Safe access to search params
+    try {
+      const params = new URLSearchParams(window.location.search);
+      setSearchParams(params);
+      const err = params.get("error");
+      if (err === "AccessDenied") {
+        setError("Your account is invalid or not permitted to sign in here.");
+        setIsGoogleLoading(false);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.warn('Error accessing search params:', error);
     }
-  }, [searchParams])
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">

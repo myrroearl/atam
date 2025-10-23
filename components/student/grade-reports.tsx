@@ -526,7 +526,7 @@ const semesterMap: Record<string, number[]> = {
 };
 const semesterOptions = Object.keys(semesterMap);
 
-export function GradesView() {
+export function GradeReports() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedSemester, setSelectedSemester] = useState('1st Sem');
