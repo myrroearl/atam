@@ -1,0 +1,12 @@
+# dependencies
+node_modules
+
+# build outputs
+.next
+out
+dist
+
+# environment files
+.env.local
+.env.development
+.env.production
