@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, BarChart, Book, CheckCircle, ChevronDown, ChevronRight, FileText, FlaskConical, Percent, Plus, Star, Target, TrendingUp, Trophy, XCircle, Brain, AlertTriangle, Award, BookOpen, GraduationCap } from "lucide-react"
 import { Bar, BarChart as BarChartRecharts, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts"
@@ -528,19 +528,27 @@ const semesterOptions = Object.keys(semesterMap);
 
 export function GradeReports() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
   const [selectedSemester, setSelectedSemester] = useState('1st Sem');
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | 'overall' | null>(null);
   const [showGradeReportsDialog, setShowGradeReportsDialog] = useState(false);
 
   useEffect(() => {
-    const subjectId = searchParams.get('subject');
-    if (subjectId && subjectId !== 'overall') {
-      setSelectedSubjectId(parseInt(subjectId, 10));
-    } else {
+    // Safe access to search params
+    try {
+      const params = new URLSearchParams(window.location.search);
+      setSearchParams(params);
+      const subjectId = params.get('subject');
+      if (subjectId && subjectId !== 'overall') {
+        setSelectedSubjectId(parseInt(subjectId, 10));
+      } else {
+        setSelectedSubjectId('overall');
+      }
+    } catch (error) {
+      console.warn('Error accessing search params:', error);
       setSelectedSubjectId('overall');
     }
-  }, [searchParams]);
+  }, []);
 
   const handleBack = () => {
     router.push('/student/subjects');
