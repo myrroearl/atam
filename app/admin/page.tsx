@@ -71,14 +71,14 @@ export default function LoginPage() {
         return
       }
 
-      const result = await signIn("credentials", {
+      const result = await signIn("admin-credentials", {
         email,
         password,
         redirect: false,
       })
 
       if (result?.error) {
-        setError("Invalid credentials")
+        setError("Invalid admin credentials or account not found")
         recaptchaRef.current?.reset()
         setRecaptchaToken(null)
         setIsLoading(false)

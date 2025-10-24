@@ -54,10 +54,10 @@ export const authOptions: NextAuthOptions = {
       })
     ] : []),
 
-    // Credentials Provider for admin and professor
+    // Admin Credentials Provider
     CredentialsProvider({
-      id: "credentials",
-      name: "credentials",
+      id: "admin-credentials",
+      name: "admin-credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
@@ -68,12 +68,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Query the accounts table for admin, professor, or student
+          // Query the accounts table for admin only
           const { data: account, error } = await supabase
             .from('accounts')
             .select('*')
             .eq('email', credentials.email)
-            .in('role', ['admin', 'professor', 'student'])
+            .eq('role', 'admin')
             .eq('status', 'active')
             .single()
 
@@ -94,7 +94,99 @@ export const authOptions: NextAuthOptions = {
             account_id: account.account_id.toString()
           } as unknown as User
         } catch (error) {
-          console.error("Auth error:", error)
+          console.error("Admin auth error:", error)
+          return null
+        }
+      }
+    }),
+
+    // Professor Credentials Provider
+    CredentialsProvider({
+      id: "professor-credentials",
+      name: "professor-credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials, _req) {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        try {
+          // Query the accounts table for professor only
+          const { data: account, error } = await supabase
+            .from('accounts')
+            .select('*')
+            .eq('email', credentials.email)
+            .eq('role', 'professor')
+            .eq('status', 'active')
+            .single()
+
+          if (error || !account) {
+            return null
+          }
+
+          // TEMP: Plaintext password check until passwords are hashed in DB
+          if (credentials.password !== account.password_hash) {
+            return null
+          }
+
+          return {
+            id: account.account_id.toString(),
+            email: account.email,
+            role: account.role,
+            status: account.status,
+            account_id: account.account_id.toString()
+          } as unknown as User
+        } catch (error) {
+          console.error("Professor auth error:", error)
+          return null
+        }
+      }
+    }),
+
+    // Student Credentials Provider
+    CredentialsProvider({
+      id: "student-credentials",
+      name: "student-credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials, _req) {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        try {
+          // Query the accounts table for student only
+          const { data: account, error } = await supabase
+            .from('accounts')
+            .select('*')
+            .eq('email', credentials.email)
+            .eq('role', 'student')
+            .eq('status', 'active')
+            .single()
+
+          if (error || !account) {
+            return null
+          }
+
+          // TEMP: Plaintext password check until passwords are hashed in DB
+          if (credentials.password !== account.password_hash) {
+            return null
+          }
+
+          return {
+            id: account.account_id.toString(),
+            email: account.email,
+            role: account.role,
+            status: account.status,
+            account_id: account.account_id.toString()
+          } as unknown as User
+        } catch (error) {
+          console.error("Student auth error:", error)
           return null
         }
       }

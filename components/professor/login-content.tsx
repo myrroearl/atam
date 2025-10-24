@@ -84,14 +84,14 @@ export function LoginContent() {
         return
       }
 
-      const result = await signIn("credentials", {
+      const result = await signIn("professor-credentials", {
         email: formData.email,
         password: formData.password,
         redirect: false,
       })
 
       if (result?.error) {
-        setError("Invalid credentials")
+        setError("Invalid professor credentials or account not found")
         recaptchaRef.current?.reset()
         setRecaptchaToken(null)
         setIsLoading(false)
