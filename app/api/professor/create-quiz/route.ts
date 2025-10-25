@@ -1,15 +1,27 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // Google AI API key
 const API_KEY = 'AIzaSyDSnDgk8LUcsArTuJ_7uwHWCUlrYqH1vmM';
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 // Google Apps Script Web App URL
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWD1sG0zQ1DA9_srBN88YApyoJrT7LmhUQqpyHZkP9nUc2ZqXj0PWr5E5tnc62o6TP/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_FnO6wzz2-ZUpJWnfNUzCGSdlt4UgOu4W-AR_U769IE3Rw6qju45GMSP4bRvzHcgO/exec';
 
 export async function POST(request: Request) {
   try {
+    // Get the user session to access user email
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user?.email) {
+      return NextResponse.json(
+        { error: 'User not authenticated or email not available' },
+        { status: 401 }
+      );
+    }
+
     // Parse the request body
     const body = await request.json();
     const { prompt, numQuestions, difficulty } = body;
@@ -40,7 +52,7 @@ export async function POST(request: Request) {
     const questions = await generateQuizQuestions(prompt, numQuestions, difficulty);
     
     // Create Google Form using the Google Apps Script Web App
-    const formResponse = await createGoogleForm(prompt, questions);
+    const formResponse = await createGoogleForm(prompt, questions, session.user.email);
     
     // Return the form link and questions
     return NextResponse.json({ 
@@ -152,7 +164,7 @@ async function generateQuizQuestions(prompt: string, numQuestions: number, diffi
   }
 }
 
-async function createGoogleForm(title: string, questions: any[]) {
+async function createGoogleForm(title: string, questions: any[], userEmail: string) {
   try {
     // Prepare the questions for the Google Form
     // Include the correct answers and points for each question
@@ -173,6 +185,7 @@ async function createGoogleForm(title: string, questions: any[]) {
       body: JSON.stringify({
         title: `Quiz: ${title}`,
         questions: formQuestions,
+        userEmail: userEmail, // Pass the user's email for permissions
       })
     });
 

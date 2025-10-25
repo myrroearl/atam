@@ -1,20 +1,33 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
+    // Get the user session to access user email
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user?.email) {
+      return NextResponse.json(
+        { error: 'User not authenticated or email not available' },
+        { status: 401 }
+      );
+    }
+
     const { templateId, slideCount } = await request.json();
     
-    console.log('Making request to Google Apps Script with:', { templateId, slideCount });
+    console.log('Making request to Google Apps Script with:', { templateId, slideCount, userEmail: session.user.email });
     
     // Call your Google Apps Script web app URL
-    const response = await fetch('https://script.google.com/macros/s/AKfycbxlzhu33vkBeJg37tFbKfPbumy5afWIgJxsGNpcbVfTYML0ewhII1_4KM1XmA8pnon2JA/exec', {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbyweEslxhUSElgH0zuUd2wODdNhKM0Uq6x-0bXasfFkFKkBxnQQ0sLuflZ4wxSuCId6RQ/exec', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         function: 'createPresentationFromTemplate',
-        parameters: [templateId, slideCount]
+        parameters: [templateId, slideCount],
+        userEmail: session.user.email // Pass the user's email for permissions
       }),
     });
     
