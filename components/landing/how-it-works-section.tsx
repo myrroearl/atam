@@ -37,8 +37,8 @@ const steps = [
     step: "04",
     icon: Award,
     title: "Optimize & Succeed",
-    description: "Use insights to improve teaching strategies, motivate students with leaderboards, and find scholarship opportunities.",
-    features: ["Teaching optimization", "Student motivation", "Scholarship matching"]
+    description: "Use insights to improve teaching strategies, motivate students with leaderboards, and find learning resources.",
+    features: ["Teaching optimization", "Student motivation", "Learning resource matching"]
   }
 ];
 
@@ -51,7 +51,7 @@ const workflow = [
       "Monitors overall institutional performance",
       "Generates comprehensive reports and analytics"
     ],
-    color: "bg-blue-600"
+    color: "bg-green-600"
   },
   {
     role: "Professor",
@@ -61,7 +61,7 @@ const workflow = [
       "Reviews AI-generated insights and recommendations",
       "Communicates with students through the platform"
     ],
-    color: "bg-indigo-600"
+    color: "bg-emerald-600"
   },
   {
     role: "Student",
@@ -69,9 +69,9 @@ const workflow = [
       "Views grades and performance analytics",
       "Participates in gamified learning activities",
       "Accesses personalized study recommendations",
-      "Explores scholarship opportunities"
+      "Explores learning resources"
     ],
-    color: "bg-purple-600"
+    color: "bg-teal-600"
   }
 ];
 
@@ -87,7 +87,7 @@ export function HowItWorksSection() {
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
               Get Started in{" "}
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 Four Simple Steps
               </span>
             </h2>
@@ -107,17 +107,17 @@ export function HowItWorksSection() {
                     <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 shadow-lg h-full">
                       <CardContent className="p-6 text-center">
                         {/* Step Number */}
-                        <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-4 opacity-60">
+                        <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-4 opacity-60">
                           {step.step}
                         </div>
                         
                         {/* Icon */}
-                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                          <IconComponent className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                          <IconComponent className="w-8 h-8 text-green-600 dark:text-green-400" />
                         </div>
                         
                         {/* Content */}
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
                           {step.title}
                         </h3>
                         <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
@@ -139,7 +139,7 @@ export function HowItWorksSection() {
                     {/* Arrow between steps (hidden on mobile and last item) */}
                     {index < steps.length - 1 && (
                       <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-                        <ArrowRight className="w-8 h-8 text-blue-300 dark:text-blue-600" />
+                        <ArrowRight className="w-8 h-8 text-green-300 dark:text-green-600" />
                       </div>
                     )}
                   </div>
@@ -149,7 +149,7 @@ export function HowItWorksSection() {
           </div>
 
           {/* User Workflows */}
-          <div className="bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-2xl p-8 md:p-12">
+          <div className="bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-800 dark:to-green-900/20 rounded-2xl p-8 md:p-12">
             <div className="text-center mb-12">
               <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Tailored Workflows for Every Role
@@ -170,7 +170,7 @@ export function HowItWorksSection() {
                   <ul className="space-y-3">
                     {flow.actions.map((action, actionIndex) => (
                       <li key={actionIndex} className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2"></div>
+                        <div className="w-2 h-2 bg-green-600 rounded-full flex-shrink-0 mt-2"></div>
                         <span className="text-gray-600 dark:text-gray-300 leading-relaxed">
                           {action}
                         </span>

@@ -15,21 +15,21 @@ const benefits = [
   {
     role: "Students",
     icon: GraduationCap,
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-100 dark:bg-blue-900/30",
+    color: "text-green-600 dark:text-green-400",
+    bgColor: "bg-green-100 dark:bg-green-900/30",
     items: [
       "Track your academic progress in real-time",
       "Receive personalized learning recommendations",
       "Compete with peers through gamified leaderboards",
-      "Access scholarship opportunities automatically",
+      "Access learning resources automatically",
       "Practice with AI-powered training modules"
     ]
   },
   {
     role: "Professors",
     icon: Users,
-    color: "text-indigo-600 dark:text-indigo-400",
-    bgColor: "bg-indigo-100 dark:bg-indigo-900/30",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bgColor: "bg-emerald-100 dark:bg-emerald-900/30",
     items: [
       "Monitor class performance with detailed analytics",
       "Identify at-risk students early with AI insights",
@@ -41,8 +41,8 @@ const benefits = [
   {
     role: "Administrators",
     icon: Shield,
-    color: "text-purple-600 dark:text-purple-400",
-    bgColor: "bg-purple-100 dark:bg-purple-900/30",
+    color: "text-teal-600 dark:text-teal-400",
+    bgColor: "bg-teal-100 dark:bg-teal-900/30",
     items: [
       "Oversee institution-wide academic performance",
       "Make data-driven decisions with predictive analytics",
@@ -67,7 +67,7 @@ export function AboutSection() {
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
                 Revolutionizing Academic Management with{" "}
-                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                   Artificial Intelligence
                 </span>
               </h2>
@@ -106,12 +106,12 @@ export function AboutSection() {
 
             {/* Right Content - Visual Element */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-2xl p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-indigo-600/20 rounded-full blur-2xl"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-pink-600/20 rounded-full blur-2xl"></div>
+              <div className="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl p-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-400/20 to-emerald-600/20 rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-teal-400/20 to-cyan-600/20 rounded-full blur-2xl"></div>
                 
                 <div className="relative z-10 text-center">
-                  <Lightbulb className="w-16 h-16 text-blue-600 dark:text-blue-400 mx-auto mb-6" />
+                  <Lightbulb className="w-16 h-16 text-green-600 dark:text-green-400 mx-auto mb-6" />
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                     Innovation at Its Core
                   </h3>
@@ -145,13 +145,13 @@ export function AboutSection() {
                       <div className={`w-12 h-12 rounded-lg ${benefit.bgColor} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                         <IconComponent className={`w-6 h-6 ${benefit.color}`} />
                       </div>
-                      <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                      <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
                         For {benefit.role}
                       </h4>
                       <ul className="space-y-3">
                         {benefit.items.map((item, itemIndex) => (
                           <li key={itemIndex} className="flex items-start gap-3">
-                            <ArrowRight className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                            <ArrowRight className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                             <span className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                               {item}
                             </span>

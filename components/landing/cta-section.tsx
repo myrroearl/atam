@@ -11,10 +11,11 @@ import {
   Phone
 } from "lucide-react";
 import Link from "next/link";
+import { DynamicStats } from "./dynamic-stats";
 
 export function CTASection() {
   return (
-    <section className="py-24 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 relative overflow-hidden">
+    <section className="py-24 bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
@@ -39,45 +40,37 @@ export function CTASection() {
               </span>
             </h2>
             
-            <p className="text-xl text-blue-100 mb-10 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-green-100 mb-10 max-w-3xl mx-auto leading-relaxed">
               Start your journey towards smarter academic management today. 
               Experience the power of AI-driven insights and transform your educational outcomes.
             </p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-              <Link href="/admin">
+              <Link href="/professor">
                 <Button 
                   size="lg" 
-                  className="px-8 py-4 text-lg font-semibold bg-white text-blue-600 hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-2xl"
+                  className="px-8 py-4 text-lg font-semibold bg-white text-green-600 hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-2xl"
                 >
-                  Get Started Free
+                  Professor Portal
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
+              <Link href="/student">
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="px-8 py-4 text-lg font-semibold border-2 border-white text-white hover:bg-white hover:text-blue-600 transform hover:scale-105 transition-all duration-200"
+                className="px-8 py-4 text-lg font-semibold bg-white text-green-600 hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-2xl"
               >
-                Schedule Demo
+                Student Portal
+                <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
+              </Link>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-blue-100">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                <span>10,000+ Active Users</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5" />
-                <span>500+ Institutions</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5" />
-                <span>98% Satisfaction Rate</span>
-              </div>
+            {/* Dynamic Trust Indicators */}
+            <div className="mb-8">
+              <DynamicStats variant="dark" />
             </div>
           </div>
 
@@ -89,12 +82,12 @@ export function CTASection() {
                   <Mail className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">Email Support</h3>
-                <p className="text-blue-100 mb-4">Get help from our expert support team</p>
+                <p className="text-green-100 mb-4">Get help from our expert support team</p>
                 <a 
                   href="mailto:support@academicms.com" 
                   className="text-yellow-300 hover:text-yellow-200 font-medium transition-colors duration-200"
                 >
-                  support@academicms.com
+                  atam@gmail.com  
                 </a>
               </CardContent>
             </Card>
@@ -105,12 +98,12 @@ export function CTASection() {
                   <Phone className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">Phone Support</h3>
-                <p className="text-blue-100 mb-4">Speak directly with our specialists</p>
+                <p className="text-green-100 mb-4">Speak directly with our specialists</p>
                 <a 
                   href="tel:+1-800-ACADEMIC" 
                   className="text-yellow-300 hover:text-yellow-200 font-medium transition-colors duration-200"
                 >
-                  +1 (800) ACADEMIC
+                  +63 917 123 4567
                 </a>
               </CardContent>
             </Card>
@@ -118,8 +111,8 @@ export function CTASection() {
 
           {/* Bottom Message */}
           <div className="text-center mt-16">
-            <p className="text-blue-200 text-lg">
-              🚀 <strong>Special Launch Offer:</strong> Get 3 months free when you sign up before the end of this month!
+            <p className="text-green-200 text-lg">
+              🚀 <strong>Pilot Testing:</strong> This is a pilot testing of the system, there are selected users who are allowed to access the system.
             </p>
           </div>
         </div>

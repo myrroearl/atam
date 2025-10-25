@@ -146,6 +146,9 @@ export function LoginContent() {
 
   // Display invalid account if redirected back with AccessDenied
   useEffect(() => {
+    // Only run on client side to prevent hydration issues
+    if (typeof window === 'undefined') return;
+    
     // Safe access to search params
     try {
       const params = new URLSearchParams(window.location.search);

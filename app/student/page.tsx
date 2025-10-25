@@ -29,6 +29,9 @@ export default function LoginPage() {
 
   // Show message if redirected back with an AccessDenied error
   useEffect(() => {
+    // Only run on client side to prevent hydration issues
+    if (typeof window === 'undefined') return;
+    
     // Safe access to search params
     try {
       const params = new URLSearchParams(window.location.search);

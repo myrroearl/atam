@@ -5,6 +5,7 @@ import { AboutSection } from "@/components/landing/about-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { CTASection } from "@/components/landing/cta-section";
 import { Footer } from "@/components/landing/footer";
+import { FloatingDisclaimer } from "@/components/landing/floating-disclaimer";
 
 export default function LandingPage() {
   return (
@@ -24,6 +25,7 @@ export default function LandingPage() {
         <CTASection />
       </div>
       <Footer />
+      <FloatingDisclaimer />
     </main>
   );
 }

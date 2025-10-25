@@ -11,6 +11,7 @@ export default withAuth(
     if (
       pathname === "/" ||
       pathname.startsWith("/api/auth") ||
+      pathname.startsWith("/api/landing-stats") ||
       pathname.startsWith("/_next") ||
       pathname.startsWith("/favicon") ||
       pathname.startsWith("/public")
@@ -119,6 +120,7 @@ export default withAuth(
           pathname === "/professor" ||
           pathname === "/student" ||
           pathname.startsWith("/api/auth") ||
+          pathname.startsWith("/api/landing-stats") ||
           pathname.startsWith("/_next") ||
           pathname.startsWith("/favicon") ||
           pathname.startsWith("/public")

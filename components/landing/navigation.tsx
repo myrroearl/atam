@@ -13,6 +13,9 @@ import {
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
+import Image from "next/image";
+import logoImg from "@/public/logo.jpg"
+
 const navItems = [
   { name: "Features", href: "#features" },
   { name: "How it Works", href: "#how-it-works" },
@@ -23,15 +26,37 @@ const navItems = [
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Prevent hydration mismatch by not rendering theme-dependent content until mounted
+  if (!mounted) {
+    return (
+      <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-700">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-32 h-6 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -43,11 +68,9 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-              <GraduationCap className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
-              Learnify
+            <Image src={logoImg} alt="PLP Logo" width={32} height={32} className="rounded-full" />
+            <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
+              PLP Academic Management
             </span>
           </Link>
 
@@ -57,10 +80,10 @@ export function Navigation() {
               <a
                 key={index}
                 href={item.href}
-                className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200 relative group"
+                className="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 font-medium transition-colors duration-200 relative group"
               >
                 {item.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-600 group-hover:w-full transition-all duration-300"></span>
               </a>
             ))}
           </div>
@@ -80,14 +103,14 @@ export function Navigation() {
             </Button>
 
             {/* Auth Buttons */}
-            <Link href="/">
-              <Button variant="ghost" className="font-medium">
-                Sign In
+            <Link href="/professor">
+              <Button variant="outline" className="font-medium">
+                Professor Portal
               </Button>
             </Link>
-            <Link href="/">
-              <Button className="bg-blue-600 hover:bg-blue-700 font-medium px-6">
-                Get Started
+            <Link href="/student">
+              <Button className="bg-green-600 hover:bg-green-700 font-medium px-6">
+                Student Portal
               </Button>
             </Link>
           </div>
@@ -117,7 +140,7 @@ export function Navigation() {
                 <div className="flex flex-col h-full">
                   {/* Mobile Logo */}
                   <div className="flex items-center gap-2 pb-6 border-b border-gray-200 dark:border-gray-800">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-600 to-emerald-600 rounded-lg flex items-center justify-center">
                       <GraduationCap className="w-5 h-5 text-white" />
                     </div>
                     <span className="text-xl font-bold text-gray-900 dark:text-white">
@@ -132,7 +155,7 @@ export function Navigation() {
                         key={index}
                         href={item.href}
                         onClick={() => setIsOpen(false)}
-                        className="text-lg font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 py-2"
+                        className="text-lg font-medium text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200 py-2"
                       >
                         {item.name}
                       </a>
@@ -141,14 +164,14 @@ export function Navigation() {
 
                   {/* Mobile Actions */}
                   <div className="flex flex-col space-y-4 mt-auto pt-6 border-t border-gray-200 dark:border-gray-800">
-                    <Link href="/" onClick={() => setIsOpen(false)}>
+                    <Link href="/professor" onClick={() => setIsOpen(false)}>
                       <Button variant="outline" className="w-full font-medium">
-                        Sign In
+                        Professor Portal
                       </Button>
                     </Link>
-                    <Link href="/" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700 font-medium">
-                        Get Started
+                    <Link href="/student" onClick={() => setIsOpen(false)}>
+                      <Button className="w-full bg-green-600 hover:bg-green-700 font-medium">
+                        Student Portal
                       </Button>
                     </Link>
                   </div>

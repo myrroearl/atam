@@ -1,13 +1,9 @@
 import type React from "react"
-import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import type { Metadata } from "next"
 import "@/styles/globals.css"
 import "@/app/styles/student.css"
-import { ThemeProvider } from "@/components/student/theme-provider"
 import { LayoutWrapper } from "./layoutWrapper"
 import { ProfileProvider } from "@/contexts/profile-context"
-
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Student Dashboard",
@@ -17,29 +13,16 @@ export const metadata: Metadata = {
   keywords: ['student', 'dashboard', 'education', 'performance', 'tracking'],
 }
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-}
-
-export default function RootLayout({
+export default function StudentLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <ProfileProvider>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
-          </ProfileProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ProfileProvider>
+      <LayoutWrapper>
+        {children}
+      </LayoutWrapper>
+    </ProfileProvider>
   )
 }
