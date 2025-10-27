@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import mammoth from 'mammoth';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import * as pdfjsLib from 'pdfjs-dist';
+// Use legacy build for Node.js compatibility
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 export async function POST(request: Request) {
   try {
@@ -39,10 +40,18 @@ export async function POST(request: Request) {
     switch (fileExtension) {
       case 'pdf':
         try {
-          // Use pdfjs-dist for PDF parsing
+          // Use pdfjs-dist for PDF parsing with Node.js compatibility
           // Convert Buffer to Uint8Array as required by pdfjs-dist
           const uint8Array = new Uint8Array(fileBuffer);
-          const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
+          
+          // Use disableAutoFetch to prevent issues in Node.js
+          const loadingTask = pdfjsLib.getDocument({
+            data: uint8Array,
+            useSystemFonts: true,
+            disableAutoFetch: true,
+            disableStream: true,
+          });
+          
           const pdf = await loadingTask.promise;
           const numPages = pdf.numPages;
           
