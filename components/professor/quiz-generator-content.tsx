@@ -10,8 +10,12 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { FileText, Upload, Sparkles, Download, Eye, ArrowLeft, CheckCircle, Clock, FileUp, MessageSquare, AlertCircle, ExternalLink, RefreshCw, Calendar, Trash2 } from "lucide-react"
 import Link from "next/link"
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, TableRow as DocxTableRow, TableCell as DocxTableCell, WidthType, SectionType } from "docx"
+import { saveAs } from "file-saver"
 
 interface RecentQuiz {
   usage_id: number
@@ -23,20 +27,29 @@ interface RecentQuiz {
   created_at: string
 }
 
+type QuestionType = "multiple_choice" | "true_false" | "short_answer" | "fill_blank" | "identification"
+
 export function QuizGeneratorContent() {
   
   const [isGenerating, setIsGenerating] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const [uploadedFile, setUploadedFile] = useState<string | null>(null)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [uploadedFileName, setUploadedFileName] = useState<string>("")
+  const [extractedText, setExtractedText] = useState<string>("")
+  const [isExtracting, setIsExtracting] = useState(false)
   const [activeTab, setActiveTab] = useState("file-upload")
   const [prompt, setPrompt] = useState("")
   const [numQuestions, setNumQuestions] = useState("10")
   const [difficulty, setDifficulty] = useState("mixed")
+  const [questionTypes, setQuestionTypes] = useState<QuestionType[]>(["multiple_choice", "true_false", "short_answer"])
   const [error, setError] = useState<string | null>(null)
   const [generatedQuestions, setGeneratedQuestions] = useState([])
   const [googleFormLink, setGoogleFormLink] = useState<string | null>(null)
+  const [quizData, setQuizData] = useState<any>(null) // Store full quiz data for download
+  const [numSets, setNumSets] = useState(1) // Number of quiz sets to generate
   const [recentQuizzes, setRecentQuizzes] = useState<RecentQuiz[]>([])
   const [loadingQuizzes, setLoadingQuizzes] = useState(true)
+  const [loadingMessage, setLoadingMessage] = useState("Generating your quiz...")
 
   // Fetch recent quizzes
   const fetchRecentQuizzes = async () => {
@@ -60,29 +73,418 @@ export function QuizGeneratorContent() {
     fetchRecentQuizzes()
   }, [])
 
+  // Handle question type changes
+  const handleQuestionTypeChange = (type: QuestionType) => {
+    setQuestionTypes(prev => {
+      if (prev.includes(type)) {
+        // Prevent removing the last type
+        if (prev.length === 1) return prev
+        return prev.filter(t => t !== type)
+      }
+      return [...prev, type]
+    })
+  }
+
+  // Handle file upload and text extraction
+  const handleFileUpload = async (file: File) => {
+    try {
+      setIsExtracting(true)
+      setError(null)
+      
+      // Validate file type
+      const fileExtension = file.name.split('.').pop()?.toLowerCase()
+      if (!['pdf', 'docx', 'txt'].includes(fileExtension || '')) {
+        throw new Error('Please upload a PDF, DOCX, or TXT file')
+      }
+      
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error('File size must be less than 10MB')
+      }
+      
+      // Upload file and extract text
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await fetch('/api/professor/extract-file-text', {
+        method: 'POST',
+        body: formData,
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to extract text from file')
+      }
+      
+      const data = await response.json()
+      
+      // Store the extracted text
+      setUploadedFile(file)
+      setUploadedFileName(file.name)
+      setExtractedText(data.text)
+      
+    } catch (err: any) {
+      setError(err.message)
+      setUploadedFile(null)
+      setUploadedFileName("")
+      setExtractedText("")
+    } finally {
+      setIsExtracting(false)
+    }
+  }
+
+  // Helper function to shuffle array
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }
+
+  // Function to convert quiz data to .docx with multiple sets
+  const generateQuizDocx = async (title: string, questions: any[], numSets: number = 1) => {
+    try {
+      // Create header paragraph
+      const headerParagraph = new Paragraph({
+        children: [
+          new TextRun({
+            text: title,
+            bold: true,
+            size: 32,
+          }),
+        ],
+        heading: HeadingLevel.TITLE,
+        spacing: { after: 400 },
+        alignment: AlignmentType.CENTER,
+      })
+
+      // Create student info section
+      const studentInfo = new Paragraph({
+        children: [
+          new TextRun({
+            text: "Name: ___________________________    Date: ___________",
+            size: 22,
+          }),
+        ],
+        spacing: { after: 300 },
+      })
+
+      const instructions = new Paragraph({
+        children: [
+          new TextRun({
+            text: "Instructions: Read each question carefully and provide your answer in the space provided. Good luck!",
+            italics: true,
+            size: 22,
+          }),
+        ],
+        spacing: { after: 600 },
+      })
+
+      // Generate multiple sets of quizzes
+      const allQuestionSets: Paragraph[] = []
+      const allAnswerSets: Paragraph[] = []
+      
+      // Group questions by type for shuffling within each type
+      const groupedByType = questions.reduce((acc: any, question: any) => {
+        const type = question.type
+        if (!acc[type]) {
+          acc[type] = []
+        }
+        acc[type].push(question)
+        return acc
+      }, {})
+
+      // Type labels mapping
+      const typeLabels: { [key: string]: string } = {
+        'multiple_choice': 'Multiple Choice',
+        'true_false': 'True or False',
+        'short_answer': 'Short Answer',
+        'identification': 'Identification',
+        'fill_blank': 'Fill in the Blank'
+      }
+
+      // Generate each quiz return
+      for (let setIndex = 0; setIndex < numSets; setIndex++) {
+        const setLabel = String.fromCharCode(65 + setIndex) // A, B, C, etc.
+        
+        // Shuffle questions within each type for variety
+        const shuffledGrouped = Object.entries(groupedByType).reduce((acc, [type, typeQuestions]) => {
+          acc[type] = shuffleArray(typeQuestions as any[])
+          return acc
+        }, {} as any)
+
+        // Create questions grouped by type
+        const questionParagraphs: Paragraph[] = []
+        
+        // Add set header if multiple sets
+        if (numSets > 1) {
+          const setHeader = new Paragraph({
+            children: [
+              new TextRun({
+                text: `Set ${setLabel}`,
+                bold: true,
+                size: 28,
+              }),
+            ],
+            spacing: { before: 600, after: 300 },
+            alignment: AlignmentType.CENTER,
+          })
+          questionParagraphs.push(setHeader)
+        }
+        
+        Object.entries(shuffledGrouped).forEach(([type, typeQuestions]) => {
+          const questions = typeQuestions as any[]
+          // Add section header for question type
+          const sectionHeader = new Paragraph({
+            children: [
+              new TextRun({
+                text: typeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1).replace(/_/g, ' '),
+                bold: true,
+                size: 26,
+              }),
+            ],
+            spacing: { before: 400, after: 300 },
+          })
+          questionParagraphs.push(sectionHeader)
+
+          // Add questions of this type
+          questions.forEach((question: any, index: number) => {
+            const questionNumber = new Paragraph({
+              children: [
+                new TextRun({
+                  text: `${index + 1}. `,
+                  bold: true,
+                  size: 24,
+                }),
+                new TextRun({
+                  text: question.question,
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 200 },
+            })
+            
+            questionParagraphs.push(questionNumber)
+
+            // Handle different question types
+            if (question.type === 'multiple_choice' && question.choices) {
+              question.choices.forEach((choice: string) => {
+                const choicePara = new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `   ${choice}`,
+                      size: 22,
+                    }),
+                  ],
+                  spacing: { after: 100 },
+                  indent: { left: 400 },
+                })
+                questionParagraphs.push(choicePara)
+              })
+            }
+
+            // Add space between questions
+            const spacing = new Paragraph({
+              text: "",
+              spacing: { after: 300 },
+            })
+            questionParagraphs.push(spacing)
+          })
+        })
+        
+        // Add the questions for this set
+        allQuestionSets.push(...questionParagraphs)
+        
+        // Add page break between sets (except for last set)
+        if (setIndex < numSets - 1) {
+          const pageBreak = new Paragraph({
+            text: "",
+            spacing: { before: 0, after: 0 },
+            pageBreakBefore: true,
+          })
+          allQuestionSets.push(pageBreak)
+        }
+    }
+
+    // Create answers section on a new page
+    const answersHeader = new Paragraph({
+      children: [
+        new TextRun({
+          text: "ANSWER KEY",
+          bold: true,
+          size: 32,
+        }),
+      ],
+      heading: HeadingLevel.TITLE,
+      spacing: { after: 400, before: 400 },
+      alignment: AlignmentType.CENTER,
+      pageBreakBefore: true,
+    })
+
+    const answersSubtitle = new Paragraph({
+      children: [
+        new TextRun({
+          text: title,
+          bold: true,
+          italics: true,
+          size: 22,
+        }),
+      ],
+      spacing: { after: 400 },
+      alignment: AlignmentType.CENTER,
+    })
+
+    // Generate answer keys for each set
+    for (let setIndex = 0; setIndex < numSets; setIndex++) {
+        const setLabel = String.fromCharCode(65 + setIndex) // A, B, C, etc.
+        
+        // Add set header for answers if multiple sets
+        if (numSets > 1) {
+          const setAnswerHeader = new Paragraph({
+            children: [
+              new TextRun({
+                text: `Set ${setLabel} - Answer Key`,
+                bold: true,
+                size: 28,
+              }),
+            ],
+            spacing: { before: 400, after: 300 },
+            alignment: AlignmentType.CENTER,
+          })
+          allAnswerSets.push(setAnswerHeader)
+        }
+        
+        // Shuffle the same way as the questions for consistency
+        const shuffledGrouped = Object.entries(groupedByType).reduce((acc, [type, typeQuestions]) => {
+          acc[type] = shuffleArray(typeQuestions as any[])
+          return acc
+        }, {} as any)
+        
+        // Create answer paragraphs grouped by type
+        Object.entries(shuffledGrouped).forEach(([type, typeQuestions]) => {
+          const questions = typeQuestions as any[]
+          // Add section header for answer type
+          const sectionHeader = new Paragraph({
+            children: [
+              new TextRun({
+                text: typeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1).replace(/_/g, ' '),
+                bold: true,
+                size: 26,
+              }),
+            ],
+            spacing: { before: 400, after: 300 },
+          })
+          allAnswerSets.push(sectionHeader)
+
+          // Add answers of this type
+          questions.forEach((question: any, index: number) => {
+          let answerText = ""
+          
+          if (question.type === 'multiple_choice') {
+            answerText = `Answer: ${question.answer}`
+          } else if (question.type === 'true_false') {
+            answerText = `Answer: ${question.answer}`
+          } else if (question.type === 'short_answer') {
+            answerText = `Answer: ${question.answer}`
+          } else if (question.type === 'identification') {
+            answerText = `Answer: ${question.answer}`
+          } else if (question.type === 'fill_blank') {
+            answerText = `Answer: ${question.answer}`
+          }
+
+          const answerPara = new Paragraph({
+            children: [
+              new TextRun({
+                text: `${index + 1}. ${answerText}`,
+                bold: true,
+                size: 22,
+              }),
+            ],
+            spacing: { after: 200 },
+          })
+          allAnswerSets.push(answerPara)
+        })
+      })
+        
+      // Add space between answer sets
+      if (setIndex < numSets - 1) {
+        const spacing = new Paragraph({
+          text: "",
+          spacing: { before: 300, after: 300 },
+        })
+        allAnswerSets.push(spacing)
+      }
+    }
+
+    // Create the document
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            headerParagraph,
+            studentInfo,
+            instructions,
+            ...allQuestionSets,
+            answersHeader,
+            answersSubtitle,
+            ...allAnswerSets,
+          ],
+        },
+      ],
+    })
+
+    // Generate and download the document
+    const blob = await Packer.toBlob(doc)
+    const fileName = title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_quiz.docx'
+    saveAs(blob, fileName)
+  } catch (error) {
+    console.error('Error generating DOCX:', error)
+    throw new Error('Failed to generate document')
+  }
+}
+
   const handleGenerate = async () => {
     try {
       setIsGenerating(true)
       setError(null)
       setGoogleFormLink(null)
+      setLoadingMessage("Analyzing your request...")
       
       // Validate inputs
       if (activeTab === "custom-prompt" && !prompt.trim()) {
         throw new Error("Please enter a prompt for your quiz")
       }
       
-      if (activeTab === "file-upload" && !uploadedFile) {
-        throw new Error("Please upload a file first")
+      if (activeTab === "file-upload") {
+        if (!uploadedFile) {
+          throw new Error("Please upload a file first")
+        }
+        if (!extractedText) {
+          throw new Error("File text extraction failed. Please re-upload the file.")
+        }
       }
       
-      // For file upload, we would need to extract text from the file
-      // This is a simplified version that just uses the filename as the prompt
-      const finalPrompt = activeTab === "custom-prompt" 
-        ? prompt 
-        : `Generate questions based on ${uploadedFile} content about biology`
+      // Validate at least one question type is selected
+      if (questionTypes.length === 0) {
+        throw new Error("Please select at least one question type")
+      }
+      
+      // Build the prompt based on the selected tab
+      let finalPrompt = ''
+      if (activeTab === "custom-prompt") {
+        finalPrompt = prompt
+      } else {
+        // Use extracted text from the file
+        finalPrompt = `Generate quiz questions based on the following content:\n\n${extractedText}\n\nCreate questions that assess understanding of the key concepts in this content.`
+      }
       
       // Map the UI difficulty to API values
       const apiDifficulty = difficulty === "mixed" ? "medium" : difficulty
+      
+      setLoadingMessage("Generating quiz questions with AI...")
       
       // Call our API
       const response = await fetch("/api/professor/create-quiz", {
@@ -94,6 +496,7 @@ export function QuizGeneratorContent() {
           prompt: finalPrompt,
           numQuestions: parseInt(numQuestions),
           difficulty: apiDifficulty,
+          questionTypes: questionTypes,
         }),
       })
       
@@ -104,8 +507,20 @@ export function QuizGeneratorContent() {
       
       const data = await response.json()
       
+      setLoadingMessage("Creating Google Form...")
+      
       // Store the Google Form link and questions
       setGoogleFormLink(data.editLink)
+      
+      // Store quiz data for download with shortened title
+      setQuizData({
+        title: data.quizTitle || finalPrompt.substring(0, 50),
+        questions: data.questions,
+        difficulty: apiDifficulty,
+        numQuestions: parseInt(numQuestions)
+      })
+      
+      setLoadingMessage("Finalizing your quiz...")
       
       // Save to AI tools usage table
       try {
@@ -116,7 +531,7 @@ export function QuizGeneratorContent() {
           },
           body: JSON.stringify({
             tool_type: "quiz-generator",
-            request_text: finalPrompt,
+            request_text: activeTab === "file-upload" ? `File: ${uploadedFileName}` : finalPrompt,
             generated_output: data.editLink || "Quiz generated successfully",
             success: true,
           }),
@@ -143,7 +558,7 @@ export function QuizGeneratorContent() {
           },
           body: JSON.stringify({
             tool_type: "quiz-generator",
-            request_text: activeTab === "custom-prompt" ? prompt : `File: ${uploadedFile}`,
+            request_text: activeTab === "custom-prompt" ? prompt : `File: ${uploadedFileName || 'Uploaded file'}`,
             generated_output: null,
             success: false,
           }),
@@ -160,6 +575,32 @@ export function QuizGeneratorContent() {
 
   return (
     <div className="space-y-6">
+      {/* Loading Modal */}
+      <Dialog open={isGenerating}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 animate-pulse text-blue-500" />
+              Generating Quiz
+            </DialogTitle>
+            <DialogDescription>
+              Please wait while we create your quiz. This may take a few moments.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-6 space-y-4">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+            </div>
+            <p className="text-sm font-medium text-center animate-pulse">
+              {loadingMessage}
+            </p>
+            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+              <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -213,13 +654,58 @@ export function QuizGeneratorContent() {
                         <p className="text-sm font-medium">Upload your course materials</p>
                         <p className="text-xs text-muted-foreground">PDF, TXT, or DOCX files supported</p>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => setUploadedFile("biology-chapter-5.pdf")}>
-                        Choose Files
-                      </Button>
-                      {uploadedFile && (
+                      <div className="space-y-2">
+                        <input
+                          type="file"
+                          accept=".pdf,.docx,.txt"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              handleFileUpload(file)
+                            }
+                          }}
+                          className="hidden"
+                          id="file-upload"
+                          disabled={isExtracting}
+                        />
+                        <label htmlFor="file-upload">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            asChild
+                            disabled={isExtracting}
+                          >
+                            <span>
+                              {isExtracting ? (
+                                <>
+                                  <Clock className="mr-2 h-4 w-4 animate-spin" />
+                                  Extracting...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="mr-2 h-4 w-4" />
+                                  Choose Files
+                                </>
+                              )}
+                            </span>
+                          </Button>
+                        </label>
+                      </div>
+                      {uploadedFileName && (
                         <div className="flex items-center justify-center gap-2 mt-2 p-2 bg-green-50 dark:bg-green-950/20 rounded">
                           <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span className="text-sm text-green-700 dark:text-green-300">{uploadedFile}</span>
+                          <span className="text-sm text-green-700 dark:text-green-300">{uploadedFileName}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setUploadedFile(null)
+                              setUploadedFileName("")
+                              setExtractedText("")
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -284,12 +770,94 @@ export function QuizGeneratorContent() {
               </div>
 
               <div className="space-y-2">
+                <Label>Number of Sets (for DOCX download)</Label>
+                <Select value={numSets.toString()} onValueChange={(value) => setNumSets(parseInt(value))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 Set</SelectItem>
+                    <SelectItem value="2">2 Sets</SelectItem>
+                    <SelectItem value="3">3 Sets</SelectItem>
+                    <SelectItem value="4">4 Sets</SelectItem>
+                    <SelectItem value="5">5 Sets</SelectItem>
+                  </SelectContent>
+                </Select>
+                {numSets > 1 && (
+                  <p className="text-xs text-muted-foreground">
+                    Each set will have a different order of questions for variety
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label>Question Types</Label>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">Multiple Choice</Badge>
-                  <Badge variant="secondary">True/False</Badge>
-                  <Badge variant="secondary">Short Answer</Badge>
-                  <Badge variant="outline">Fill in the Blank</Badge>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="multiple_choice" 
+                      checked={questionTypes.includes("multiple_choice")}
+                      onCheckedChange={() => handleQuestionTypeChange("multiple_choice")}
+                    />
+                    <label
+                      htmlFor="multiple_choice"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      Multiple Choice
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="true_false" 
+                      checked={questionTypes.includes("true_false")}
+                      onCheckedChange={() => handleQuestionTypeChange("true_false")}
+                    />
+                    <label
+                      htmlFor="true_false"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      True/False
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="short_answer" 
+                      checked={questionTypes.includes("short_answer")}
+                      onCheckedChange={() => handleQuestionTypeChange("short_answer")}
+                    />
+                    <label
+                      htmlFor="short_answer"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      Short Answer
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="identification" 
+                      checked={questionTypes.includes("identification")}
+                      onCheckedChange={() => handleQuestionTypeChange("identification")}
+                    />
+                    <label
+                      htmlFor="identification"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      Identification
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="fill_blank" 
+                      checked={questionTypes.includes("fill_blank")}
+                      onCheckedChange={() => handleQuestionTypeChange("fill_blank")}
+                    />
+                    <label
+                      htmlFor="fill_blank"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      Fill in the Blank
+                    </label>
+                  </div>
                 </div>
               </div>
               
@@ -326,7 +894,7 @@ export function QuizGeneratorContent() {
                   <CardTitle>Quiz Preview</CardTitle>
                   <CardDescription>Sample output from your generated quiz</CardDescription>
                 </div>
-                {showPreview && (
+                {/* {showPreview && (
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm">
                       <Eye className="h-4 w-4 mr-2" />
@@ -337,7 +905,7 @@ export function QuizGeneratorContent() {
                       Export
                     </Button>
                   </div>
-                )}
+                )} */}
               </div>
             </CardHeader>
             <CardContent>
@@ -376,6 +944,28 @@ export function QuizGeneratorContent() {
                     </div>
                   )}
 
+                  {/* Download Options */}
+                  {quizData && (
+                    <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <h4 className="font-medium text-purple-800 dark:text-purple-200 mb-2">Download Options</h4>
+                      <p className="text-sm text-purple-700 dark:text-purple-300 mb-3">
+                        Download your quiz as a professional .docx document
+                      </p>
+                      <Button 
+                        onClick={() => generateQuizDocx(quizData.title, quizData.questions, numSets)}
+                        className="w-full"
+                        variant="outline"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Quiz as DOCX ({numSets} Set{numSets > 1 ? 's' : ''})
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {numSets > 1 
+                          ? `Includes ${numSets} sets with different question orders and answer keys`
+                          : 'Includes all questions and answer key on separate pages'}
+                      </p>
+                    </div>
+                  )}
                   
                 </div>
               )}

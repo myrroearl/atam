@@ -206,7 +206,7 @@ export function StudentProfileContent({ studentId }: StudentProfileContentProps)
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <Button variant="outline" onClick={handleExport}>
                 <Printer className="h-4 w-4 mr-2" />
                 Print Profile
@@ -215,7 +215,7 @@ export function StudentProfileContent({ studentId }: StudentProfileContentProps)
                 <Download className="h-4 w-4 mr-2" />
                 Export PDF
               </Button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

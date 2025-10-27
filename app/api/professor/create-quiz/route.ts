@@ -24,12 +24,32 @@ export async function POST(request: Request) {
 
     // Parse the request body
     const body = await request.json();
-    const { prompt, numQuestions, difficulty } = body;
+    const { prompt, numQuestions, difficulty, questionTypes } = body;
     
     // Validate input
     if (!prompt || !numQuestions || !difficulty) {
       return NextResponse.json(
         { error: 'Missing required fields: prompt, numQuestions, or difficulty' },
+        { status: 400 }
+      );
+    }
+    
+    // Validate question types
+    const validQuestionTypes = ['multiple_choice', 'true_false', 'short_answer', 'fill_blank', 'identification'];
+    const selectedTypes = questionTypes || ['multiple_choice', 'true_false', 'short_answer'];
+    
+    if (!Array.isArray(selectedTypes) || selectedTypes.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one question type must be selected' },
+        { status: 400 }
+      );
+    }
+    
+    // Validate that all question types are valid
+    const invalidTypes = selectedTypes.filter(type => !validQuestionTypes.includes(type));
+    if (invalidTypes.length > 0) {
+      return NextResponse.json(
+        { error: `Invalid question types: ${invalidTypes.join(', ')}` },
         { status: 400 }
       );
     }
@@ -48,17 +68,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // Generate a short quiz title
+    const quizTitle = await generateShortTitle(prompt);
+    
     // Call Gemini API to generate quiz questions
-    const questions = await generateQuizQuestions(prompt, numQuestions, difficulty);
+    const questions = await generateQuizQuestions(prompt, numQuestions, difficulty, selectedTypes);
     
-    // Create Google Form using the Google Apps Script Web App
-    const formResponse = await createGoogleForm(prompt, questions, session.user.email);
+    // Create Google Form using the Google Apps Script Web App with shortened title
+    const formResponse = await createGoogleForm(quizTitle, questions, session.user.email);
     
-    // Return the form link and questions
+    // Return the form link and questions with the quiz title
     return NextResponse.json({ 
       link: formResponse.link,
       editLink: formResponse.editLink,
-      questions: questions 
+      questions: questions,
+      quizTitle: quizTitle 
     });
     
   } catch (error: any) {
@@ -70,30 +94,85 @@ export async function POST(request: Request) {
   }
 }
 
-async function generateQuizQuestions(prompt: string, numQuestions: number, difficulty: string) {
+async function generateShortTitle(prompt: string): Promise<string> {
   try {
+    // If the prompt is very long (likely extracted file content), ask Gemini for a short title
+    if (prompt.length > 200) {
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const titlePrompt = `Based on this content, generate a concise, professional quiz title (maximum 8 words, no quotes needed):\n\n${prompt.substring(0, 1000)}`;
+      
+      try {
+        const result = await model.generateContent(titlePrompt);
+        const response = result.response;
+        let title = response.text().trim();
+        
+        // Remove any quotes if present
+        title = title.replace(/^["']|["']$/g, '');
+        
+        // Limit to 8 words max
+        const words = title.split(' ');
+        if (words.length > 8) {
+          title = words.slice(0, 8).join(' ');
+        }
+        
+        return title;
+      } catch (error) {
+        console.error('Error generating short title:', error);
+        // Fall through to default logic
+      }
+    }
+    
+    // For shorter prompts, extract the first few words
+    const words = prompt.split(/\s+/);
+    if (words.length > 8) {
+      return words.slice(0, 8).join(' ');
+    }
+    return prompt.substring(0, 50);
+  } catch (error) {
+    console.error('Error in generateShortTitle:', error);
+    return 'Quiz';
+  }
+}
+
+async function generateQuizQuestions(prompt: string, numQuestions: number, difficulty: string, questionTypes: string[]) {
+  try {
+    // Map question types to descriptions
+    const typeDescriptions: { [key: string]: string } = {
+      'multiple_choice': 'Multiple choice questions (with 4 options)',
+      'true_false': 'True/False questions',
+      'short_answer': 'Short answer questions',
+      'identification': 'Identification questions (naming or identifying items)',
+      'fill_blank': 'Fill in the blank questions'
+    };
+    
+    // Build the question types string for the prompt
+    const typesList = questionTypes.map(type => `- ${typeDescriptions[type]}`).join('\n');
+    
+    // Build JSON structure examples for selected types
+    const typeExamples: { [key: string]: string } = {
+      'multiple_choice': '{ "type": "multiple_choice", "question": "Question text?", "choices": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"], "answer": "A", "points": 1 }',
+      'true_false': '{ "type": "true_false", "question": "Statement to evaluate.", "answer": "True", "points": 1 }',
+      'short_answer': '{ "type": "short_answer", "question": "Question requiring a short response?", "answer": "Sample answer", "points": 2 }',
+      'identification': '{ "type": "identification", "question": "What is this item called?", "answer": "Correct identification", "points": 2 }',
+      'fill_blank': '{ "type": "fill_blank", "question": "Complete the sentence: The capital of France is _____.", "answer": "Paris", "points": 1 }'
+    };
+    
+    const examples = questionTypes.map(type => typeExamples[type]).join('\n\n      ');
+    
     // Construct the prompt for Gemini
     const geminiPrompt = `
       Create a quiz with ${numQuestions} questions about: ${prompt}.
       Difficulty level: ${difficulty}.
       
-      Include a mix of question types:
-      - Multiple choice questions (with 4 options)
-      - True/False questions
-      - Short answer questions
+      Include ONLY the following question types:
+      ${typesList}
       
       Format the response as a valid JSON array with the following structure for each question type:
       
-      For multiple choice:
-      { "type": "multiple_choice", "question": "Question text?", "choices": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"], "answer": "A", "points": 1 }
-      
-      For true/false:
-      { "type": "true_false", "question": "Statement to evaluate.", "answer": "True", "points": 1 }
-      
-      For short answer:
-      { "type": "short_answer", "question": "Question requiring a short response?", "answer": "Sample answer", "points": 2 }
+      ${examples}
       
       Assign points based on difficulty: easy questions = 1 point, medium = 2 points, hard = 3 points.
+      Distribute the questions evenly across the selected types.
       
       Return ONLY the JSON array with no additional text.
     `;

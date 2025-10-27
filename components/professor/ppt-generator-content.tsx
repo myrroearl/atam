@@ -10,7 +10,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Presentation, Download, Eye, Sparkles, Clock, Palette, FileText, ArrowLeft, AlertCircle, CheckCircle, RefreshCw, Calendar, ExternalLink } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Presentation, Download, Eye, Sparkles, Clock, Palette, FileText, ArrowLeft, AlertCircle, CheckCircle, RefreshCw, Calendar, ExternalLink, Upload, FileUp, MessageSquare, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -31,6 +33,11 @@ export function PPTGeneratorContent() {
   const [currentStep, setCurrentStep] = useState<string>("")
   const [recentPresentations, setRecentPresentations] = useState<RecentPresentation[]>([])
   const [loadingPresentations, setLoadingPresentations] = useState(true)
+  const [activeTab, setActiveTab] = useState("file-upload")
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [uploadedFileName, setUploadedFileName] = useState<string>("")
+  const [extractedText, setExtractedText] = useState<string>("")
+  const [isExtracting, setIsExtracting] = useState(false)
   const [formData, setFormData] = useState({
     topic: "",
     gradeLevel: "",
@@ -61,12 +68,84 @@ export function PPTGeneratorContent() {
     fetchRecentPresentations()
   }, [])
 
+  // Handle file upload and text extraction
+  const handleFileUpload = async (file: File) => {
+    try {
+      setIsExtracting(true)
+      setError(null)
+      
+      // Validate file type
+      const fileExtension = file.name.split('.').pop()?.toLowerCase()
+      if (!['pdf', 'docx', 'txt'].includes(fileExtension || '')) {
+        throw new Error('Please upload a PDF, DOCX, or TXT file')
+      }
+      
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error('File size must be less than 10MB')
+      }
+      
+      // Upload file and extract text
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await fetch('/api/professor/extract-file-text', {
+        method: 'POST',
+        body: formData,
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to extract text from file')
+      }
+      
+      const data = await response.json()
+      
+      // Store the extracted text
+      setUploadedFile(file)
+      setUploadedFileName(file.name)
+      setExtractedText(data.text)
+      
+    } catch (err: any) {
+      setError(err.message)
+      setUploadedFile(null)
+      setUploadedFileName("")
+      setExtractedText("")
+    } finally {
+      setIsExtracting(false)
+    }
+  }
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     setError(null);
     setCurrentStep("Initializing...");
     
     try {
+      // Validate inputs based on active tab
+      if (activeTab === "file-upload") {
+        if (!uploadedFile) {
+          throw new Error("Please upload a file first")
+        }
+        if (!extractedText) {
+          throw new Error("File text extraction failed. Please re-upload the file.")
+        }
+      } else {
+        if (!formData.topic.trim()) {
+          throw new Error("Please enter a topic for your presentation")
+        }
+      }
+
+      // Build the prompt based on the selected tab
+      let finalPrompt = ''
+      if (activeTab === "file-upload") {
+        // Use extracted text from the file
+        finalPrompt = `Create a presentation based on the following content:\n\n${extractedText}\n\nCover the key concepts and main points from this content in the presentation.`
+      } else {
+        // Use the topic
+        finalPrompt = formData.topic
+      }
+      
       // Step 1: Get the appropriate template ID based on style
       setCurrentStep("Selecting template...");
       const templateId = getTemplateId(formData.style);
@@ -111,7 +190,7 @@ export function PPTGeneratorContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userPrompt: formData.topic,
+          userPrompt: finalPrompt,
           placeholders,
           gradeLevel: formData.gradeLevel,
           style: formData.style,
@@ -158,7 +237,7 @@ export function PPTGeneratorContent() {
       
       // Set the generated PPT data for display
       setGeneratedPPT({
-        title: formData.topic,
+        title: activeTab === "file-upload" ? uploadedFileName : formData.topic,
         slideCount: Number.parseInt(formData.slideCount),
         gradeLevel: formData.gradeLevel,
         style: formData.style,
@@ -179,7 +258,7 @@ export function PPTGeneratorContent() {
           },
           body: JSON.stringify({
             tool_type: "ppt-generator",
-            request_text: `Topic: ${formData.topic}, Grade: ${formData.gradeLevel}, Style: ${formData.style}, Slides: ${formData.slideCount}${formData.additionalNotes ? `, Notes: ${formData.additionalNotes}` : ''}`,
+            request_text: activeTab === "file-upload" ? `File: ${uploadedFileName}` : `Topic: ${formData.topic}, Grade: ${formData.gradeLevel}, Style: ${formData.style}, Slides: ${formData.slideCount}${formData.additionalNotes ? `, Notes: ${formData.additionalNotes}` : ''}`,
             generated_output: finalPresentationUrl,
             success: true,
           }),
@@ -207,7 +286,7 @@ export function PPTGeneratorContent() {
           },
           body: JSON.stringify({
             tool_type: "ppt-generator",
-            request_text: `Topic: ${formData.topic}, Grade: ${formData.gradeLevel}, Style: ${formData.style}, Slides: ${formData.slideCount}`,
+            request_text: activeTab === "file-upload" ? `File: ${uploadedFileName || 'Uploaded file'}` : `Topic: ${formData.topic}, Grade: ${formData.gradeLevel}, Style: ${formData.style}, Slides: ${formData.slideCount}`,
             generated_output: null,
             success: false,
           }),
@@ -249,6 +328,32 @@ export function PPTGeneratorContent() {
 
   return (
     <div className="space-y-6">
+      {/* Loading Modal */}
+      <Dialog open={isGenerating}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 animate-pulse text-blue-500" />
+              Generating Presentation
+            </DialogTitle>
+            <DialogDescription>
+              Please wait while we create your presentation. This may take a few moments.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-6 space-y-4">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+            </div>
+            <p className="text-sm font-medium text-center animate-pulse">
+              {currentStep || "Initializing..."}
+            </p>
+            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+              <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -310,15 +415,104 @@ export function PPTGeneratorContent() {
             <CardDescription>Fill in the details to generate your custom presentation</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="topic">Topic/Subject</Label>
-              <Input
-                id="topic"
-                placeholder="e.g., Introduction to Photosynthesis"
-                value={formData.topic}
-                onChange={(e) => handleInputChange("topic", e.target.value)}
-              />
-            </div>
+            <Tabs defaultValue="file-upload" className="w-full" onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="file-upload" className="flex items-center gap-2">
+                  <FileUp className="h-4 w-4" />
+                  Upload File
+                </TabsTrigger>
+                <TabsTrigger value="custom-prompt" className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Custom Prompt
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="file-upload" className="space-y-4 pt-4">
+                {/* File Upload */}
+                <div className="space-y-2">
+                  <Label>Course Material</Label>
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center space-y-2">
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Upload your course materials</p>
+                      <p className="text-xs text-muted-foreground">PDF, TXT, or DOCX files supported</p>
+                    </div>
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept=".pdf,.docx,.txt"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            handleFileUpload(file)
+                          }
+                        }}
+                        className="hidden"
+                        id="file-upload-ppt"
+                        disabled={isExtracting}
+                      />
+                      <label htmlFor="file-upload-ppt">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          asChild
+                          disabled={isExtracting}
+                        >
+                          <span>
+                            {isExtracting ? (
+                              <>
+                                <Clock className="mr-2 h-4 w-4 animate-spin" />
+                                Extracting...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Choose Files
+                              </>
+                            )}
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                    {uploadedFileName && (
+                      <div className="flex items-center justify-center gap-2 mt-2 p-2 bg-green-50 dark:bg-green-950/20 rounded">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-green-700 dark:text-green-300">{uploadedFileName}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setUploadedFile(null)
+                            setUploadedFileName("")
+                            setExtractedText("")
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="custom-prompt" className="space-y-4 pt-4">
+                {/* Custom Prompt */}
+                <div className="space-y-2">
+                  <Label htmlFor="topic">Topic/Subject</Label>
+                  <Input
+                    id="topic"
+                    placeholder="e.g., Introduction to Photosynthesis"
+                    value={formData.topic}
+                    onChange={(e) => handleInputChange("topic", e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Be specific about the topic, grade level, and presentation style you want to generate.
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <Separator />
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -382,9 +576,9 @@ export function PPTGeneratorContent() {
               />
             </div>
 
-            <Button
+              <Button
               onClick={handleGenerate}
-              disabled={!formData.topic || !formData.gradeLevel || !formData.style || isGenerating}
+              disabled={(activeTab === "custom-prompt" && !formData.topic) || !formData.gradeLevel || !formData.style || isGenerating}
               className="w-full"
             >
               {isGenerating ? (
@@ -471,13 +665,10 @@ export function PPTGeneratorContent() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex gap-2">
-                <Button size="sm" onClick={() => window.open(generatedPPT.presentationUrl, '_blank')}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download PPTX
-                </Button>
+                
                 <Button variant="outline" size="sm" onClick={() => window.open(generatedPPT.presentationUrl, '_blank')}>
-                  <Eye className="w-4 h-4 mr-2" />
-                  Preview
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Open Link
                 </Button>
               </div>
 

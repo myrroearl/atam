@@ -29,7 +29,8 @@ import {
   Trash2,
   Plus,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Mail
 } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import Link from "next/link"
@@ -618,11 +619,11 @@ export function HelpSupportContent() {
           <div className="flex justify-center gap-4">
             <Button variant="outline" size="sm">
               <MessageSquare className="h-4 w-4 mr-2" />
-              Contact Support
+              0917 123 4567
             </Button>
             <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Download Manual
+              <Mail className="h-4 w-4 mr-2" />
+              atam@gmail.com
             </Button>
           </div>
         </CardContent>
