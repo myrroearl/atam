@@ -6,6 +6,7 @@ import "@/app/styles/student.css"
 import { ThemeProvider } from "@/components/student/theme-provider"
 import { LayoutWrapper } from "./layoutWrapper"
 import { ProfileProvider } from "@/contexts/profile-context"
+import { PrivacyProvider } from "@/contexts/privacy-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -34,9 +35,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <ProfileProvider>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
+            <PrivacyProvider>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </PrivacyProvider>
           </ProfileProvider>
         </ThemeProvider>
       </body>

@@ -440,11 +440,37 @@ export const ActivityActions = {
   VIEW_ANALYTICS: 'Viewed analytics',
   VIEW_DASHBOARD: 'Viewed dashboard',
   
+  // Learning Resources & Bookmarks
+  BOOKMARK_RESOURCE: 'Bookmarked learning resource',
+  UNBOOKMARK_RESOURCE: 'Removed bookmark from learning resource',
+  
   // Security
   FAILED_LOGIN: 'Failed login attempt',
   PASSWORD_CHANGE: 'Changed password',
   UNAUTHORIZED_ACCESS: 'Attempted unauthorized access',
 } as const
+
+/**
+ * Log bookmark activity
+ */
+export async function logBookmarkActivity(
+  accountId: number,
+  resourceId: string,
+  resourceTitle: string,
+  action: 'bookmark' | 'unbookmark'
+): Promise<boolean> {
+  return logActivity({
+    account_id: accountId,
+    action: action === 'bookmark' ? ActivityActions.BOOKMARK_RESOURCE : ActivityActions.UNBOOKMARK_RESOURCE,
+    description: `${action === 'bookmark' ? 'Bookmarked' : 'Removed bookmark from'} resource: "${resourceTitle}"`,
+    metadata: {
+      resource_id: resourceId,
+      resource_title: resourceTitle,
+      timestamp: new Date().toISOString()
+    }
+  })
+}
+
 
 /**
  * Helper function to log activities with predefined actions

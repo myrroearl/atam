@@ -2,23 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { supabaseServer } from "@/lib/student/supabaseServer"
-
-// Convert percentage (0-100) to Philippine grading scale (1.0-5.0, where 1.0 is highest)
-function convertPercentToGrade(percentage: number): number {
-  if (percentage >= 97.5) return 1.0
-  if (percentage >= 94.5) return 1.25
-  if (percentage >= 91.5) return 1.5
-  if (percentage >= 88.5) return 1.75
-  if (percentage >= 85.5) return 2.0
-  if (percentage >= 82.5) return 2.25
-  if (percentage >= 79.5) return 2.5
-  if (percentage >= 76.5) return 2.75
-  if (percentage >= 74.5) return 3.0
-  if (percentage >= 69.5) return 3.5
-  if (percentage >= 64.5) return 4.0
-  if (percentage >= 59.5) return 4.5
-  return 5.0
-}
+import { convertPercentageToGPA, convertPercentageToPreciseGPA, calculateGPA, calculateWeightedAverage } from "@/lib/student/grade-calculations"
+import { calculateAllSubjectGrades } from "@/lib/student/subject-grade-calculator"
 
 export async function GET(_request: NextRequest) {
   try {
@@ -38,10 +23,10 @@ export async function GET(_request: NextRequest) {
       console.error("Current student lookup error:", meError)
     }
 
-    // Get students
+    // Get students with privacy settings
     const { data: students, error: studentsError } = await supabaseServer
       .from("students")
-      .select(`student_id, first_name, last_name, section_id, profile_picture_url, accounts:account_id(role)`) // keep simple to avoid nested shape issues
+      .select(`student_id, first_name, last_name, section_id, profile_picture_url, privacy_settings, account_id, accounts:account_id(role)`) // keep simple to avoid nested shape issues
 
     if (studentsError) {
       console.error("Students fetch error:", studentsError)
@@ -50,13 +35,17 @@ export async function GET(_request: NextRequest) {
 
     const studentIds = (students || []).map(s => s.student_id)
 
-    // Get all grade entries for all students to compute weighted grades
+    
+    // Get grade entries for all students from current year only
+    const currentYear = new Date().getFullYear()
+    
     const { data: entries, error: entriesError } = await supabaseServer
       .from("grade_entries")
       .select(`
         student_id,
         score,
         max_score,
+        date_recorded,
         classes:class_id (
           subject_id
         ),
@@ -69,10 +58,27 @@ export async function GET(_request: NextRequest) {
       .in("student_id", studentIds)
       .not("score", "is", null)
       .not("max_score", "is", null)
+      .gte("date_recorded", `${currentYear}-01-01`)
+      .lte("date_recorded", `${currentYear}-12-31`)
 
     if (entriesError) {
       console.error("Entries fetch error:", entriesError)
       return NextResponse.json({ error: "Failed to fetch grade entries" }, { status: 500 })
+    }
+
+    // Get subject units information for proper GWA calculation
+    const { data: subjects, error: subjectsError } = await supabaseServer
+      .from("subjects")
+      .select(`
+        subject_id,
+        subject_name,
+        subject_code,
+        units
+      `)
+
+    if (subjectsError) {
+      console.error("Subjects fetch error:", subjectsError)
+      return NextResponse.json({ error: "Failed to fetch subjects" }, { status: 500 })
     }
 
     // Calculate weighted grades by student and subject from entries
@@ -130,15 +136,22 @@ export async function GET(_request: NextRequest) {
       }
     }
 
-    // Calculate GWA per student from computed subject grades
-    const byStudent: Record<number, { sum: number; count: number }> = {}
+    // Calculate GWA per student using weighted average by units (same as dashboard)
+    const byStudent: Record<number, Array<{ percentage: number; units: number }>> = {}
     for (const [key, computedGrade] of Object.entries(computedGrades)) {
-      const [studentIdStr] = key.split('-')
+      const [studentIdStr, subjectIdStr] = key.split('-')
       const studentId = Number(studentIdStr)
+      const subjectId = Number(subjectIdStr)
       
-      if (!byStudent[studentId]) byStudent[studentId] = { sum: 0, count: 0 }
-      byStudent[studentId].sum += computedGrade.percentage
-      byStudent[studentId].count += 1
+      // Get subject units
+      const subject = subjects?.find(s => s.subject_id === subjectId)
+      const units = subject?.units || 3 // Default to 3 units if not found
+      
+      if (!byStudent[studentId]) byStudent[studentId] = []
+      byStudent[studentId].push({
+        percentage: computedGrade.percentage,
+        units: units
+      })
     }
 
     // Fetch section information for section names
@@ -217,9 +230,10 @@ export async function GET(_request: NextRequest) {
     }
 
     const leaderboard = (students || []).map((s) => {
-      const agg = byStudent[s.student_id] || { sum: 0, count: 0 }
-      const averagePercentage = agg.count ? agg.sum / agg.count : null
-      const gwa = averagePercentage !== null ? convertPercentToGrade(averagePercentage) : null
+      const subjectGrades = byStudent[s.student_id] || []
+      // Use weighted average by units (same as dashboard GWA calculation)
+      const weightedAveragePercentage = subjectGrades.length > 0 ? calculateWeightedAverage(subjectGrades) : null
+      const gwa = weightedAveragePercentage !== null ? convertPercentageToPreciseGPA(weightedAveragePercentage) : null
       const course = studentIdToCourseName[s.student_id] || null
       const department = studentIdToDepartmentName[s.student_id] || null
       const sectionName = sectionIdToName[s.section_id as number] || null
@@ -227,19 +241,44 @@ export async function GET(_request: NextRequest) {
       return {
         student_id: s.student_id,
         name: `${s.first_name} ${s.last_name}`.trim(),
-        gpa: gwa, // Now in 1.0-5.0 scale
+        gpa: gwa, // Now in 1.0-5.0 scale using weighted average by units
         course,
         department,
         section: sectionName,
         isCurrentUser,
         avatar: (s as any).profile_picture_url || null,
+        privacy_settings: (s as any).privacy_settings || { profileVisibility: 'public' },
+        account_id: (s as any).account_id,
       }
     })
     .filter((x) => x.gpa !== null)
     .sort((a, b) => (a.gpa as number) - (b.gpa as number)) // Sort ascending - lower GWA (1.0) is better
     .map((x, idx) => ({ ...x, rank: idx + 1 }))
 
-    // Build subject-specific rankings
+    // Build subject-specific rankings using the new library
+    const allStudentIds = (students || []).map(s => s.student_id)
+    const allSubjectIds = (subjects || []).map(s => s.subject_id)
+    
+    // Get all grade components
+    const allGradeComponents = (entries || [])
+      .map(entry => entry.grade_components)
+      .filter(component => component != null)
+      .reduce((unique, component) => {
+        if (!unique.find((c: any) => c.component_id === (component as any).component_id)) {
+          unique.push(component)
+        }
+        return unique
+      }, [] as any[])
+
+    // Calculate all subject grades using the new library
+    const allSubjectGrades = calculateAllSubjectGrades(
+      allStudentIds,
+      allSubjectIds,
+      entries || [],
+      allGradeComponents
+    )
+
+    // Convert to the expected format for the API response
     const subjectRankings: Record<number, Array<{
       student_id: number
       name: string
@@ -248,61 +287,33 @@ export async function GET(_request: NextRequest) {
       avatar: string | null
     }>> = {}
 
-    // Group grades by subject
-    const gradesBySubject: Record<number, Array<{
-      student_id: number
-      grade: number
-    }>> = {}
-
-    for (const [key, computedGrade] of Object.entries(computedGrades)) {
-      const [studentIdStr, subjectIdStr] = key.split('-')
-      const studentId = Number(studentIdStr)
+    for (const [subjectIdStr, subjectGrades] of Object.entries(allSubjectGrades)) {
       const subjectId = Number(subjectIdStr)
       
-      if (!gradesBySubject[subjectId]) {
-        gradesBySubject[subjectId] = []
-      }
-      gradesBySubject[subjectId].push({
-        student_id: studentId,
-        grade: computedGrade.percentage
-      })
-    }
-
-    // Calculate rankings for each subject
-    for (const [subjectIdStr, subjectGrades] of Object.entries(gradesBySubject)) {
-      const subjectId = Number(subjectIdStr)
-      
-      // Convert grades to 1.0-5.0 scale and sort by grade (ascending - lower grade (1.0) is better)
-      const sortedGrades = subjectGrades
-        .map(g => ({
-          student_id: g.student_id,
-          grade: convertPercentToGrade(g.grade)
-        }))
-        .sort((a, b) => a.grade - b.grade)
-      
-      // Assign ranks
-      const rankings = sortedGrades.map((gradeData, index) => {
+      const rankings = subjectGrades.map(gradeData => {
         const student = students?.find(s => s.student_id === gradeData.student_id)
         return {
           student_id: gradeData.student_id,
-          name: student ? `${student.first_name} ${student.last_name}`.trim() : "Unknown",
-          grade: gradeData.grade,
-          rank: index + 1,
-          avatar: student ? (student as any).profile_picture_url || null : null
+          name: student ? `${student.first_name} ${student.last_name}`.trim() : 'Unknown Student',
+          grade: gradeData.gpa, // Use GPA from the library calculation
+          rank: gradeData.rank || 1, // Ensure rank is always a number
+          avatar: (student as any)?.profile_picture_url || null,
+          privacy_settings: (student as any)?.privacy_settings || { profileVisibility: 'public' },
+          account_id: (student as any)?.account_id,
         }
       })
-
+      
       subjectRankings[subjectId] = rankings
     }
 
     // Get subject names for the frontend
-    const subjectIds = Object.keys(gradesBySubject).map(Number)
+    const subjectIdsForNames = Object.keys(allSubjectGrades).map(Number)
     let subjectNames: Record<number, string> = {}
-    if (subjectIds.length > 0) {
+    if (subjectIdsForNames.length > 0) {
       const { data: subjectsData } = await supabaseServer
         .from('subjects')
         .select('subject_id, subject_name, subject_code')
-        .in('subject_id', subjectIds)
+        .in('subject_id', subjectIdsForNames)
       
       for (const subj of (subjectsData || [])) {
         subjectNames[subj.subject_id] = `${subj.subject_code} - ${subj.subject_name}`

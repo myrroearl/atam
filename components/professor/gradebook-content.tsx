@@ -15,7 +15,7 @@ import { Upload, Download, HelpCircle, Save, Calculator, Plus, Search, Eye, EyeO
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { ClassData, StudentGradeData, GradingWeights, VisibleComponents, AttendanceItem, ScoreItem, GoogleCourse, GoogleCoursework, GoogleScore, GradeComponent } from "@/lib/types/gradebook"
 import { useGoogleClassroom, useGoogleClassroomAuth } from "@/hooks/use-google-classroom"
-import { calculateFinalGrade, calculateComponentAverage } from "@/lib/grade-calculations"
+import { calculateFinalGrade, calculateComponentAverage, convertPercentageToPreciseGPA } from "@/lib/student/grade-calculations"
 
 // Interface for user preferences that should be persisted
 interface UserPreferences {
@@ -1399,11 +1399,7 @@ export function GradebookContent({ classData }: { classData: ClassData }) {
   }
 
   const getGWA = (grade: number): string => {
-    if (grade >= 90) return "1"
-    if (grade >= 80) return "2"
-    if (grade >= 70) return "3"
-    if (grade >= 60) return "4"
-    return "5"
+    return convertPercentageToPreciseGPA(grade).toFixed(2)
   }
 
   const getGradeColor = (grade: number): string => {
@@ -2283,8 +2279,8 @@ export function GradebookContent({ classData }: { classData: ClassData }) {
                           {calculateStudentFinalGrade(student)}%
                         </span>
                         <Badge
-                          variant={getGWA(calculateStudentFinalGrade(student)) === "1" ? "default" : 
-                                  getGWA(calculateStudentFinalGrade(student)) === "5" ? "destructive" : "secondary"}
+                          variant={parseFloat(getGWA(calculateStudentFinalGrade(student))) <= 1.5 ? "default" : 
+                                  parseFloat(getGWA(calculateStudentFinalGrade(student))) >= 4.0 ? "destructive" : "secondary"}
                         >
                           {getGWA(calculateStudentFinalGrade(student))}
                         </Badge>

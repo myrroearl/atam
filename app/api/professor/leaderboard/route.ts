@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { NextRequest, NextResponse } from "next/server"
 import { authOptions } from "@/lib/auth"
 import { createClient } from "@supabase/supabase-js"
-import { calculateFinalGrade, normalizeGradeEntries, normalizeGradeComponents, calculateClassAverage, calculateClassAverageFromEntries, type GradeEntry } from "@/lib/grade-calculations"
+import { calculateFinalGrade, normalizeGradeEntries, normalizeGradeComponents, calculateClassAverage, calculateClassAverageFromEntries, type GradeEntry } from "@/lib/student/grade-calculations"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -11,10 +11,11 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Calendar, GraduationCap, Camera, Save, Shield, Bell, Globe, Eye, EyeOff, BookOpen, Mail, Phone, MapPin, Edit3, Upload, X, Loader2, CheckCircle } from "lucide-react"
+import { User, Calendar, GraduationCap, Camera, Save, Shield, Bell, Globe, Eye, EyeOff, BookOpen, Mail, Phone, MapPin, Edit3, Upload, X, Loader2, CheckCircle, TrendingUp } from "lucide-react"
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/contexts/profile-context";
+import { usePrivacy } from "@/contexts/privacy-context";
 import { ImageCropper } from "@/components/ui/image-cropper";
 import { UploadConfirmationModal } from "@/components/ui/upload-confirmation-modal";
 
@@ -46,10 +47,10 @@ const iconMap: { [key: string]: any } = {
   'Activity': User
 };
 
-const privacySettings = [
+const privacySettingsConfig = [
   {
     title: "Profile Visibility",
-    description: "Who can see your profile information",
+    description: "Who can see your profile information in leaderboards and dashboards",
     options: ["Public", "Private"],
     current: "Public",
   },
@@ -64,72 +65,55 @@ const notificationPreferences = [
   { label: "Weekly Summary", description: "Receive weekly performance summaries", enabled: false },
 ]
 
-const userSkills = [
+// Current subjects data - will be fetched from API
+const defaultSubjects = [
   {
     id: 1,
-    name: "Python Programming",
-    category: "Programming",
-    proficiency: 85,
-    level: "Advanced",
-    lastUsed: "2024-01-15",
-    projects: 12,
+    subjectCode: "COMP 101",
+    subjectName: "Introduction to Computing",
+    units: 3,
+    professor: "Prof. Dawn Bernadette Menor, MSIT",
+    semester: "1st Semester",
+    year: "1st Year",
+    status: "Enrolled",
     color: "from-blue-500 to-cyan-500",
-    icon: "🐍"
+    icon: "💻"
   },
   {
     id: 2,
-    name: "Web Development",
-    category: "Frontend",
-    proficiency: 78,
-    level: "Intermediate",
-    lastUsed: "2024-01-10",
-    projects: 8,
+    subjectCode: "COMP 102",
+    subjectName: "Fundamentals of Programming (C++)",
+    units: 3,
+    professor: "Prof. Juanito Alvarez Jr., MIT",
+    semester: "1st Semester",
+    year: "1st Year",
+    status: "Enrolled",
     color: "from-green-500 to-emerald-500",
-    icon: "🌐"
+    icon: "🔧"
   },
   {
     id: 3,
-    name: "Database Management",
-    category: "Backend",
-    proficiency: 72,
-    level: "Intermediate",
-    lastUsed: "2024-01-08",
-    projects: 6,
+    subjectCode: "IT 101",
+    subjectName: "Discrete Mathematics",
+    units: 3,
+    professor: "Dr. Laura Altea",
+    semester: "2nd Semester",
+    year: "1st Year",
+    status: "Enrolled",
     color: "from-purple-500 to-pink-500",
-    icon: "🗄️"
+    icon: "📊"
   },
   {
     id: 4,
-    name: "Network Security",
-    category: "Cybersecurity",
-    proficiency: 65,
-    level: "Beginner",
-    lastUsed: "2024-01-05",
-    projects: 3,
+    subjectCode: "IT 102",
+    subjectName: "Quantitative Methods",
+    units: 3,
+    professor: "Prof. Fr",
+    semester: "2nd Semester",
+    year: "1st Year",
+    status: "Enrolled",
     color: "from-red-500 to-orange-500",
-    icon: "🔒"
-  },
-  {
-    id: 5,
-    name: "Cloud Computing",
-    category: "Infrastructure",
-    proficiency: 58,
-    level: "Beginner",
-    lastUsed: "2024-01-02",
-    projects: 2,
-    color: "from-indigo-500 to-blue-500",
-    icon: "☁️"
-  },
-  {
-    id: 6,
-    name: "DevOps",
-    category: "Operations",
-    proficiency: 45,
-    level: "Beginner",
-    lastUsed: "2023-12-28",
-    projects: 1,
-    color: "from-yellow-500 to-orange-500",
-    icon: "⚙️"
+    icon: "📈"
   }
 ]
 
@@ -147,6 +131,7 @@ function useHydrated() {
 export function ProfileSettings() {
   const router = useRouter();
   const { profilePictureUrl, setProfilePictureUrl, refreshProfile } = useProfile();
+  const { privacySettings, updatePrivacySettings, isLoading: privacyLoading, error: privacyError } = usePrivacy();
   const hydrated = useHydrated();
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState<ProfileForm>({
@@ -164,6 +149,13 @@ export function ProfileSettings() {
   const [activityLogs, setActivityLogs] = useState<any[]>([])
   const [loadingLogs, setLoadingLogs] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
+  const [subjects, setSubjects] = useState(defaultSubjects)
+  const [loadingSubjects, setLoadingSubjects] = useState(false)
+  const [sectionInfo, setSectionInfo] = useState<any>(null)
+  const [currentSemester, setCurrentSemester] = useState<any>(null)
+  const [academicInfo, setAcademicInfo] = useState<any>(null)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [performanceData, setPerformanceData] = useState<any>(null)
 
   useEffect(() => {
     let active = true
@@ -179,6 +171,12 @@ export function ProfileSettings() {
         const b = await res.json()
         const s = b.student
         if (!active || !s) return
+        
+        // Store academic info if available
+        if (s.academicInfo) {
+          setAcademicInfo(s.academicInfo)
+        }
+        
         setFormData({
           firstName: s.first_name,
           middleName: s.middle_name || "",
@@ -191,8 +189,8 @@ export function ProfileSettings() {
           major: s.sections?.year_level?.courses?.course_name || "",
           year: s.sections?.year_level?.name || "",
           section: s.sections?.section_name || "",
-          gpa: "",
-          expectedGraduation: "",
+          gpa: s.academicInfo?.gpa?.toString() || "",
+          expectedGraduation: s.academicInfo?.expectedGraduationYear?.toString() || "",
         })
       } catch (e: any) {
         if (active) setError(e.message || 'Failed to load profile')
@@ -215,8 +213,111 @@ export function ProfileSettings() {
   useEffect(() => {
     if (hydrated) {
       fetchActivityLogs();
+      fetchSubjects();
+      fetchDashboardData();
+      fetchPerformanceData();
     }
   }, [hydrated]);
+
+  const fetchSubjects = async () => {
+    try {
+      setLoadingSubjects(true);
+      const response = await fetch('/api/student/subjects', { 
+        cache: 'no-store',
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.subjects && Array.isArray(data.subjects)) {
+          // Store section and semester info
+          if (data.sectionInfo) {
+            setSectionInfo(data.sectionInfo);
+          }
+          if (data.currentSemester) {
+            setCurrentSemester(data.currentSemester);
+          }
+
+          // Transform API data to match our component structure
+          const transformedSubjects = data.subjects.map((subject: any, index: number) => ({
+            id: subject.subjects?.subject_id || index + 1,
+            subjectCode: subject.subjects?.subject_code || 'N/A',
+            subjectName: subject.subjects?.subject_name || 'Unknown Subject',
+            units: subject.subjects?.units || 0,
+            professor: subject.professors ? 
+              `Prof. ${subject.professors.first_name} ${subject.professors.last_name}` : 
+              'TBA',
+            semester: data.currentSemester?.semesterName || 'Current Semester',
+            year: data.sectionInfo?.yearLevel || 'Current Year',
+            status: 'Enrolled',
+            color: [
+              "from-blue-500 to-cyan-500",
+              "from-green-500 to-emerald-500", 
+              "from-purple-500 to-pink-500",
+              "from-red-500 to-orange-500",
+              "from-indigo-500 to-blue-500",
+              "from-yellow-500 to-orange-500"
+            ][index % 6],
+            icon: ["💻", "🔧", "📊", "📈", "🌐", "⚙️"][index % 6]
+          }));
+          setSubjects(transformedSubjects);
+        }
+      } else {
+        console.error('Failed to fetch subjects:', response.status);
+        // Keep default subjects if API fails
+      }
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
+      // Keep default subjects if API fails
+    } finally {
+      setLoadingSubjects(false);
+    }
+  };
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch('/api/student/dashboard', { 
+        cache: 'no-store',
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardData(data);
+      } else {
+        console.error('Failed to fetch dashboard data:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
+
+  const fetchPerformanceData = async () => {
+    try {
+      const response = await fetch('/api/student/performance', { 
+        cache: 'no-store',
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPerformanceData(data);
+      } else {
+        console.error('Failed to fetch performance data:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching performance data:', error);
+    }
+  };
 
 
 
@@ -534,13 +635,18 @@ ACADEMIC INFORMATION
 Major: ${formData.major}
 Academic Year: ${formData.year}
 Section: ${formData.section}
-Expected Graduation: ${formData.expectedGraduation ? new Date(formData.expectedGraduation as string).toLocaleDateString() : ""}
+Current GPA: ${dashboardData?.overallGPA ? dashboardData.overallGPA.toFixed(2) : 'N/A'}
+Academic Standing: ${dashboardData?.overallGPA >= 3.5 ? 'Excellent' :
+                   dashboardData?.overallGPA >= 3.0 ? 'Very Good' :
+                   dashboardData?.overallGPA >= 2.5 ? 'Good' :
+                   dashboardData?.overallGPA >= 2.0 ? 'Satisfactory' :
+                   'Needs Improvement'}
 
-TECHNICAL SKILLS
+CURRENT SUBJECTS
 --------------------------------------------------------------------------------
-${userSkills
-  .filter(skill => skill.proficiency > 50)
-  .map(skill => `• ${skill.name}`)
+${subjects
+  .filter(subject => subject.status === 'Enrolled')
+  .map(subject => `• ${subject.subjectCode} - ${subject.subjectName} (${subject.units} units)`)
   .join('\n')}
 
 PROFILE SUMMARY
@@ -550,14 +656,19 @@ Dedicated Information Technology student with a strong foundation in programming
 EDUCATION
 --------------------------------------------------------------------------------
 ${formData.major} - ${formData.year} (Section: ${formData.section})
-Expected Graduation: ${formData.expectedGraduation ? new Date(formData.expectedGraduation as string).toLocaleDateString() : ""}
-Current GPA: ${formData.gpa}
+Current GPA: ${dashboardData?.overallGPA ? dashboardData.overallGPA.toFixed(2) : 'N/A'}
+Academic Standing: ${dashboardData?.overallGPA >= 3.5 ? 'Excellent' :
+                   dashboardData?.overallGPA >= 3.0 ? 'Very Good' :
+                   dashboardData?.overallGPA >= 2.5 ? 'Good' :
+                   dashboardData?.overallGPA >= 2.0 ? 'Satisfactory' :
+                   'Needs Improvement'}
+Progress: ${performanceData?.completionRate ? `${performanceData.completionRate}%` : 'N/A'} (${performanceData?.subjectsPassed || 0} of ${performanceData?.totalSubjects || 0} subjects passed)
 
-SKILLS DEVELOPMENT
+ACADEMIC PROGRESS
 --------------------------------------------------------------------------------
-${userSkills
-  .filter(skill => skill.proficiency > 50)
-  .map(skill => `${skill.name} - ${skill.category}`)
+${subjects
+  .filter(subject => subject.status === 'Enrolled')
+  .map(subject => `${subject.subjectCode} - ${subject.subjectName} (${subject.semester}, ${subject.year})`)
   .join('\n')}
 
 ================================================================================
@@ -706,6 +817,16 @@ Generated on: ${new Date().toLocaleDateString()}
               Profile Settings
             </h1>
             <p className="text-lg text-muted-foreground">Manage your account settings and preferences</p>
+            
+            {/* Privacy Status Indicator */}
+            {privacySettings.profileVisibility === 'private' && (
+              <div className="flex items-center space-x-2 px-4 py-2 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                <Shield className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                <span className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                  Your profile is in private mode - your name will be hidden in leaderboards and public views
+                </span>
+              </div>
+            )}
           </div>
           
           {/* Make Resume Button */}
@@ -713,7 +834,7 @@ Generated on: ${new Date().toLocaleDateString()}
             <Button 
               onClick={() => generateResume()}
               disabled={isGenerating}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 h-12"
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 h-12"
             >
               <BookOpen className="w-5 h-5 mr-2" />
               {isGenerating ? 'Creating…' : 'Make Resume'}
@@ -1123,7 +1244,7 @@ Generated on: ${new Date().toLocaleDateString()}
                     </div>
                   </div>
                   <Button 
-                    className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
+                    className="w-full h-12 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
                     onClick={handlePasswordUpdate}
                   >
                     <Shield className="w-4 h-4 mr-2" />
@@ -1202,23 +1323,72 @@ Generated on: ${new Date().toLocaleDateString()}
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide mb-2">Current GPA</p>
-                      <p className="text-3xl font-bold text-green-600 dark:text-green-400">{formData.gpa || 'Loading...'}</p>
+                      <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                        {dashboardData?.overallGPA ? dashboardData.overallGPA.toFixed(2) : 'Loading...'}
+                      </p>
+                      {dashboardData?.totalUnits && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {dashboardData.totalUnits} units completed
+                        </p>
+                      )}
                     </div>
-                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 shadow-md px-3 py-1 text-sm font-semibold">
-                      Excellent
+                    <Badge className={`shadow-md px-3 py-1 text-sm font-semibold ${
+                      dashboardData?.overallGPA >= 3.5 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                      dashboardData?.overallGPA >= 3.0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                      dashboardData?.overallGPA >= 2.5 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                      dashboardData?.overallGPA >= 2.0 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}>
+                      {dashboardData?.overallGPA >= 3.5 ? 'Excellent' :
+                       dashboardData?.overallGPA >= 3.0 ? 'Very Good' :
+                       dashboardData?.overallGPA >= 2.5 ? 'Good' :
+                       dashboardData?.overallGPA >= 2.0 ? 'Satisfactory' :
+                       'Needs Improvement'}
                     </Badge>
                   </div>
                 </div>
                 <div className="p-6 bg-card border border-slate-200 dark:border-slate-700  rounded-2xl">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-2">Expected Graduation</p>
+                      <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-2">Academic Progress</p>
                       <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                        {formData.expectedGraduation ? new Date(formData.expectedGraduation as string).toLocaleDateString() : 'Loading...'}
+                        {performanceData?.completionRate ? `${performanceData.completionRate}%` : 'Loading...'}
                       </p>
+                      {performanceData?.subjectsPassed && performanceData?.totalSubjects && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {performanceData.subjectsPassed} of {performanceData.totalSubjects} subjects passed
+                        </p>
+                      )}
+                      {performanceData?.riskLevel && (
+                        <div className="mt-1">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Risk Level: <span className={`font-semibold ${
+                              performanceData.riskLevel === 'Excellent' ? 'text-green-600 dark:text-green-400' :
+                              performanceData.riskLevel === 'Low' ? 'text-blue-600 dark:text-blue-400' :
+                              performanceData.riskLevel === 'Moderate' ? 'text-yellow-600 dark:text-yellow-400' :
+                              'text-red-600 dark:text-red-400'
+                            }`}>
+                              {performanceData.riskLevel}
+                            </span>
+                            {performanceData?.riskScore !== undefined && (
+                              <span className="ml-2 text-gray-400">(Score: {performanceData.riskScore})</span>
+                            )}
+                          </p>
+                          {performanceData?.riskFactors && performanceData.riskFactors.length > 0 && (
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                              Factors: {performanceData.riskFactors.join(', ')}
+                            </p>
+                          )}
+                          {performanceData?.completionRate >= 100 && performanceData?.riskLevel === 'High' && (
+                            <p className="text-xs text-orange-500 dark:text-orange-400 mt-1">
+                              ⚠️ High risk despite 100% completion - check GPA and performance
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg">
-                      <Calendar className="w-6 h-6 text-white" />
+                      <TrendingUp className="w-6 h-6 text-white" />
                     </div>
                   </div>
                 </div>
@@ -1226,44 +1396,99 @@ Generated on: ${new Date().toLocaleDateString()}
             </CardContent>
           </Card>
 
-          {/* Skills Section */}
+          {/* Current Subjects Section */}
           <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl">
             <CardHeader className="pb-6">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
-                <div>
-                  <CardTitle className="text-2xl font-bold">Technical Skills</CardTitle>
-                  <CardDescription className="text-base">Your developed technical skills</CardDescription>
+                <div className="flex-1">
+                  <CardTitle className="text-2xl font-bold">Current Subjects</CardTitle>
+                  <CardDescription className="text-base">Your enrolled subjects for this semester</CardDescription>
+                  {sectionInfo && (
+                    <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      <span className="flex items-center space-x-1">
+                        <GraduationCap className="w-4 h-4" />
+                        <span>{sectionInfo.course} ({sectionInfo.courseCode})</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <User className="w-4 h-4" />
+                        <span>{sectionInfo.yearLevel} - {sectionInfo.sectionName}</span>
+                      </span>
+                      {currentSemester && (
+                        <span className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{currentSemester.semesterName}</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {userSkills
-                  .filter(skill => skill.proficiency > 50)
-                  .map((skill) => (
-                    <div 
-                      key={skill.id} 
-                      className="flex items-center space-x-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 bg-white dark:bg-gray-800/50"
-                    >
-                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${skill.color} flex items-center justify-center text-base flex-shrink-0`}>
-                        {skill.icon}
+              {loadingSubjects ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Loading subjects...</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {subjects
+                    .filter(subject => subject.status === 'Enrolled')
+                    .map((subject) => (
+                      <div 
+                        key={subject.id} 
+                        className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 bg-white dark:bg-gray-800/50"
+                      >
+                        <div className="flex items-start space-x-4">
+                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${subject.color} flex items-center justify-center text-lg flex-shrink-0`}>
+                            {subject.icon}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg">{subject.subjectCode}</h3>
+                              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 text-xs font-semibold">
+                                {subject.status}
+                              </Badge>
+                            </div>
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-200 text-base mb-2">{subject.subjectName}</h4>
+                            <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                              <p><span className="font-medium">Professor:</span> {subject.professor}</p>
+                              <p><span className="font-medium">Units:</span> {subject.units} units</p>
+                              <p><span className="font-medium">Semester:</span> {subject.semester}, {subject.year}</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{skill.name}</h3>
-                      </div>
-                    </div>
-                  ))}
-              </div>
+                    ))}
+                </div>
+              )}
               
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {userSkills.filter(s => s.proficiency > 50).length} skills developed
-                  </p>
+                <div className="flex items-center justify-between">
+                  <div className="text-center flex-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {subjects.filter(s => s.status === 'Enrolled').length} subjects enrolled
+                    </p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    onClick={fetchSubjects}
+                    disabled={loadingSubjects}
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                  >
+                    {loadingSubjects ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Refreshing...
+                      </>
+                    ) : (
+                      'Refresh Subjects'
+                    )}
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -1284,46 +1509,81 @@ Generated on: ${new Date().toLocaleDateString()}
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {privacySettings.map((setting, index) => (
+              {privacyLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Loading privacy settings...</span>
+                </div>
+              ) : privacyError ? (
+                <div className="text-center py-8">
+                  <div className="text-red-500 mb-4">⚠️ Error loading privacy settings</div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">{privacyError}</p>
+                  <Button 
+                    onClick={() => window.location.reload()}
+                    variant="outline"
+                  >
+                    Retry
+                  </Button>
+                </div>
+              ) : (
+                privacySettingsConfig.map((setting: any, index: number) => (
                 <div key={index} className="flex items-center justify-between p-6 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-200">
                   <div>
                     <h4 className="font-semibold text-lg">{setting.title}</h4>
                     <p className="text-muted-foreground">{setting.description}</p>
                   </div>
                   <Select 
-                    defaultValue="public"
+                    value={privacySettings.profileVisibility}
                     onValueChange={async (value) => {
-                      // Log privacy settings change
                       try {
-                        await fetch('/api/student/log-activity', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify({
-                            action: 'Privacy Settings Updated',
-                            description: `Changed profile visibility to ${value.charAt(0).toUpperCase() + value.slice(1)}`
-                          })
-                        });
+                        // Update privacy settings
+                        await updatePrivacySettings({ profileVisibility: value as 'public' | 'private' });
+                        
+                        // Log privacy settings change
+                        try {
+                          await fetch('/api/student/log-activity', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              action: 'Privacy Settings Updated',
+                              description: `Changed profile visibility to ${value.charAt(0).toUpperCase() + value.slice(1)}`
+                            })
+                          });
+                        } catch (logError) {
+                          console.error('Failed to log privacy change:', logError);
+                        }
+                        
+                        // Show success notification
+                        showNotification('success', `Profile visibility set to ${value.charAt(0).toUpperCase() + value.slice(1)}`);
+                        
+                        // Refresh activity logs
                         fetchActivityLogs();
-                      } catch (error) {
-                        console.error('Failed to log privacy change:', error);
+                      } catch (error: any) {
+                        console.error('Failed to update privacy settings:', error);
+                        showNotification('error', error.message || 'Failed to update privacy settings');
                       }
                     }}
                   >
                     <SelectTrigger className="w-40 h-12 border-2 border-gray-200 dark:border-gray-700 shadow-md">
-                      <SelectValue />
+                      <SelectValue placeholder="Select visibility">
+                        {privacySettings.profileVisibility === 'public' ? 'Public' : 
+                         privacySettings.profileVisibility === 'private' ? 'Private' : 
+                         'Select visibility'}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {setting.options.map((option) => (
-                        <SelectItem key={option} value={option.toLowerCase().replace(" ", "-")}>
+                      {setting.options.map((option: string) => (
+                        <SelectItem key={option} value={option.toLowerCase()}>
                           {option}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              ))}
+                ))
+              )}
 
               <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
                 <h3 className="text-xl font-bold mb-6">Data & Privacy</h3>
@@ -1383,23 +1643,7 @@ Generated on: ${new Date().toLocaleDateString()}
                 </div>
               ))}
 
-              <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
-                <h3 className="text-xl font-bold mb-6">Notification Schedule</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <Label htmlFor="quietHoursStart" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                      Quiet Hours Start
-                    </Label>
-                    <Input id="quietHoursStart" type="time" className="h-12 text-base border-2 border-gray-200 dark:border-gray-700" />
-                  </div>
-                  <div className="space-y-3">
-                    <Label htmlFor="quietHoursEnd" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                      Quiet Hours End
-                    </Label>
-                    <Input id="quietHoursEnd" type="time" className="h-12 text-base border-2 border-gray-200 dark:border-gray-700" />
-                  </div>
-                </div>
-              </div>
+             
             </CardContent>
           </Card>
         </TabsContent>

@@ -5,156 +5,116 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ProfileAvatar } from "@/components/ui/profile-avatar"
-import { BookOpen, TrendingUp, Trophy, AlertCircle, CheckCircle, Star, Crown, Users } from "lucide-react"
+import { StatsCard } from "@/components/ui/stats-card"
+import { BookOpen, TrendingUp, Trophy, AlertCircle, CheckCircle, Crown, Users } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts"
 import { cn } from "@/lib/utils"
 import { useEffect, useMemo, useState } from "react"
+import { useStudentDashboard, useStudentLeaderboard, useLearningResourcesCount, useBookmarksCount } from "@/hooks/use-student-data"
+import { Loading, SkeletonCard, SkeletonChart } from "@/components/ui/loading"
+import { usePrivacy } from "@/contexts/privacy-context"
+import { shouldHideProfile, getMaskedName, getMaskedAvatarFallback } from "@/lib/student/privacy-utils"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 
-type GradeRow = { grade: number | null; subjects: { subject_name: string } }
-type SubjectClass = any
+type Student = {
+  id: number
+  name: string
+  section: string
+  course: string
+  profilePicture?: string
+}
+
+type SubjectGrade = {
+  subjectId: number
+  subjectName: string
+  subjectCode: string
+  units: number
+  percentage: number
+  gpa: number
+  components: Array<{
+    componentName: string
+    weight: number
+    percentage: number
+  }>
+}
+
+type RecentEntry = {
+  id: number
+  name: string
+  score: number
+  maxScore: number
+  percentage: number
+  date: string
+  subject: string
+}
+
+type DashboardData = {
+  student: Student
+  subjects: SubjectGrade[]
+  overallGPA: number
+  weightedAverage: number
+  totalUnits: number
+  recentEntries: RecentEntry[]
+  finalGrades: any[]
+}
+
 type LeaderRow = { rank: number; name: string; gpa: number | null; avatar?: string; course?: string; isCurrentUser?: boolean }
-type WeeklyRow = { week: string; performance: number }
 
 export function DashboardOverview() {
-  const [grades, setGrades] = useState<GradeRow[]>([])
-  const [subjects, setSubjects] = useState<SubjectClass[]>([])
-  const [leaders, setLeaders] = useState<LeaderRow[]>([])
-  const [entries, setEntries] = useState<any[]>([])
-  const [weekly, setWeekly] = useState<WeeklyRow[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  // Data hooks
+  const { data: dashboardData, loading: dashboardLoading, error: dashboardError } = useStudentDashboard()
+  const { data: leaderboardData, loading: leaderboardLoading, error: leaderboardError } = useStudentLeaderboard()
+  const { data: resourcesData, loading: resourcesLoading, error: resourcesError } = useLearningResourcesCount()
+  const { data: bookmarksData, loading: bookmarksLoading, error: bookmarksError } = useBookmarksCount()
+  const { privacySettings } = usePrivacy()
+  
+  // Combined loading/error states
+  const loading = dashboardLoading || leaderboardLoading || resourcesLoading || bookmarksLoading
+  const error = dashboardError || leaderboardError || resourcesError || bookmarksError
+  
+  // Extract leaderboard data
+  const leaders = (leaderboardData as any)?.leaderboard || []
+  const currentAccountId = (leaderboardData as any)?.currentAccountId
 
-  async function fetchJson(url: string, init?: RequestInit & { timeoutMs?: number }, retries = 2): Promise<any> {
-    const timeoutMs = init?.timeoutMs ?? 8000
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), timeoutMs)
-      try {
-        const res = await fetch(url, {
-          cache: 'no-store',
-          credentials: 'same-origin',
-          ...init,
-          signal: controller.signal,
-        })
-        clearTimeout(timeout)
-        if (!res.ok) {
-          const text = await res.text().catch(() => '')
-          throw new Error(`HTTP ${res.status} from ${url}${text ? `: ${text}` : ''}`)
-        }
-        return await res.json()
-      } catch (e: any) {
-        clearTimeout(timeout)
-        const isLast = attempt === retries
-        const isAbort = e?.name === 'AbortError'
-        if (isLast || (!isAbort && attempt === retries)) throw e
-        await new Promise(r => setTimeout(r, 300 * (attempt + 1)))
+  // Prepare subject grades for bar chart (top 5 subjects)
+  const gradeData = useMemo(() => {
+    if (!(dashboardData as any)?.subjects) return []
+    return (dashboardData as any).subjects.slice(0, 5).map((subject: any) => ({ 
+      subject: subject.subjectCode, 
+      grade: subject.percentage 
+    }))
+  }, [dashboardData])
+
+  // Calculate weekly performance averages from recent entries
+  const performanceData = useMemo(() => {
+    if (!(dashboardData as any)?.recentEntries) return []
+    
+    // Group entries by week and calculate average scores
+    const weeklyData: Record<string, { total: number; count: number }> = {}
+    
+    const recentEntries = (dashboardData as any)?.recentEntries || []
+    recentEntries.forEach((entry: any) => {
+      const week = new Date(entry.date).toISOString().split('T')[0]
+      if (!weeklyData[week]) {
+        weeklyData[week] = { total: 0, count: 0 }
       }
-    }
-    throw new Error(`Failed to fetch ${url}`)
-  }
-
-  useEffect(() => {
-    let active = true
-    async function load() {
-      setLoading(true)
-      setError(null)
-      try {
-        const results = await Promise.allSettled([
-          fetchJson('/api/student/grades'),
-          fetchJson('/api/student/subjects'),
-          fetchJson('/api/student/leaderboard'),
-          fetchJson('/api/student/performance'),
-          fetchJson('/api/student/entries'),
-        ])
-        const [gradesRes, subjectsRes, leadersRes, perfRes, entriesRes] = results
-        if (!active) return
-        const partialErrors: string[] = []
-        if (gradesRes.status === 'fulfilled') {
-          setGrades((gradesRes.value.grades || []) as GradeRow[])
-        } else {
-          setGrades([])
-          partialErrors.push('grades')
-        }
-        if (subjectsRes.status === 'fulfilled') {
-          setSubjects(subjectsRes.value.subjects || [])
-        } else {
-          setSubjects([])
-          partialErrors.push('subjects')
-        }
-        if (leadersRes.status === 'fulfilled') {
-          setLeaders((leadersRes.value.leaderboard || []) as LeaderRow[])
-        } else {
-          setLeaders([])
-          partialErrors.push('leaderboard')
-        }
-        if (perfRes.status === 'fulfilled') {
-          setWeekly((perfRes.value.weekly || []) as WeeklyRow[])
-        } else {
-          setWeekly([])
-          partialErrors.push('performance')
-        }
-        if (entriesRes.status === 'fulfilled') {
-          setEntries(entriesRes.value.entries || [])
-        } else {
-          setEntries([])
-          partialErrors.push('entries')
-        }
-        if (partialErrors.length) {
-          setError(`Some data failed to load: ${partialErrors.join(', ')}`)
-        }
-      } catch (e: any) {
-        if (active) setError(e.message || 'Failed to load dashboard')
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-    load()
-    return () => { active = false }
-  }, [])
-
-  // Build entries by subject and compute real-time percentage grade per subject
-  const computedSubjectGrades = useMemo(() => {
-    const map: Record<number, { name: string; total: number; score: number }> = {}
-    // derive subject ids and names from subjects list
-    const subjectInfos: Array<{ id: number; name: string }> = (subjects || []).map((c: any) => {
-      const subj = c?.subjects
-      return { id: subj?.subject_id ?? c?.class_id, name: subj?.subject_name ?? 'Subject' }
-    }).filter(s => s.id != null)
-
-    for (const e of entries) {
-      const subjectId = e?.classes?.subject_id
-      if (!subjectId) continue
-      const maxScore = e?.max_score != null ? Number(e.max_score) : 0
-      const score = e?.score != null ? Number(e.score) : null
-      // consider only graded items for percentage
-      if (score == null || !Number.isFinite(score) || !Number.isFinite(maxScore) || maxScore <= 0) continue
-      const bucket = map[subjectId] || (map[subjectId] = { name: subjectInfos.find(si => si.id === subjectId)?.name || 'Subject', total: 0, score: 0 })
-      bucket.total += maxScore
-      bucket.score += score
-    }
-
-    // Build final list ensuring subjects without graded works appear with 0
-    const list = subjectInfos.map(si => {
-      const b = map[si.id]
-      const percent = b && b.total > 0 ? (b.score / b.total) * 100 : 0
-      return { subjectId: si.id, subject: si.name, grade: Number.isFinite(percent) ? percent : 0 }
+      weeklyData[week].total += entry.percentage
+      weeklyData[week].count += 1
     })
 
-    return list
-  }, [subjects, entries])
+    // Convert to array format and sort by date
+    return Object.entries(weeklyData).map(([week, data]) => ({
+      month: week,
+      score: Math.round((data.total / data.count) * 100) / 100
+    })).sort((a, b) => a.month.localeCompare(b.month))
+  }, [dashboardData])
 
-  const gradeData = useMemo(() => {
-    return computedSubjectGrades.slice(0, 5).map((g) => ({ subject: g.subject, grade: g.grade }))
-  }, [computedSubjectGrades])
-
-  const performanceData = useMemo(() => {
-    return weekly.map((w) => ({ month: w.week, score: w.performance }))
-  }, [weekly])
-
+  // Get top 5 from leaderboard and current user's rank
   const top5Leaderboard = useMemo(() => leaders.slice(0, 5), [leaders])
-  const currentUser = undefined
-  const userRank = top5Leaderboard[0]?.rank || 0
+  const currentUser = leaders.find((l: any) => l.isCurrentUser)
+  const userRank = currentUser?.rank || 0
 
+  // Get badge color based on rank (1st gold, 2nd silver, 3rd bronze)
   const getRankBadge = (rank: number) => {
     const colors = {
       1: "bg-yellow-500 text-primary-foreground",
@@ -166,6 +126,7 @@ export function DashboardOverview() {
     return colors[rank as keyof typeof colors] || "bg-blue-500 text-primary-foreground"
   }
 
+  // Get status badge color based on academic standing
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "President's Lister":
@@ -179,76 +140,120 @@ export function DashboardOverview() {
     }
   }
 
+  // Loading skeleton UI
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col space-y-2">
+          <div className="h-8 bg-muted rounded w-64 animate-pulse"></div>
+          <div className="h-4 bg-muted rounded w-96 animate-pulse"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonChart />
+          <SkeletonChart />
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+            <h3 className="text-lg font-semibold text-red-800">Error Loading Dashboard</h3>
+          </div>
+          <p className="text-sm text-red-600 mt-2">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            variant="outline" 
+            size="sm" 
+            className="mt-4"
+          >
+            Reload Page
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6">
-      {loading && <p className="text-sm text-muted-foreground">Loading dashboard...</p>}
-      {error && <p className="text-sm text-red-500">{error}</p>}
-      {/* Header */}
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">
-          Welcome back!
-        </h1>
-        <p className="text-muted-foreground">Here's what's happening with your studies today.</p>
+    <ErrorBoundary>
+      <div className="space-y-6">
+      {/* Welcome header with student info */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-2">
+          <h1 className="text-3xl font-bold text-foreground">
+            Welcome back, {(dashboardData as any)?.student?.name || 'Student'}!
+          </h1>
+          <div className="flex items-center space-x-4">
+            <div className="flex-1">
+              <p className="text-sm text-muted-foreground">
+                {(dashboardData as any)?.student?.email || 'student@email.com'}
+              </p>
+              <p className="text-sm text-muted-foreground opacity-90">
+                {(dashboardData as any)?.student?.year_level || 'Year Level'} - {(dashboardData as any)?.student?.section || 'Section'} - {(dashboardData as any)?.student?.current_semester || 'Semester'}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+       
       </div>
 
-      {/* Stats Cards */}
+      {/* Summary stats cards: GWA, Active Courses, Rank, Resources */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overall GPA</CardTitle>
-            <Trophy className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(() => {
-              const values = computedSubjectGrades.map(g => g.grade)
-              const avg = values.length ? values.reduce((s, v) => s + v, 0) / values.length : 0
-              return (Number.isFinite(avg) ? avg : 0).toFixed(2)
-            })()}</div>
-            <p className="text-xs text-muted-foreground">Based on current graded works</p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="GWA"
+          value={(dashboardData as any)?.overallGPA ? (dashboardData as any).overallGPA.toFixed(2) : '0.00'}
+          description={(dashboardData as any)?.totalUnits ? `${(dashboardData as any).totalUnits} units` : 'No units'}
+          icon={Trophy}
+          iconColor="text-yellow-500"
+        />
 
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Courses</CardTitle>
-            <BookOpen className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{subjects.length}</div>
-            <p className="text-xs text-muted-foreground">Active courses</p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Active Courses"
+          value={(dashboardData as any)?.subjects?.length || 0}
+          description="Active courses"
+          icon={BookOpen}
+          iconColor="text-blue-500"
+        />
 
-      
+        <StatsCard
+          title="Rank"
+          value={userRank ? `#${userRank}` : '-'}
+          description="in overall ranking"
+          icon={TrendingUp}
+          iconColor="text-emerald-500"
+        />
 
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rank</CardTitle>
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{userRank ? `#${userRank}` : '-'}</div>
-            <p className="text-xs text-muted-foreground">in overall ranking</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Academic Standing</CardTitle>
-            <Crown className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Dean's Lister</div>
-            <p className="text-xs text-muted-foreground">Maintaining excellent grades!</p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Learning Resources"
+          value={(resourcesData as any)?.totalResources || 0}
+          description={`${(bookmarksData as any)?.bookmarksCount || 0} bookmarked`}
+          icon={BookOpen}
+          iconColor="text-purple-500"
+        />
       </div>
 
       
 
-      {/* Charts Row */}
+      {/* Charts: Subject performance bar chart and performance trend line chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
+        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg dark:shadow-card-lg rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle>Subject Performance</CardTitle>
             <CardDescription>Your current grades by subject</CardDescription>
@@ -266,7 +271,7 @@ export function DashboardOverview() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
+        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg dark:shadow-card-lg rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle>Performance Trend</CardTitle>
             <CardDescription>Your academic progress over time</CardDescription>
@@ -285,7 +290,7 @@ export function DashboardOverview() {
         </Card>
       </div>
 
-      {/* Bottom Row */}
+      {/* Bottom section: Top 5 leaderboard and latest grade entries */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top 5 Leaderboard - Compact Version */}
         <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-xl rounded-2xl hover:shadow-xl transition-all duration-300">
@@ -295,8 +300,8 @@ export function DashboardOverview() {
               <span>Top 5 Rankings</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {/* Your Current Position Banner - Compact */}
+          <CardContent className="space-y-2">
+            {/* Highlight current user's rank */}
             <div
               className={cn(
                 "p-2 rounded-lg border border-border",
@@ -308,111 +313,140 @@ export function DashboardOverview() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <ProfileAvatar size="sm" className="border border-white shadow-sm" />
-                  <span className="font-medium text-sm">Your Position</span>
+                  <span className="font-medium text-lg">Your Position</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <Badge className={cn("text-xs px-2 py-0.5", getRankBadge(userRank))}>#{userRank}</Badge>
+                  <Badge className={cn("text-sm px-2 py-1", getRankBadge(userRank))}>#{userRank}</Badge>
                   {userRank <= 3 && <Crown className="w-3 h-3 text-yellow-500" />}
                 </div>
               </div>
             </div>
 
-            {/* Top 5 List - Compact */}
+            {/* Display top 5 students with privacy masking */}
             <div className="space-y-1">
-              {top5Leaderboard.map((student, index) => (
-                <div
-                  key={student.rank}
-                  className={cn(
-                    "flex items-center justify-between p-2 rounded-md transition-all duration-300",
-                    student.isCurrentUser ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
-                  )}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Badge className={cn("text-xs px-1.5 py-0.5", getRankBadge(student.rank))}>{student.rank}</Badge>
-                    <Avatar className="w-6 h-6 " >
-                      <AvatarImage src={student.avatar || "/placeholder.svg"} alt={student.name} />
-                      <AvatarFallback className="text-xs text-foreground">
-                        {student.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-xs">{student.name}</p>
-                      <p className="text-xs opacity-75">{student.course || ''}</p>
+              {top5Leaderboard.map((student: any, index: number) => {
+                // Apply privacy settings to hide sensitive data
+                const shouldHide = shouldHideProfile(student, currentAccountId)
+                const displayName = shouldHide ? getMaskedName(student.name, student.student_id) : student.name
+                const displayCourse = shouldHide ? 'Private' : (student.course || '')
+                const avatarFallback = shouldHide ? getMaskedAvatarFallback(student.name, student.student_id) : 
+                  student.name.split(" ").map((n: string) => n[0]).join("")
+                
+                return (
+                  <div
+                    key={student.rank}
+                    className={cn(
+                      "flex items-center justify-between p-2 rounded-md transition-all duration-300",
+                      student.isCurrentUser ? "bg-primary text-primary-foreground" : "bg-muted/30 hover:bg-muted/50"
+                    )}
+                  >
+                    <div className="flex items-center space-x-2 min-w-0 flex-1">
+                      <Badge className={cn("text-sm px-2 py-1", getRankBadge(student.rank))}>{student.rank}</Badge>
+                      <Avatar className="w-5 h-5 flex-shrink-0">
+                        <AvatarImage src={shouldHide ? "/placeholder.svg" : (student.avatar || "/placeholder.svg")} alt={displayName} />
+                        <AvatarFallback className="text-xs text-foreground">
+                          {avatarFallback}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm truncate">{displayName}</p>
+                        <p className="text-sm opacity-75 truncate">{displayCourse}</p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <div className="text-sm font-bold">{student.gpa?.toFixed(2)}</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xs font-bold">{student.gpa}</div>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
-         <Link href={`/dashboard/leaderboard`} className="mt-3">
-            <Button className="w-full bg-transparent" variant="outline" size="sm">
-              View Full Leaderboard
-            </Button>
+            
+            <Link href="/student/leaderboard" className="block mt-2">
+              <Button className="w-full bg-transparent" variant="outline" size="sm">
+                View Full Leaderboard
+              </Button>
             </Link>
           </CardContent>
         </Card>
 
-        {/* AI Study Recommendations */}
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300 ">
+        {/* Latest 5 grade entries with score and percentage */}
+        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-xl rounded-2xl hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center space-x-2 text-lg">
-              <div className="w-4 h-4 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                <Star className="w-2 h-2 text-white" />
+              <div className="w-4 h-4 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-2 h-2 text-white" />
               </div>
-              <span>AI Study Recommendations</span>
+              <span>Latest Grades</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2">
             {(() => {
-              const sorted = [...computedSubjectGrades].sort((a,b) => a.grade - b.grade)
-              const low = sorted.slice(0, 1)
-              const high = sorted.slice(-1)
+              const recentEntries = (dashboardData as any)?.recentEntries || []
+              
+              // Show empty state if no entries
+              if (recentEntries.length === 0) {
+                return (
+                  <div className="p-2 rounded-lg bg-gray-100/20">
+                    <div className="flex items-center space-x-2">
+                      <AlertCircle className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-xs">No Recent Grades</p>
+                        <p className="text-xs text-muted-foreground">No recent entries available.</p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+
+              const latestEntries = recentEntries.slice(0, 5)
+              
               return (
                 <>
-                  {low.map((g, idx) => (
-                    <div key={`low-${idx}`} className="p-3 rounded-lg bg-purple-100/20">
-                      <div className="flex items-start space-x-2">
-                        <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-sm">Focus on {g.subject}</p>
-                          <p className="text-xs text-muted-foreground">Your performance is lower here. Review recent materials and practice targeted exercises.</p>
+                  {latestEntries.map((entry: any, idx: number) => (
+                    <div key={`entry-${idx}`} className="flex items-center justify-between p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-all duration-300">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></div>
+                          <p className="font-medium text-xs truncate">{entry.name}</p>
                         </div>
+                        <p className="text-xs text-muted-foreground truncate">{entry.subject}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-1 ml-2">
+                        <div className="text-xs font-bold">
+                          {entry.score}/{entry.maxScore}
+                        </div>
+                        {/* Color-coded badge by percentage */}
+                        <Badge 
+                          variant="secondary" 
+                          className={cn(
+                            "text-xs px-1.5 py-0.5",
+                            entry.percentage >= 90 ? "bg-green-100 text-green-800" :
+                            entry.percentage >= 80 ? "bg-blue-100 text-blue-800" :
+                            entry.percentage >= 70 ? "bg-yellow-100 text-yellow-800" :
+                            "bg-red-100 text-red-800"
+                          )}
+                        >
+                          {entry.percentage.toFixed(0)}%
+                        </Badge>
                       </div>
                     </div>
                   ))}
-                  {high.map((g, idx) => (
-                    <div key={`high-${idx}`} className="p-3 rounded-lg bg-emerald-100/20">
-                      <div className="flex items-start space-x-2">
-                        <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-sm">Great Progress in {g.subject}</p>
-                          <p className="text-xs text-muted-foreground">Keep pushing this strength—consider advanced resources to deepen mastery.</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {computedSubjectGrades.length > 1 && (
-                    <div className="p-3 rounded-lg bg-orange-100/20">
-                      <div className="flex items-start space-x-2">
-                        <TrendingUp className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-sm">Balanced Study Plan</p>
-                          <p className="text-xs text-muted-foreground">Allocate extra time to the lowest subject while maintaining momentum in your best one.</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  
+                  <Link href="/student/subjects/grades" className="block mt-2">
+                    <Button className="w-full bg-transparent" variant="outline" size="sm">
+                      View All Grades
+                    </Button>
+                  </Link>
                 </>
               )
             })()}
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </ErrorBoundary>
   )
 }

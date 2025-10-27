@@ -26,7 +26,8 @@ export interface StudentGradeData {
 }
 
 /**
- * Calculate component average for a specific component
+ * Calculates average for a grade component (assignments, exams, etc.)
+ * Handles both score-based and attendance-based entries
  */
 export function calculateComponentAverage(
   component: GradeComponent, 
@@ -34,12 +35,12 @@ export function calculateComponentAverage(
 ): number {
   if (entries.length === 0) return 0
 
-  // Check if this component is attendance-based by looking at the entries
+  // Determine if entries are attendance or score-based
   const hasAttendanceEntries = entries.some(e => e.attendance !== null)
   const hasScoreEntries = entries.some(e => e.score !== null && e.max_score && e.max_score > 0)
 
   if (hasAttendanceEntries && !hasScoreEntries) {
-    // Handle attendance: present=100%, late=50%, absent=0%
+    // Calculate attendance: present=100%, late=50%, absent=0%
     const attendanceEntries = entries.filter(e => e.attendance !== null)
     if (attendanceEntries.length === 0) return 0
     
@@ -48,7 +49,7 @@ export function calculateComponentAverage(
     
     return Math.round(((presentCount + (lateCount * 0.5)) / attendanceEntries.length) * 10000) / 100
   } else {
-    // Handle score-based components
+    // Calculate score-based average: total earned / total possible
     const scoreEntries = entries.filter(e => e.score !== null && e.max_score && e.max_score > 0)
     if (scoreEntries.length === 0) return 0
     
@@ -60,9 +61,7 @@ export function calculateComponentAverage(
   }
 }
 
-/**
- * Calculate final weighted grade for a student
- */
+
 export function calculateFinalGrade(
   student: StudentGradeData,
   components: GradeComponent[]
@@ -77,7 +76,7 @@ export function calculateFinalGrade(
     if (items.length > 0) {
       const average = calculateComponentAverage(component, items)
       const weight = component.weight_percentage / 100
-      totalWeightedScore += average * weight
+      totalWeightedScore += average * weight  // Component Score × Weight
       totalWeightUsed += weight
     }
   })
@@ -137,6 +136,120 @@ export function calculateSimpleAverage(entries: GradeEntry[]): number {
   }, 0)
   
   return Math.round((totalPercentage / validScores.length) * 100) / 100
+}
+
+/**
+ * Convert percentage grade to GPA (Philippine 1.0-5.0 scale)
+ */
+export function convertPercentageToGPA(percentage: number): number {
+  if (percentage >= 97.5) return 1.0
+  if (percentage >= 94.5) return 1.25
+  if (percentage >= 91.5) return 1.5
+  if (percentage >= 88.5) return 1.75
+  if (percentage >= 85.5) return 2.0
+  if (percentage >= 82.5) return 2.25
+  if (percentage >= 79.5) return 2.5
+  if (percentage >= 76.5) return 2.75
+  if (percentage >= 74.5) return 3.0
+  if (percentage >= 69.5) return 3.5
+  if (percentage >= 64.5) return 4.0
+  if (percentage >= 59.5) return 4.5
+  return 5.0
+}
+
+/**
+ * Convert percentage grade to precise GPA (Philippine 1.0-5.0 scale with decimal precision)
+ */
+export function convertPercentageToPreciseGPA(percentage: number): number {
+  if (percentage >= 100) return 1.0
+  if (percentage >= 97.5) {
+    // Linear interpolation between 100% (1.0) and 97.5% (1.0)
+    return 1.0
+  }
+  if (percentage >= 94.5) {
+    // Linear interpolation between 97.5% (1.0) and 94.5% (1.25)
+    return 1.0 + ((97.5 - percentage) / 3.0) * 0.25
+  }
+  if (percentage >= 91.5) {
+    // Linear interpolation between 94.5% (1.25) and 91.5% (1.5)
+    return 1.25 + ((94.5 - percentage) / 3.0) * 0.25
+  }
+  if (percentage >= 88.5) {
+    // Linear interpolation between 91.5% (1.5) and 88.5% (1.75)
+    return 1.5 + ((91.5 - percentage) / 3.0) * 0.25
+  }
+  if (percentage >= 85.5) {
+    // Linear interpolation between 88.5% (1.75) and 85.5% (2.0)
+    return 1.75 + ((88.5 - percentage) / 3.0) * 0.25
+  }
+  if (percentage >= 82.5) {
+    // Linear interpolation between 85.5% (2.0) and 82.5% (2.25)
+    return 2.0 + ((85.5 - percentage) / 3.0) * 0.25
+  }
+  if (percentage >= 79.5) {
+    // Linear interpolation between 82.5% (2.25) and 79.5% (2.5)
+    return 2.25 + ((82.5 - percentage) / 3.0) * 0.25
+  }
+  if (percentage >= 76.5) {
+    // Linear interpolation between 79.5% (2.5) and 76.5% (2.75)
+    return 2.5 + ((79.5 - percentage) / 3.0) * 0.25
+  }
+  if (percentage >= 74.5) {
+    // Linear interpolation between 76.5% (2.75) and 74.5% (3.0)
+    return 2.75 + ((76.5 - percentage) / 2.0) * 0.25
+  }
+  if (percentage >= 69.5) {
+    // Linear interpolation between 74.5% (3.0) and 69.5% (3.5)
+    return 3.0 + ((74.5 - percentage) / 5.0) * 0.5
+  }
+  if (percentage >= 64.5) {
+    // Linear interpolation between 69.5% (3.5) and 64.5% (4.0)
+    return 3.5 + ((69.5 - percentage) / 5.0) * 0.5
+  }
+  if (percentage >= 59.5) {
+    // Linear interpolation between 64.5% (4.0) and 59.5% (4.5)
+    return 4.0 + ((64.5 - percentage) / 5.0) * 0.5
+  }
+  if (percentage >= 50) {
+    // Linear interpolation between 59.5% (4.5) and 50% (5.0)
+    return 4.5 + ((59.5 - percentage) / 9.5) * 0.5
+  }
+  return 5.0
+}
+
+/**
+ * Calculate GPA from percentage grades with credit hours
+ */
+export function calculateGPA(subjectGrades: Array<{ percentage: number; units: number }>): number {
+  if (subjectGrades.length === 0) return 0
+  
+  let totalGradePoints = 0
+  let totalUnits = 0
+  
+  subjectGrades.forEach(({ percentage, units }) => {
+    const gpa = convertPercentageToGPA(percentage)
+    totalGradePoints += gpa * units
+    totalUnits += units
+  })
+  
+  return totalUnits > 0 ? Math.round((totalGradePoints / totalUnits) * 100) / 100 : 0
+}
+
+/**
+ * Calculate weighted average from percentage grades with credit hours
+ */
+export function calculateWeightedAverage(subjectGrades: Array<{ percentage: number; units: number }>): number {
+  if (subjectGrades.length === 0) return 0
+  
+  let totalWeightedScore = 0
+  let totalUnits = 0
+  
+  subjectGrades.forEach(({ percentage, units }) => {
+    totalWeightedScore += percentage * units
+    totalUnits += units
+  })
+  
+  return totalUnits > 0 ? Math.round((totalWeightedScore / totalUnits) * 100) / 100 : 0
 }
 
 /**

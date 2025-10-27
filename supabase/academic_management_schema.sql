@@ -101,6 +101,7 @@ CREATE TABLE students (
     address TEXT,
     contact_number TEXT,
     section_id BIGINT REFERENCES sections(section_id),
+    privacy_settings JSONB DEFAULT '{"profileVisibility": "public"}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -317,4 +318,67 @@ create table if not exists public.learning_resources (
   dislikes int default 0,                                 -- number of user dislikes
   is_active boolean default true                          -- soft delete or active toggle
 );
+
+-- =========================
+-- STUDENT BOOKMARKS
+-- =========================
+CREATE TABLE student_bookmarks (
+    id BIGSERIAL PRIMARY KEY,
+    student_id BIGINT REFERENCES students(student_id) ON DELETE CASCADE,
+    resource_id UUID REFERENCES learning_resources(id) ON DELETE CASCADE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(student_id, resource_id)
+);
+
+-- Create index for better performance
+CREATE INDEX idx_student_bookmarks_student_id ON student_bookmarks(student_id);
+CREATE INDEX idx_student_bookmarks_resource_id ON student_bookmarks(resource_id);
+CREATE INDEX idx_student_bookmarks_active ON student_bookmarks(is_active);
+
+-- =========================
+-- RESOURCE LINK OPENS
+-- =========================
+CREATE TABLE resource_link_opens (
+    id BIGSERIAL PRIMARY KEY,
+    student_id BIGINT REFERENCES students(student_id) ON DELETE CASCADE,
+    resource_id UUID REFERENCES learning_resources(id) ON DELETE CASCADE,
+    opened_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create indexes for better performance
+CREATE INDEX idx_resource_link_opens_student_id ON resource_link_opens(student_id);
+CREATE INDEX idx_resource_link_opens_resource_id ON resource_link_opens(resource_id);
+CREATE INDEX idx_resource_link_opens_opened_at ON resource_link_opens(opened_at);
+
+-- =========================
+-- RESOURCE OPEN STATISTICS VIEW
+-- =========================
+CREATE VIEW resource_open_stats AS
+SELECT 
+    r.id as resource_id,
+    r.title as resource_title,
+    COUNT(rlo.id) as total_opens,
+    COUNT(DISTINCT rlo.student_id) as unique_students,
+    MAX(rlo.opened_at) as last_opened
+FROM learning_resources r
+LEFT JOIN resource_link_opens rlo ON r.id = rlo.resource_id
+GROUP BY r.id, r.title;
+
+-- =========================
+-- STUDENT RESOURCE STATISTICS VIEW
+-- =========================
+CREATE VIEW student_resource_stats AS
+SELECT 
+    s.student_id,
+    s.first_name,
+    s.last_name,
+    COUNT(rlo.id) as total_opens,
+    COUNT(DISTINCT rlo.resource_id) as unique_resources_opened,
+    MAX(rlo.opened_at) as last_opened
+FROM students s
+LEFT JOIN resource_link_opens rlo ON s.student_id = rlo.student_id
+GROUP BY s.student_id, s.first_name, s.last_name;
 

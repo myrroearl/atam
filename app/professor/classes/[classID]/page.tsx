@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js"
 import { redirect } from "next/navigation"
 import type { GradeEntry } from "@/lib/types/gradebook"
 import { ClassPageClient } from "./class-page-client"
-import { calculateClassAverageFromEntries, normalizeGradeEntries, normalizeGradeComponents } from "@/lib/grade-calculations"
+import { calculateClassAverageFromEntries, normalizeGradeEntries, normalizeGradeComponents } from "@/lib/student/grade-calculations"
 
 // Types based on Supabase schema
 export type GradeComponent = {

@@ -210,17 +210,89 @@ export async function GET(_request: NextRequest) {
 
     // Calculate risk assessment based on multiple factors
     let riskScore = 0
-    if (avgPerformance < 80) riskScore += 3
-    else if (avgPerformance < 90) riskScore += 1
+    let riskFactors = []
     
-    if (completionRate < 80) riskScore += 2
-    else if (completionRate < 90) riskScore += 1
+    // Performance factor
+    if (avgPerformance < 80) {
+      riskScore += 3
+      riskFactors.push('Low Performance')
+    } else if (avgPerformance < 90) {
+      riskScore += 1
+      riskFactors.push('Moderate Performance')
+    }
     
-    if (gpa < 2.5) riskScore += 3
-    else if (gpa < 3.0) riskScore += 2
-    else if (gpa < 3.5) riskScore += 1
+    // Completion rate factor
+    if (completionRate < 80) {
+      riskScore += 2
+      riskFactors.push('Low Completion')
+    } else if (completionRate < 90) {
+      riskScore += 1
+      riskFactors.push('Moderate Completion')
+    }
+    
+    // GPA factor
+    if (gpa < 2.5) {
+      riskScore += 3
+      riskFactors.push('Low GPA')
+    } else if (gpa < 3.0) {
+      riskScore += 2
+      riskFactors.push('Moderate GPA')
+    } else if (gpa < 3.5) {
+      riskScore += 1
+      riskFactors.push('Good GPA')
+    }
 
-    const riskLevel = riskScore >= 5 ? 'High' : riskScore >= 2 ? 'Moderate' : 'Low'
+    // Determine risk level with more logical thresholds
+    let riskLevel = 'Low'
+    if (riskScore >= 6) {
+      riskLevel = 'High'
+    } else if (riskScore >= 3) {
+      riskLevel = 'Moderate'
+    } else if (riskScore >= 1) {
+      riskLevel = 'Low'
+    } else {
+      riskLevel = 'Excellent'
+    }
+
+    // Special case: If completion is 100%, significantly reduce risk
+    if (completionRate >= 100) {
+      console.log(`🔍 Risk Debug - Before adjustment:`, {
+        completionRate,
+        avgPerformance,
+        gpa,
+        riskScore,
+        riskLevel,
+        riskFactors
+      })
+      
+      // Reduce risk score by 2 points for perfect completion
+      riskScore = Math.max(0, riskScore - 2)
+      
+      // If completion is 100% and performance is decent, further reduce risk
+      if (avgPerformance >= 80 && gpa >= 2.5) {
+        riskScore = Math.max(0, riskScore - 1)
+      }
+      
+      // Recalculate risk level based on adjusted score
+      if (riskScore >= 6) {
+        riskLevel = 'High'
+      } else if (riskScore >= 3) {
+        riskLevel = 'Moderate'
+      } else if (riskScore >= 1) {
+        riskLevel = 'Low'
+      } else {
+        riskLevel = 'Excellent'
+      }
+      
+      console.log(`🔍 Risk Debug - After adjustment:`, {
+        completionRate,
+        avgPerformance,
+        gpa,
+        riskScore,
+        riskLevel,
+        riskFactors
+      })
+    }
 
     // Calculate subjects passed
     const subjectsPassed = validGrades.filter(g => Number(g.grade) >= 75).length
@@ -280,6 +352,8 @@ export async function GET(_request: NextRequest) {
       totalAssignments,
       completedAssignments,
       riskLevel,
+      riskScore,
+      riskFactors,
       weeksTracked: weeklyPerformance.length,
       gpa: Math.round(gpa * 100) / 100,
       totalUnits,
@@ -287,8 +361,7 @@ export async function GET(_request: NextRequest) {
       totalSubjects: validGrades.length,
       currentSubjects: currentSubjects?.length || 0,
       outcomesPerformance,
-      recommendations,
-      riskScore
+      recommendations
     })
 
   } catch (err) {

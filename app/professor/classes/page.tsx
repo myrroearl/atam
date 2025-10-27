@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { createClient } from "@supabase/supabase-js"
 import { ClassesContent } from "@/components/professor/classes-content"
-import { calculateClassAverageFromEntries, normalizeGradeEntries, normalizeGradeComponents } from "@/lib/grade-calculations"
+import { calculateClassAverageFromEntries, normalizeGradeEntries, normalizeGradeComponents } from "@/lib/student/grade-calculations"
 
 type UiClass = {
   id: number
