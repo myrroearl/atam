@@ -111,21 +111,23 @@ export function StudentsTable({ students, onDeleteStudent, onEditStudent, curren
                     <td className="px-2 py-2 text-sm text-black dark:text-white">
                       <Badge
                         variant={
-                          student.status === "Active"
+                          student.status === "active"
                             ? "default"
-                            : student.status === "Inactive"
+                            : student.status === "inactive"
                               ? "destructive"
                               : "outline"
                         }
                         className={
-                          student.status === "Active"
-                            ? "bg-green-100 text-green-800 hover:bg-green-100"
-                            : student.status === "Inactive"
+                          student.status === "active"
+                            ? "bg-green-100 text-green-800 hover:bg-emerald-100"
+                            : student.status === "inactive"
                               ? "bg-red-100 text-red-800 hover:bg-red-100"
-                              : "bg-gray-100 text-gray-800 hover:bg-gray-100"
+                              : student.status === "suspended"
+                                ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
+                                : "bg-gray-100 text-gray-800 hover:bg-gray-100"
                         }
                       >
-                        {student.status}
+                        {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                       </Badge>
                     </td>
                     <td className="px-2 py-2 text-sm text-black dark:text-white">

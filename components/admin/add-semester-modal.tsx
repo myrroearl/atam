@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import { Plus, Loader2 } from "lucide-react"
 
 interface YearLevel {
   year_level_id: number
@@ -43,9 +44,16 @@ export default function AddSemesterModal({
     semester_name: "",
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [isFormValid, setIsFormValid] = useState(false)
   const [yearLevels, setYearLevels] = useState<YearLevel[]>([])
   const [isLoadingYearLevels, setIsLoadingYearLevels] = useState(false)
   const [existingSemesters, setExistingSemesters] = useState<Record<number, string[]>>({})
+
+  // Validate form whenever formData changes
+  useEffect(() => {
+    const isValid = !!(formData.year_level && formData.semester_name)
+    setIsFormValid(isValid)
+  }, [formData])
 
   // Fetch year levels and existing semesters when modal opens
   useEffect(() => {
@@ -172,44 +180,40 @@ export default function AddSemesterModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="font-bold text-black">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Create Semester
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
-            Add a new semester for {yearLevelName}
+          <DialogDescription className="text-sm text-gray-500">
+            Add a new semester for <strong>{yearLevelName}</strong>
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex gap-2">
-            <div className="items-center text-center"><p className="text-black">Year Level:</p></div>
-            <div className="flex items-center text-center"><p className="text-gray-500">{yearLevelName || 'Loading...'}</p></div>
-          </div>
           
           <div className="space-y-2">
-            <Label htmlFor="semester_name" className="text-black">Semester Name <strong className="text-red-600">*</strong></Label>
+            <Label htmlFor="semester_name">Semester Name <strong className="text-red-600">*</strong></Label>
             <Select 
               value={formData.semester_name} 
               onValueChange={(value) => setFormData(prev => ({ ...prev, semester_name: value }))}
               disabled={!formData.year_level}
             >
-              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer">
+              <SelectTrigger className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                 <SelectValue placeholder={
                   !formData.year_level 
                     ? "Loading..." 
                     : "Select semester"
                 } />
               </SelectTrigger>
-              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden">
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                 {formData.year_level ? (
                   getAvailableSemesters(parseInt(formData.year_level)).length > 0 ? (
                     getAvailableSemesters(parseInt(formData.year_level)).map((semester) => (
                       <SelectItem 
                         key={semester} 
                         value={semester}
-                        className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer"
+                        className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]"
                       >
                         {semester}
                       </SelectItem>
@@ -260,22 +264,30 @@ export default function AddSemesterModal({
                 variant="outline"
                 onClick={handleClose}
                 disabled={isLoading}
-                className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%]"
+                className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
                 disabled={
+                  !isFormValid || 
                   isLoading || 
                   yearLevels.length === 0 || 
-                  !formData.year_level || 
-                  !formData.semester_name ||
                   getAvailableSemesters(parseInt(formData.year_level)).length === 0
                 }
-                className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center w-[50%]"
+                className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 w-[50%] dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
               >
-                {isLoading ? "Adding..." : "Add Semester"}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    Add Semester
+                  </>
+                )}
               </Button>
             </div>
           </DialogFooter>

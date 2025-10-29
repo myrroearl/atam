@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -36,7 +36,7 @@ interface FormErrors {
   general?: string
 }
 
-export default function NewCourseModalNew({
+export default function NewCourseModal({
   isOpen,
   onClose,
   onSuccess,
@@ -50,6 +50,14 @@ export default function NewCourseModalNew({
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isFormValid, setIsFormValid] = useState(false)
+
+  // Validate form whenever formData changes
+  useEffect(() => {
+    const isValid = formData.course_code.trim().length >= 2 && 
+                   formData.course_name.trim().length >= 2
+    setIsFormValid(isValid)
+  }, [formData])
 
   // Reset form when modal opens/closes
   const handleOpenChange = (open: boolean) => {
@@ -146,30 +154,29 @@ export default function NewCourseModalNew({
     }
   }
 
-  const isFormValid = formData.course_code.trim() !== "" && formData.course_name.trim() !== ""
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center font-bold text-black">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Create Course
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
+          <DialogDescription className="text-sm text-gray-500">
             Create a new course for the <strong>{departmentName}</strong> department.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="course_code" className="text-black">Course Code <strong className="text-red-600">*</strong></Label>
+            <Label htmlFor="course_code">Course Code <strong className="text-red-600">*</strong></Label>
             <Input
               id="course_code"
               type="text"
               placeholder="e.g., BSIT, BSCS, BSN"
               value={formData.course_code}
               onChange={(e) => handleInputChange('course_code', e.target.value.toUpperCase())}
-              className={errors.course_code ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+              className={errors.course_code ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
               disabled={isSubmitting}
             />
             {errors.course_code && (
@@ -178,14 +185,14 @@ export default function NewCourseModalNew({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="course_name" className="text-black">Course Name <strong className="text-red-600">*</strong></Label>
+            <Label htmlFor="course_name">Course Name <strong className="text-red-600">*</strong></Label>
             <Input
               id="course_name"
               type="text"
               placeholder="e.g., Bachelor of Science in Information Technology"
               value={formData.course_name}
               onChange={(e) => handleInputChange('course_name', e.target.value)}
-              className={errors.course_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+              className={errors.course_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
               disabled={isSubmitting}
             />
             {errors.course_name && (
@@ -202,7 +209,7 @@ export default function NewCourseModalNew({
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows={3}
               disabled={isSubmitting}
-              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
             />
           </div>
 
@@ -218,14 +225,14 @@ export default function NewCourseModalNew({
               variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={isSubmitting}
-              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)]"
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={!isFormValid || isSubmitting}
-              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center"
+              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
             >
               {isSubmitting ? (
                 <>
@@ -234,7 +241,7 @@ export default function NewCourseModalNew({
                 </>
               ) : (
                 <>
-                  Create Course
+                  Add Course
                 </>
               )}
             </Button>

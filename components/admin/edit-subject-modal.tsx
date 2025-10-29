@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { Edit, Loader2 } from "lucide-react"
+import { SquarePen, Loader2 } from "lucide-react"
 
 interface Subject {
   subject_id: number
@@ -46,17 +46,32 @@ export default function EditSubjectModal({
     units: "",
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
+  const [originalData, setOriginalData] = useState<{subject_code: string, subject_name: string, units: string} | null>(null)
 
   // Update form data when subject changes
   useEffect(() => {
     if (subject) {
-      setFormData({
+      const initialData = {
         subject_code: subject.subject_code,
         subject_name: subject.subject_name,
         units: subject.units.toString(),
-      })
+      }
+      setFormData(initialData)
+      setOriginalData(initialData)
+      setHasChanges(false)
     }
   }, [subject])
+
+  // Check for changes whenever formData changes
+  useEffect(() => {
+    if (originalData) {
+      const changed = formData.subject_code !== originalData.subject_code ||
+                     formData.subject_name !== originalData.subject_name ||
+                     formData.units !== originalData.units
+      setHasChanges(changed)
+    }
+  }, [formData, originalData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,20 +135,19 @@ export default function EditSubjectModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-bold text-black">
-            <Edit className="w-5 h-5" />
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto dark:bg-black border-none transition-colors duration-300" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Edit Subject
           </DialogTitle>
-          <DialogDescription className="text-gray-500 text-sm">
-            Update the subject information for {subject?.subject_name}
+          <DialogDescription className="text-sm text-gray-500 dark:text-gray-600">
+            Update the subject information for <strong>{subject?.subject_name}</strong>
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="subject_code" className="text-black">Subject Code <strong className="text-red-500">*</strong></Label>
+            <Label htmlFor="subject_code" className="text-black dark:text-white">Subject Code</Label>
             <Input
               id="subject_code"
               value={formData.subject_code}
@@ -145,7 +159,7 @@ export default function EditSubjectModal({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="subject_name" className="text-black">Subject Name <strong className="text-red-500">*</strong></Label>
+            <Label htmlFor="subject_name" className="text-black dark:text-white">Subject Name</Label>
             <Input
               id="subject_name"
               value={formData.subject_name}
@@ -157,7 +171,7 @@ export default function EditSubjectModal({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="units" className="text-black">Units <strong className="text-red-500">*</strong></Label>
+            <Label htmlFor="units" className="text-black dark:text-white">Units</Label>
             <Input
               id="units"
               type="number"
@@ -181,7 +195,7 @@ export default function EditSubjectModal({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading} className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center w-[50%]">
+            <Button type="submit" disabled={!hasChanges || isLoading} className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 w-[50%]">
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />

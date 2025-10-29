@@ -64,29 +64,25 @@ export function StudentViewModal({ student, open, onOpenChange }: StudentViewMod
             <div className="text-right space-y-2">
               <Badge
                 variant={
-                  student.status === "Enrolled"
+                  student.status === "active"
                     ? "default"
-                    : student.status === "Graduated"
-                      ? "secondary"
-                      : student.status === "Dropout"
-                        ? "destructive"
-                        : student.status === "Leave of Absence"
-                          ? "outline"
-                          : "outline"
+                    : student.status === "inactive"
+                      ? "destructive"
+                      : student.status === "suspended"
+                        ? "outline"
+                        : "outline"
                 }
                 className={
-                  student.status === "Enrolled"
+                  student.status === "active"
                     ? "bg-green-100 text-green-600 hover:bg-green-100 text-lg px-4 py-2"
-                    : student.status === "Graduated"
-                      ? "bg-blue-100 text-blue-600 hover:bg-blue-100 text-lg px-4 py-2"
-                      : student.status === "Dropout"
-                        ? "bg-red-100 text-red-600 hover:bg-red-100 text-lg px-4 py-2"
-                        : student.status === "Leave of Absence"
-                          ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-100 border-none text-lg px-4 py-2"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-100 text-lg px-4 py-2"
+                    : student.status === "inactive"
+                      ? "bg-red-100 text-red-600 hover:bg-red-100 text-lg px-4 py-2"
+                      : student.status === "suspended"
+                        ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-100 border-none text-lg px-4 py-2"
+                        : "bg-gray-100 text-gray-800 hover:bg-gray-100 text-lg px-4 py-2"
                 }
               >
-                {student.status}
+                {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
               </Badge>
               <Button
                 onClick={handleViewPerformance}

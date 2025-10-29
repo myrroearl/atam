@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Loader2, AlertTriangle, Trash } from "lucide-react"
+import { Loader2, AlertTriangle } from "lucide-react"
 import { toast } from "sonner"
 import {
   Dialog,
@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface Course {
   course_id: number
@@ -31,7 +30,7 @@ interface DeleteCourseModalProps {
   course: Course | null
 }
 
-export default function DeleteCourseModalNew({
+export default function DeleteCourseModal({
   isOpen,
   onClose,
   onSuccess,
@@ -55,7 +54,7 @@ export default function DeleteCourseModalNew({
         throw new Error(result.error || 'Failed to delete course')
       }
 
-      toast.success(`Course "${course.course_name}" has been deleted successfully!`)
+      toast.success(`Course "${course.course_name}" deleted successfully.`)
       onSuccess()
       onClose()
 
@@ -85,66 +84,61 @@ export default function DeleteCourseModalNew({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-black">
+      <DialogContent className="sm:max-w-[500px] dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Delete Course
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-500">
-            Are you sure you want to delete the course <strong>"{course.course_name}"</strong> ({course.course_code})?
+            Are you sure you want to delete <strong>{course.course_name}</strong>?
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <Alert className="border-none p-0">
-            <AlertDescription className="text-red-800 font-semibold">
-              Deleting this course will permanently lost following:
-            </AlertDescription>
-          </Alert>
+          <div className="space-y-2 p-0 rounded-lg">
+            <div className="border-none p-0">
+              <p className="text-red-600 dark:text-red-500 font-semibold text-sm">
+                This action will permanently delete the course and all associated data.
+              </p>
+            </div>
 
-          <div className="">
-            <div className="space-y-1 text-sm">
-              <div className="flex gap-1">
-                <span className="text-black dark:text-gray-400">Code:</span>
-                <span className="text-gray-600 dark:text-white">{course.course_code}</span>
+            {/* Course info */}
+            <div className="space-y-1">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Course Code:</span>
+                <span className="font-semibold text-black dark:text-white">{course.course_code}</span>
               </div>
-              <div className="flex gap-1">
-                <span className="text-black dark:text-gray-400">Name:</span>
-                <span className="text-gray-600 dark:text-white">{course.course_name}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Course Name:</span>
+                <span className="font-medium text-black dark:text-white">{course.course_name}</span>
               </div>
               {course.description && (
-                <div className="flex gap-1">
-                  <span className="text-black dark:text-gray-400">Description:</span>
-                  <span className="text-gray-600 dark:text-white line-clamp-1">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">Description:</span>
+                  <span className="font-medium text-black dark:text-white line-clamp-1 w-80 truncate">
                     {course.description}
                   </span>
                 </div>
               )}
-              {/* <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Created:</span>
-                <span className="text-gray-900 dark:text-white">
-                  {new Date(course.created_at).toLocaleDateString()}
-                </span>
-              </div> */}
             </div>
           </div>
         </div>
 
         <DialogFooter className="w-full">
-          <div className="w-full justify-between gap-2 flex">
+          <div className="flex w-full justify-between gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={isDeleting}
-              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%]"
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%] dark:border-[var(--darkmode-color-four)] dark:bg-transparent dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:text-white dark:hover:border-none"
             >
-              No, keep it.
+              No, keep it
             </Button>
             <Button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-500 text-white border-none w-[50%]"
+              className="bg-red-600 hover:bg-red-700 text-white border-none w-[50%] dark:bg-red-800 dark:hover:bg-red-600 dark:hover:text-white dark:border-none"
             >
               {isDeleting ? (
                 <>
@@ -152,9 +146,7 @@ export default function DeleteCourseModalNew({
                   Deleting...
                 </>
               ) : (
-                <>
-                  Yes, Delete!
-                </>
+                "Yes, Delete it"
               )}
             </Button>
           </div>

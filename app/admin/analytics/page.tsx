@@ -473,11 +473,11 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] transition-colors">
+    <div className="flex h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] px-5 py-5">
+        <div className="bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] px-5 py-5 transition-colors">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <h1 className="text-3xl font-extrabold text-black dark:text-white">Report & Analytics</h1>
@@ -487,7 +487,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-5 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)]">
+        <div className="flex-1 p-5 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid w-full grid-cols-5 bg-white dark:bg-[var(--darkmode-color-one)] border rounded-full h-full p-0">
               <TabsTrigger
@@ -592,7 +592,7 @@ export default function AnalyticsPage() {
                   </div>
 
                   {/* Overall Performance Donut Chart */}
-                  <Card className="bg-white border rounded-lg">
+                  <Card className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg transition-colors duration-300">
                     <CardHeader>
                       <CardTitle className="text-lg font-bold">Overall Academic Performance</CardTitle>
                       <p className="text-gray-600 text-sm">Distribution of performance ratings across all subjects</p>
@@ -640,7 +640,7 @@ export default function AnalyticsPage() {
                   </Card>
 
                   {/* Subject Filter */}
-                  <Card className="bg-white border rounded-lg">
+                  <Card className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg transition-colors duration-300">
                     <CardHeader>
                       <CardTitle className="text-lg font-bold">Subject Filter</CardTitle>
                       <p className="text-gray-600 text-sm">Filter academic performance and learning outcomes by specific subject</p>
@@ -665,28 +665,28 @@ export default function AnalyticsPage() {
 
                   {/* Learning Outcomes per Semester */}
                   <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-gray-900">Learning Outcomes per Semester</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Learning Outcomes per Semester</h3>
                     {selectedStudent.semesterData.map((semesterData: any, index: number) => (
-                      <Card key={index} className="bg-white border rounded-lg">
+                      <Card key={index} className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg transition-colors duration-300">
                         <CardHeader>
-                          <CardTitle className="text-lg font-bold">{semesterData.semester}</CardTitle>
+                          <CardTitle className="text-lg font-bold dark:text-white">{semesterData.semester}</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="overflow-x-auto">
                             <table className="min-w-full text-sm border rounded-lg">
-                              <thead className="bg-gray-50">
+                              <thead className="bg-gray-50 dark:bg-[var(--darkmode-color-two)]">
                                 <tr>
-                                  <th className="px-4 py-3 text-left font-medium text-gray-700">Subject</th>
-                                  <th className="px-4 py-3 text-left font-medium text-gray-700">Learning Outcome</th>
+                                  <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Subject</th>
+                                  <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Learning Outcome</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {semesterData.subjects
                                   .filter((subject: any) => selectedSubject === "All Subjects" || subject.name === selectedSubject)
                                   .map((subject: any, subIdx: number) => (
-                                  <tr key={subIdx} className="border-b last:border-b-0 hover:bg-gray-50">
-                                    <td className="px-4 py-3 font-medium text-gray-900 w-1/4">{subject.name}</td>
-                                    <td className="px-4 py-3 text-gray-700">{subject.learningOutcome}</td>
+                                  <tr key={subIdx} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-[var(--darkmode-color-two)]">
+                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white w-1/4">{subject.name}</td>
+                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{subject.learningOutcome}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -699,28 +699,28 @@ export default function AnalyticsPage() {
 
                   {/* Academic Performance per Semester */}
                   <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-gray-900">Academic Performance per Semester</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Academic Performance per Semester</h3>
                     {selectedStudent.semesterData.map((semesterData: any, index: number) => (
-                      <Card key={index} className="bg-white border rounded-lg">
+                      <Card key={index} className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg transition-colors duration-300">
                         <CardHeader>
-                          <CardTitle className="text-lg font-bold">{semesterData.semester}</CardTitle>
+                          <CardTitle className="text-lg font-bold dark:text-white">{semesterData.semester}</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="overflow-x-auto">
                             <table className="min-w-full text-sm border rounded-lg">
-                              <thead className="bg-gray-50">
+                              <thead className="bg-gray-50 dark:bg-[var(--darkmode-color-two)]">
                                 <tr>
-                                  <th className="px-4 py-3 text-left font-medium text-gray-700">Subject</th>
-                                  <th className="px-4 py-3 text-center font-medium text-gray-700">Score</th>
-                                  <th className="px-4 py-3 text-center font-medium text-gray-700">Performance</th>
+                                  <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">Subject</th>
+                                  <th className="px-4 py-3 text-center font-medium text-gray-700 dark:text-gray-300">Score</th>
+                                  <th className="px-4 py-3 text-center font-medium text-gray-700 dark:text-gray-300">Performance</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {semesterData.subjects
                                   .filter((subject: any) => selectedSubject === "All Subjects" || subject.name === selectedSubject)
                                   .map((subject: any, subIdx: number) => (
-                                  <tr key={subIdx} className="border-b last:border-b-0 hover:bg-gray-50">
-                                    <td className="px-4 py-3 font-medium text-gray-900">{subject.name}</td>
+                                  <tr key={subIdx} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-[var(--darkmode-color-two)]">
+                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{subject.name}</td>
                                     <td className="px-4 py-3 text-center">
                                       <span className={`font-semibold ${
                                         subject.score >= 90 ? 'text-green-700' : 
@@ -787,7 +787,7 @@ export default function AnalyticsPage() {
 
               <div className="mb-6">
                 {/* Bar graph placeholder for number of top-performing students by department/year */}
-                <Card className="bg-white border rounded-lg mb-4">
+                <Card className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg mb-4 transition-colors duration-300">
                   <CardHeader>
                     <CardTitle className="text-lg font-bold">
                       {selectedDepartment === "All Departments" 
@@ -826,7 +826,7 @@ export default function AnalyticsPage() {
                 </Card>
               </div>
               {/* Students Table */}
-              <Card className="bg-white border rounded-lg">
+              <Card className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg transition-colors duration-300">
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -897,7 +897,7 @@ export default function AnalyticsPage() {
               <h2 className="text-xl font-bold text-gray-900">At-Risk Students</h2>
               <div className="mb-6">
                 {/* Donut chart placeholder for at-risk student distribution */}
-                <Card className="bg-white border rounded-lg mb-4">
+                <Card className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg mb-4 transition-colors duration-300">
                   <CardHeader>
                     <CardTitle className="text-lg font-bold">Distribution of At-Risk Students</CardTitle>
                     <p className="text-gray-600 text-sm">Donut chart visualizing risk levels and monthly trends</p>
@@ -912,7 +912,7 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-1 gap-8">
                 {/* Detailed insights for each at-risk student */}
                 {bottomStudents.map((student) => (
-                  <Card key={student.studentId} className="bg-white border rounded-lg">
+                  <Card key={student.studentId} className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg transition-colors duration-300">
                     <CardHeader>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -992,9 +992,9 @@ export default function AnalyticsPage() {
                   <option>2024</option>
                 </select>
               </div>
-              <Card className="bg-white border rounded-lg mb-4">
+              <Card className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg mb-4 transition-colors duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg font-bold">Dropout Trends</CardTitle>
+                  <CardTitle className="text-lg font-bold dark:text-white">Dropout Trends</CardTitle>
                   <p className="text-gray-600 text-sm">Visualize and analyze student dropouts per academic year</p>
                 </CardHeader>
                 <CardContent>
@@ -1005,7 +1005,7 @@ export default function AnalyticsPage() {
               </Card>
               <div className="grid grid-cols-1 gap-8">
                 {/* Detailed dropout insights placeholder */}
-                <Card className="bg-white border rounded-lg">
+                <Card className="bg-white dark:bg-[var(--darkmode-color-one)] border rounded-lg transition-colors duration-300">
                   <CardHeader>
                     <CardTitle className="text-lg font-bold">Dropout Insights</CardTitle>
                     <p className="text-gray-600 text-sm">Potential reasons for each dropout (academic, financial, personal, etc.)</p>

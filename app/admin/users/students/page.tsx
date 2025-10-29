@@ -267,7 +267,7 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="p-5 space-y-6 w-full bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] transition-colors">
+    <div className="p-5 space-y-6 w-full bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold text-black dark:text-white">Student Management</h1>
@@ -296,35 +296,35 @@ export default function StudentsPage() {
           />
         </div>
         <Select value={courseFilter} onValueChange={handleCourseFilterChange}>
-          <SelectTrigger className="min-w-[300px] text-[11px] pr-[8px] pl-[8px] bg-white dark:bg-black !border-none !outline-none focus:!outline-none focus:!border-none focus:!ring-0 focus:!ring-offset-0">
+          <SelectTrigger className="min-w-[400px] text-[11px] pr-[8px] pl-[8px] bg-white dark:bg-black !border-none !outline-none focus:!outline-none focus:!border-none focus:!ring-0 focus:!ring-offset-0">
             <SelectValue placeholder="All Courses" />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
-            <SelectItem value="all-courses">All Courses</SelectItem>
+            <SelectItem value="all-courses" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Courses</SelectItem>
             {getFilteredCourses().map((course) => (
-              <SelectItem key={course} value={course}>{course}</SelectItem>
+              <SelectItem key={course} value={course} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">{course}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={yearLevelFilter} onValueChange={handleYearLevelFilterChange}>
-          <SelectTrigger className="min-w-[150px] text-[11px] pr-[8px] pl-[8px] bg-white dark:bg-black !border-none !outline-none focus:!outline-none focus:!border-none focus:!ring-0 focus:!ring-offset-0">
+          <SelectTrigger className="min-w-[50px] text-[11px] pr-[8px] pl-[8px] bg-white dark:bg-black !border-none !outline-none focus:!outline-none focus:!border-none focus:!ring-0 focus:!ring-offset-0">
             <SelectValue placeholder="All Year Levels" />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
-            <SelectItem value="all-year-levels">All Year Levels</SelectItem>
+            <SelectItem value="all-year-levels" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Year Levels</SelectItem>
             {getFilteredYearLevels().map((yearLevel) => (
-              <SelectItem key={yearLevel} value={yearLevel}>{yearLevel}</SelectItem>
+              <SelectItem key={yearLevel} value={yearLevel} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">{yearLevel}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={sectionFilter} onValueChange={setSectionFilter}>
-          <SelectTrigger className="min-w-[150px] text-[11px] pr-[8px] pl-[8px] bg-white dark:bg-black !border-none !outline-none focus:!outline-none focus:!border-none focus:!ring-0 focus:!ring-offset-0">
+          <SelectTrigger className="min-w-[50px] text-[11px] pr-[8px] pl-[8px] bg-white dark:bg-black !border-none !outline-none focus:!outline-none focus:!border-none focus:!ring-0 focus:!ring-offset-0">
             <SelectValue placeholder="All Sections" />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
-            <SelectItem value="all-sections">All Sections</SelectItem>
+            <SelectItem value="all-sections" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Sections</SelectItem>
             {getFilteredSections().map((section) => (
-              <SelectItem key={section} value={section}>{section}</SelectItem>
+              <SelectItem key={section} value={section} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">{section}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -337,11 +337,11 @@ export default function StudentsPage() {
           <div className="flex flex-col items-center">
             {sortOrder === "asc" ? (
               <>
-                <ArrowDownAZ className="w-3 h-3 text-[var(--customized-color-one)]" />
+                <ArrowDownZA className="w-3 h-3 text-[var(--customized-color-one)]" />
               </>
             ) : (
               <>
-                <ArrowDownZA className="w-3 h-3 text-[var(--customized-color-one)]" />
+                <ArrowDownAZ className="w-3 h-3 text-[var(--customized-color-one)]" />
               </>
             )}
           </div>

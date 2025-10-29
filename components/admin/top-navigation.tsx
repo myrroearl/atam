@@ -162,7 +162,7 @@ export function TopNavigation() {
   }
 
   return (
-    <header className="px-5 py-1 transition-colors bg-white dark:bg-black sticky top-0 z-50 border-l border-[var(--customized-color-five)] dark:border-[var(--darkmode-color-five)]">
+    <header className="px-5 py-1 transition-colors bg-white dark:bg-black sticky top-0 z-50 border-l border-transparent dark:border-[var(--darkmode-color-five)]">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Button

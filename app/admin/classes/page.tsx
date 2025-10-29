@@ -155,7 +155,7 @@ export default function ClassesPage() {
   const uniqueSections = [...new Set(classes.map(c => c.section))]
 
   return (
-    <div className="p-5 space-y-4 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] transition-colors w-full">
+    <div className="p-5 space-y-4 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors w-full">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold text-black dark:text-white">Class Management</h1>
@@ -182,9 +182,9 @@ export default function ClassesPage() {
             <SelectValue placeholder="All Subjects" />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
-            <SelectItem value="all-subjects">All Subjects</SelectItem>
+            <SelectItem value="all-subjects" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Subjects</SelectItem>
             {uniqueSubjects.map((subject) => (
-              <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+              <SelectItem key={subject} value={subject} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">{subject}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -193,9 +193,9 @@ export default function ClassesPage() {
             <SelectValue placeholder="All Professors" />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
-            <SelectItem value="all-professors">All Professors</SelectItem>
+            <SelectItem value="all-professors" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Professors</SelectItem>
             {uniqueProfessors.map((professor) => (
-              <SelectItem key={professor} value={professor}>{professor}</SelectItem>
+              <SelectItem key={professor} value={professor} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">{professor}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -204,9 +204,9 @@ export default function ClassesPage() {
             <SelectValue placeholder="All Sections" />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
-            <SelectItem value="all-sections">All Sections</SelectItem>
+            <SelectItem value="all-sections" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Sections</SelectItem>
             {uniqueSections.map((section) => (
-              <SelectItem key={section} value={section}>{section}</SelectItem>
+              <SelectItem key={section} value={section} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">{section}</SelectItem>
             ))}
           </SelectContent>
         </Select>

@@ -1,4 +1,6 @@
+import { getServerSession } from "next-auth"
 import { NextRequest, NextResponse } from "next/server"
+import { authOptions } from "@/lib/auth"
 import { createClient } from "@supabase/supabase-js"
 
 const supabase = createClient(
@@ -6,121 +8,124 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// GET - Fetch all courses (with optional department filter)
+export async function GET(request: NextRequest) {
   try {
-    const courseId = params.id
+    const session = await getServerSession(authOptions)
 
-    // Fetch course details
-    const { data: course, error: courseError } = await supabase
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const departmentId = searchParams.get('department_id')
+
+    let query = supabase
       .from('courses')
       .select(`
-        course_id,
-        department_id,
-        course_code,
-        course_name,
-        description,
-        created_at,
-        updated_at,
+        *,
         departments (
-          department_id,
           department_name,
-          description,
           dean_name
         )
       `)
-      .eq('course_id', courseId)
-      .single()
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
 
-    if (courseError) {
-      console.error('Database error:', courseError)
-      return NextResponse.json({ error: 'Course not found' }, { status: 404 })
+    // Filter by department if specified
+    if (departmentId) {
+      query = query.eq('department_id', departmentId)
     }
 
-    return NextResponse.json({ course })
+    const { data: courses, error } = await query
+
+    if (error) {
+      console.error("Database error:", error)
+      return NextResponse.json({ error: "Failed to fetch courses" }, { status: 500 })
+    }
+
+    return NextResponse.json({ courses })
   } catch (error) {
-    console.error('Error in course GET:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// POST - Create a new course
+export async function POST(request: NextRequest) {
   try {
-    const courseId = params.id
-    const body = await request.json()
-    const { course_code, course_name, description } = body
+    const session = await getServerSession(authOptions)
 
-    // Validate required fields
-    if (!course_code || !course_name) {
-      return NextResponse.json(
-        { error: 'Course code and name are required' },
-        { status: 400 }
-      )
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    // Update course
-    const { data: course, error } = await supabase
+    const body = await request.json()
+    const { course_code, course_name, description, department_id } = body
+
+    // Validate required fields
+    if (!course_code || !course_name || !department_id) {
+      return NextResponse.json({ 
+        error: "Course code, course name, and department ID are required" 
+      }, { status: 400 })
+    }
+
+    // Check if course code already exists
+    const { data: existingCourse } = await supabase
       .from('courses')
-      .update({
+      .select('course_id')
+      .eq('course_code', course_code)
+      .single()
+
+    if (existingCourse) {
+      return NextResponse.json({ 
+        error: "Course with this code already exists" 
+      }, { status: 409 })
+    }
+
+    // Check if department exists
+    const { data: department } = await supabase
+      .from('departments')
+      .select('department_id')
+      .eq('department_id', department_id)
+      .single()
+
+    if (!department) {
+      return NextResponse.json({ 
+        error: "Department not found" 
+      }, { status: 404 })
+    }
+
+    // Insert new course
+    const { data: newCourse, error } = await supabase
+      .from('courses')
+      .insert([{
         course_code,
         course_name,
         description: description || null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('course_id', courseId)
-      .select()
+        department_id
+      }])
+      .select(`
+        *,
+        departments (
+          department_name,
+          dean_name
+        )
+      `)
       .single()
 
     if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json({ error: 'Failed to update course' }, { status: 500 })
+      console.error("Database error:", error)
+      return NextResponse.json({ error: "Failed to create course" }, { status: 500 })
     }
 
-    return NextResponse.json({ course })
+    return NextResponse.json({ 
+      message: "Course created successfully",
+      course: newCourse 
+    }, { status: 201 })
+
   } catch (error) {
-    console.error('Error in course PUT:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const courseId = params.id
-
-    // Soft delete: Update status to 'inactive' instead of deleting
-    const { error } = await supabase
-      .from('courses')
-      .update({ 
-        status: 'inactive',
-        updated_at: new Date().toISOString()
-      })
-      .eq('course_id', courseId)
-
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json({ error: 'Failed to archive course' }, { status: 500 })
-    }
-
-    return NextResponse.json({ message: 'Course archived successfully' })
-  } catch (error) {
-    console.error('Error in course DELETE:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

@@ -7,5 +7,6 @@ export interface Announcement {
   type: string | null
   status: string | null
   created_at: string
+  receiver_count?: number
 }
 

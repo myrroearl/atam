@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         contact_number,
         created_at,
         updated_at,
-        accounts!inner (
+        accounts (
           account_id,
           email,
           status
@@ -54,7 +54,6 @@ export async function GET(request: NextRequest) {
           )
         )
       `)
-      .eq('accounts.status', 'active')
       .order('last_name', { ascending: true })
 
     if (error) {
@@ -75,13 +74,8 @@ export async function GET(request: NextRequest) {
       // Generate student ID from student_id (assuming it's numeric)
       const studentId = student.student_id.toString().padStart(8, '0')
 
-      // Determine status based on account status and other factors
-      let status = "Active"
-      if (student.accounts?.status === "Active") {
-        status = "Dropout"
-      } else if (student.accounts?.status === "suspended") {
-        status = "Leave of Absence"
-      }
+      // Use status from accounts table directly (active, inactive, suspended)
+      const status = student.accounts?.status || "active"
 
       // Create school year (this would typically come from semester data)
       // For now, we'll use current year as placeholder
@@ -164,13 +158,17 @@ export async function POST(request: NextRequest) {
     } catch (e) {
       // If hashing fails for any reason, proceed with given string (not ideal but non-blocking)
     }
+    // Validate status is one of the allowed values
+    const validStatuses = ['active', 'inactive', 'suspended']
+    const accountStatus = validStatuses.includes(status?.toLowerCase()) ? status.toLowerCase() : 'active'
+    
     const { data: account, error: accountError } = await supabase
       .from('accounts')
       .insert({
         email,
         password_hash: passwordHash,
         role: 'student',
-        status: status === 'Dropout' ? 'inactive' : status === 'Leave of Absence' ? 'suspended' : 'active'
+        status: accountStatus
       })
       .select('account_id')
       .single()
@@ -355,9 +353,13 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update account information
+    // Validate status is one of the allowed values
+    const validStatuses = ['active', 'inactive', 'suspended']
+    const accountStatus = validStatuses.includes(status?.toLowerCase()) ? status.toLowerCase() : 'active'
+    
     const accountUpdateData: any = {
       email,
-      status: status === 'Dropout' ? 'inactive' : status === 'Leave of Absence' ? 'suspended' : 'active'
+      status: accountStatus
     }
 
     // Only update password if provided; hash it

@@ -278,43 +278,43 @@ export default function DepartmentEditModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader className="space-y-1">
-          <DialogTitle className="flex items-center text-xl gap-2 font-bold text-black">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Edit Department
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
-            Update the information and configure grading components for <strong className="text-black dark:text-white">{department.department_name}</strong>.
+          <DialogDescription className="text-sm text-gray-500">
+            Update the information and configure grading components for <strong>{department.department_name}</strong>.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex justify-between gap-4">
             {/* Department Information Section */}
-            <Card className="w-[40%] border">
+            <Card className="w-[40%] border border-gray-200 bg-transparent dark:border-gray-900">
               <CardHeader className="p-4">
-                <CardTitle className="flex items-center justify-between text-lg text-black">
+                <CardTitle className="flex items-center justify-between text-lg text-black dark:text-white">
                   <div className="flex items-center gap-2 font-bold">
                     Department Information
                   </div>
-                  {hasDepartmentFormChanged() && (
+                  {/* {hasDepartmentFormChanged() && (
                     <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 px-2 py-1 rounded-full">
                       Modified
                     </span>
-                  )}
+                  )} */}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-4">
                 <div className="space-y-4">
                   <div className="w-full space-y-1">
-                    <Label htmlFor="edit-department_name" className="text-black">Department Name</Label>
+                    <Label htmlFor="edit-department_name">Department Name</Label>
                     <Input
                       id="edit-department_name"
                       type="text"
                       placeholder="e.g., College of Arts and Science"
                       value={formData.department_name}
                       onChange={(e) => handleInputChange('department_name', e.target.value)}
-                      className={errors.department_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+                      className={errors.department_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
                       disabled={isSubmitting}
                     />
                     {errors.department_name && (
@@ -323,14 +323,14 @@ export default function DepartmentEditModal({
                   </div>
 
                   <div className="w-full space-y-1">
-                    <Label htmlFor="edit-dean_name" className="text-black">Department Dean</Label>
+                    <Label htmlFor="edit-dean_name">Department Dean</Label>
                     <Input
                       id="edit-dean_name"
                       type="text"
                       placeholder="e.g., Dr. Carolyn A. Alvero"
                       value={formData.dean_name}
                       onChange={(e) => handleInputChange('dean_name', e.target.value)}
-                      className={errors.dean_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+                      className={errors.dean_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
                       disabled={isSubmitting}
                     />
                     {errors.dean_name && (
@@ -340,7 +340,7 @@ export default function DepartmentEditModal({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-description" className="text-black">Description</Label>
+                  <Label htmlFor="edit-description">Description</Label>
                   <Textarea
                     id="edit-description"
                     placeholder="Brief description of the department..."
@@ -348,31 +348,31 @@ export default function DepartmentEditModal({
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     rows={3}
                     disabled={isSubmitting}
-                    className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+                    className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Grading Components Section */}
-            <Card className="w-[60%]">
+            <Card className="w-[60%] bg-transparent border border-gray-200 dark:border-gray-900">
               <CardHeader className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CardTitle className="flex items-center gap-2 text-lg font-bold text-black">
+                    <CardTitle className="flex items-center gap-2 text-lg font-bold text-black dark:text-white">
                       Grading Components
                     </CardTitle>
-                    {haveGradeComponentsChanged() && (
+                    {/* {haveGradeComponentsChanged() && (
                       <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 px-2 py-1 rounded-full">
                         Modified
                       </span>
-                    )}
+                    )} */}
                   </div>
                   <Button
                     type="button"
                     onClick={addGradeComponent}
                     size="sm"
-                    className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none"
+                    className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
                     disabled={isSubmitting}
                   >
                     <Plus className="w-4 h-4" />
@@ -389,7 +389,7 @@ export default function DepartmentEditModal({
                 ) : (
                   <div className="flex flex-col gap-1">
                     {/* Total Weight Display */}
-                    <div className="flex justify-between p-2 dark:bg-gray-800 rounded-lg">
+                    <div className="flex justify-between p-2 rounded-lg">
                       <div className="space-x-1">
                         <span className="font-medium text-black dark:text-gray-300">Total Weight:</span>
                         <span className={`font-bold text-lg ${totalWeight === 100 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
@@ -397,7 +397,7 @@ export default function DepartmentEditModal({
                         </span>
                       </div>
                         {totalWeight !== 100 && gradeComponents.length > 0 && (
-                        <p className="text-sm text-red-500">
+                        <p className="text-sm text-red-500 dark:text-red-400">
                           Total weight must equal 100%
                         </p>
                       )}
@@ -407,7 +407,7 @@ export default function DepartmentEditModal({
                         <div key={index} className="flex items-center gap-2 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                           <div className="">
                             <div>
-                              <Label htmlFor={`component-name-${index}`} className="text-black">Component Name</Label>
+                              <Label htmlFor={`component-name-${index}`}>Component Name</Label>
                               <Input
                                 id={`component-name-${index}`}
                                 type="text"
@@ -415,12 +415,12 @@ export default function DepartmentEditModal({
                                 value={component.component_name}
                                 onChange={(e) => updateGradeComponent(index, 'component_name', e.target.value)}
                                 disabled={isSubmitting}
-                                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+                                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
                               />
                             </div>
                           </div>
                           <div className="w-3xs">
-                            <Label htmlFor={`component-weight-${index}`} className="text-black">Weight (%)</Label>
+                            <Label htmlFor={`component-weight-${index}`}>Weight (%)</Label>
                             <Input
                               id={`component-weight-${index}`}
                               type="number"
@@ -430,7 +430,7 @@ export default function DepartmentEditModal({
                               value={component.weight_percentage}
                               onChange={(e) => updateGradeComponent(index, 'weight_percentage', Number(e.target.value))}
                               disabled={isSubmitting}
-                              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+                              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
                             />
                           </div>
                           <Button
@@ -438,7 +438,7 @@ export default function DepartmentEditModal({
                             variant="outline"
                             size="sm"
                             onClick={() => removeGradeComponent(index)}
-                            className="text-red-500 hover:text-red-500 hover:bg-red-50 border-red-200"
+                            className="bg-red-100 border-none text-red-500 hover:bg-red-500 hover:text-red-50 dark:bg-[var(--delete-color-one)] dark:text-red-300 dark:hover:bg-red-500 dark:hover:text-black"
                             disabled={isSubmitting}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -478,14 +478,14 @@ export default function DepartmentEditModal({
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)]"
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={!isFormValid || isSubmitting}
-              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
             >
               {isSubmitting ? (
                 <>

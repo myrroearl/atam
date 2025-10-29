@@ -3,24 +3,15 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   DropdownMenu,
@@ -31,22 +22,13 @@ import {
 import { 
   Plus, 
   Search, 
-  Filter, 
   MoreHorizontal, 
   Edit, 
   Trash2, 
-  Eye, 
-  Download,
   ExternalLink,
-  ThumbsUp,
-  ThumbsDown,
   BookMarked,
   RefreshCw,
-  AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight
+  AlertTriangle
 } from "lucide-react"
 import { LearningResource, CreateLearningResourceRequest, UpdateLearningResourceRequest, LEARNING_RESOURCE_TYPES, LEARNING_RESOURCE_SOURCES } from "@/types/learning-resources"
 // Import modal components
@@ -268,12 +250,12 @@ export default function LearningResourcesPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-5 w-full bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Learning Resources</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <h1 className="text-3xl font-extrabold text-black dark:text-white">Learning Resources ({filteredResources.length})</h1>
+          <p className="text-lg text-gray-700 dark:text-gray-400 mt-1">
             Manage educational resources including videos, books, articles, and courses
           </p>
         </div>
@@ -282,7 +264,7 @@ export default function LearningResourcesPage() {
             onClick={handleDataHarvest}
             disabled={isLoading}
             variant="outline"
-            className="gap-2"
+            className="gap-2 border-none"
             title="Generate learning resources using AI based on your classes and grade entries"
           >
             <RefreshCw className="h-4 w-4" />
@@ -291,10 +273,10 @@ export default function LearningResourcesPage() {
           <Button 
             onClick={() => setIsAddModalOpen(true)} 
             disabled={isLoading}
-            className="gap-2"
+            className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
-            Add Resource
+            Create Resource
           </Button>
         </div>
       </div>
@@ -310,55 +292,52 @@ export default function LearningResourcesPage() {
       )}
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
+      <Card className='bg-transparent shadow-none border-none'>
+        <CardContent className='p-0 border-none bg-transparent'>
+          <div className="flex w-full gap-2">
+            <div className="relative w-[50%]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search resources..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
               />
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger>
+              <SelectTrigger className='border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none w-[15%]'>
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all" className='hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer'>All Types</SelectItem>
                 {LEARNING_RESOURCE_TYPES.map(type => (
-                  <SelectItem key={type.value} value={type.value}>
+                  <SelectItem key={type.value} value={type.value} className='hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer'>
                     {type.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={sourceFilter} onValueChange={setSourceFilter}>
-              <SelectTrigger>
+              <SelectTrigger className='border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none w-[20%]'>
                 <SelectValue placeholder="Filter by source" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="all" className='hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer'>All Sources</SelectItem>
                 {LEARNING_RESOURCE_SOURCES.map(source => (
-                  <SelectItem key={source.value} value={source.value}>
+                  <SelectItem key={source.value} value={source.value} className='hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer'>
                     {source.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
+              <SelectTrigger className='border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none w-[15%]'>
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="all" className='hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer'>All Status</SelectItem>
+                <SelectItem value="active" className='hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer'>Active</SelectItem>
+                <SelectItem value="inactive" className='hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer'>Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -366,141 +345,107 @@ export default function LearningResourcesPage() {
       </Card>
 
       {/* Resources Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <BookMarked className="h-5 w-5" />
-                Learning Resources ({filteredResources.length})
-              </CardTitle>
-              <CardDescription>
-                Manage your educational content library
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Items per page:</span>
-              <Select value={itemsPerPage.toString()} onValueChange={(value) => {
-                setItemsPerPage(Number(value))
-                setCurrentPage(1)
-              }}>
-                <SelectTrigger className="w-20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <div className="bg-white rounded-lg">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
+            <span className="ml-2 text-gray-500">Loading learning resources...</span>
           </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
-              <span className="ml-2 text-gray-500">Loading learning resources...</span>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Author</TableHead>
-                    <TableHead>Topics</TableHead>
-                    {/* <TableHead>Engagement</TableHead> */}
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentResources.map((resource) => (
-                  <TableRow key={resource.id}>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-medium">{resource.title}</div>
-                        {resource.description && (
-                          <div className="text-sm text-gray-500 line-clamp-2">
-                            {resource.description}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getTypeColor(resource.type)}>
-                        {resource.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{resource.source}</TableCell>
-                    <TableCell>{resource.author || "N/A"}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {resource.topics.slice(0, 2).map((topic, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {topic}
-                          </Badge>
-                        ))}
-                        {resource.topics.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{resource.topics.length - 2}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    {/* <TableCell>
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="flex items-center gap-1 text-green-600">
-                          <ThumbsUp className="h-3 w-3" />
-                          {resource.likes}
+        ) : (
+          <div className="overflow-x-auto border-none overflow-hidden rounded-t-lg">
+            <table className="w-full rounded-lg">
+              <thead className="bg-[var(--customized-color-four)] rounded-lg dark:bg-[var(--darkmode-color-two)] w-full transition-colors">
+                <tr>
+                  <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Title</th>
+                  <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Type</th>
+                  <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Source</th>
+                  <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Author</th>
+                  <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Topics</th>
+                  <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Status</th>
+                  <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentResources.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center text-gray-500 py-8">No learning resources found.</td>
+                  </tr>
+                ) : (
+                  currentResources.map((resource) => (
+                    <tr key={resource.id} className="border-b border-[var(--customized-color-five)] bg-white dark:bg-black hover:bg-[var(--customized-color-five)] dark:hover:bg-[var(--darkmode-color-two)] dark:border-[var(--darkmode-color-two)]">
+                      <td className="px-2 py-2 text-sm text-black dark:text-white">
+                        <div>
+                          <p className="font-medium">{resource.title}</p>
+                          {resource.description && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{resource.description}</p>
+                          )}
                         </div>
-                        <div className="flex items-center gap-1 text-red-600">
-                          <ThumbsDown className="h-3 w-3" />
-                          {resource.dislikes}
+                      </td>
+                      <td className="px-2 py-2 text-sm text-black dark:text-white">
+                        <Badge className={getTypeColor(resource.type)}>
+                          {resource.type}
+                        </Badge>
+                      </td>
+                      <td className="px-2 py-2 text-sm text-black dark:text-white">{resource.source}</td>
+                      <td className="px-2 py-2 text-sm text-black dark:text-white">{resource.author || "N/A"}</td>
+                      <td className="px-2 py-2 text-sm text-black dark:text-white">
+                        <div className="flex flex-wrap gap-1">
+                          {resource.topics.slice(0, 2).map((topic, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {topic}
+                            </Badge>
+                          ))}
+                          {resource.topics.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{resource.topics.length - 2}
+                            </Badge>
+                          )}
                         </div>
-                      </div>
-                    </TableCell> */}
-                    <TableCell>
-                      <Badge variant={resource.is_active ? "default" : "secondary"}>
-                        {resource.is_active ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => window.open(resource.url, '_blank')}>
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            View Resource
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openEditModal(resource)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => openDeleteModal(resource)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                      </td>
+                      <td className="px-2 py-2 text-sm text-black dark:text-white">
+                        <Badge variant={resource.is_active ? "default" : "secondary"}>
+                          {resource.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </td>
+                      <td className="px-2 py-2 text-sm text-black dark:text-white">
+                        <div className="flex items-center gap-2 justify-end">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-gray-600 hover:!text-[var(--customized-color-one)] hover:bg-[var(--customized-color-four)] dark:text-gray-300 dark:hover:text-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-four)] transition-colors"
+                              >
+                                <MoreHorizontal className="h-5 w-5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40 bg-white dark:bg-[var(--darkmode-color-five)] border-none dark:border-none transition-colors" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+                              <DropdownMenuItem onClick={() => window.open(resource.url, '_blank')} className="flex items-center gap-2 focus:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] cursor-pointer">
+                                <ExternalLink className="h-4 w-4" />
+                                View Resource
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openEditModal(resource)} className="flex items-center gap-2 focus:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] cursor-pointer">
+                                <Edit className="h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => openDeleteModal(resource)} 
+                                className="flex items-center gap-2 text-red-500 focus:bg-red-50 focus:text-red-500 cursor-pointer"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
           
           {!isLoading && currentResources.length === 0 && (
             <div className="text-center py-8">
@@ -521,85 +466,42 @@ export default function LearningResourcesPage() {
               )}
             </div>
           )}
-        </CardContent>
-        
-        {/* Pagination Controls */}
+
+        {/* Pagination */}
         {!isLoading && filteredResources.length > 0 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t">
-            <div className="text-sm text-gray-500">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredResources.length)} of {filteredResources.length} results
-            </div>
+          <div className="flex items-center justify-between p-2 bg-white dark:bg-black">
+            <p className="text-xs text-gray-700 dark:text-gray-400">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredResources.length)} of {filteredResources.length} resources
+            </p>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToFirstPage}
-                disabled={currentPage === 1}
-                className="h-8 w-8 p-0"
-              >
-                <ChevronsLeft className="h-4 w-4" />
+              <span className="text-xs text-gray-600">Page {currentPage} of {totalPages}</span>
+              <Button className="text-xs border-none" variant="outline" size="sm" onClick={goToFirstPage} disabled={currentPage === 1}>
+                First
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToPreviousPage}
-                disabled={currentPage === 1}
-                className="h-8 w-8 p-0"
-              >
-                <ChevronLeft className="h-4 w-4" />
+              <Button className="text-xs border-none" variant="outline" size="sm" onClick={goToPreviousPage} disabled={currentPage === 1}>
+                {"<"}
               </Button>
-              
-              {/* Page numbers */}
-              <div className="flex items-center gap-1">
-                {(() => {
-                  const pages = []
-                  const maxVisiblePages = 5
-                  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
-                  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
-                  
-                  if (endPage - startPage + 1 < maxVisiblePages) {
-                    startPage = Math.max(1, endPage - maxVisiblePages + 1)
-                  }
-                  
-                  for (let i = startPage; i <= endPage; i++) {
-                    pages.push(
-                      <Button
-                        key={i}
-                        variant={currentPage === i ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => goToPage(i)}
-                        className="h-8 w-8 p-0"
-                      >
-                        {i}
-                      </Button>
-                    )
-                  }
-                  return pages
-                })()}
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className="h-8 w-8 p-0"
-              >
-                <ChevronRight className="h-4 w-4" />
+              {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, currentPage - 2), currentPage + 3).map((page) => (
+                <Button
+                  key={page}
+                  variant={page === currentPage ? "default" : "outline"}
+                  size="sm"
+                  className={page === currentPage ? "bg-[var(--customized-color-one)] border-none hover:bg-[var(--customized-color-two)]" : "border-none hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)]"}
+                  onClick={() => goToPage(page)}  
+                >
+                  {page}
+                </Button>
+              ))}
+              <Button className="text-xs border-none hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)]" variant="outline" size="sm" onClick={goToNextPage} disabled={currentPage === totalPages}>
+                {">"}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToLastPage}
-                disabled={currentPage === totalPages}
-                className="h-8 w-8 p-0"
-              >
-                <ChevronsRight className="h-4 w-4" />
+              <Button className="text-xs border-none hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)]" variant="outline" size="sm" onClick={goToLastPage} disabled={currentPage === totalPages}>
+                Last
               </Button>
             </div>
           </div>
         )}
-      </Card>
+      </div>
 
       {/* Modals */}
       <AddLearningResourceModal

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
 import { Plus, Eye, EyeOff, Loader2 } from "lucide-react"
 import { StudentFormData } from "@/types/student"
 import { toast } from "sonner"
@@ -52,7 +52,7 @@ export function AddStudentModal({ onAdd }: AddStudentModalProps) {
     courseId: "",
     yearLevelId: "",
     sectionId: "",
-    status: "Enrolled",
+    status: "active",
   })
   
   // New state for dynamic data
@@ -66,6 +66,19 @@ export function AddStudentModal({ onAdd }: AddStudentModalProps) {
   const [errors, setErrors] = useState<Record<string, string | undefined>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [existingStudents, setExistingStudents] = useState<any[]>([])
+  const [isFormValid, setIsFormValid] = useState(false)
+
+  // Validate form whenever formData changes
+  useEffect(() => {
+    const isValid = formData.firstName.trim() !== "" && 
+                   formData.lastName.trim() !== "" && 
+                   formData.email.trim() !== "" && 
+                   formData.course !== "" && 
+                   formData.yearLevel !== "" && 
+                   formData.section !== "" &&
+                   formData.birthday !== ""
+    setIsFormValid(isValid)
+  }, [formData])
 
   // Fetch courses when modal opens
   useEffect(() => {
@@ -89,7 +102,7 @@ export function AddStudentModal({ onAdd }: AddStudentModalProps) {
         courseId: "",
         yearLevelId: "",
         sectionId: "",
-        status: "Enrolled",
+        status: "active",
       })
       setShowPassword(false)
     }
@@ -357,17 +370,17 @@ const handleSectionChange = (sectionId: string) => {
           New Student
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="font-bold text-black">Create Student</DialogTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto dark:bg-black border-none transition-colors duration-300" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">Create Student</DialogTitle>
+          <DialogDescription className="text-sm text-gray-500 dark:text-gray-600">
             Add a new student to the system. Select course, year level, and section to assign the student properly.
-          </p>
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="gap-4 flex">
             <div className="space-y-2 w-[80%]">
-              <Label htmlFor="email">Email <strong className="text-red-600">*</strong></Label>
+              <Label htmlFor="email" className="text-black dark:text-white">Email <strong className="text-red-600">*</strong></Label>
               <Input
                 id="email"
                 type="email"
@@ -379,7 +392,7 @@ const handleSectionChange = (sectionId: string) => {
                   }
                 }}
                 placeholder="student@plpasig.edu.ph"
-                className={errors.email ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+                className={errors.email ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
                 disabled={isSubmitting}
                 required
               />
@@ -388,17 +401,17 @@ const handleSectionChange = (sectionId: string) => {
               )}
             </div>
             <div className="space-y-2 w-[20%]">
-              <Label htmlFor="contactNumber">Contact Number</Label>
+              <Label htmlFor="contactNumber" className="text-black dark:text-white">Contact Number</Label>
               <Input
                 id="contactNumber"
                 value={formData.contactNumber || ""}
                 onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
                 placeholder="+63 912 345 6789"
-                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               />
             </div>
             {/* <div className="space-y-2">
-              <Label htmlFor="schoolYear">School Year</Label>
+              <Label htmlFor="schoolYear" className="text-black dark:text-white">School Year</Label>
               <Select
                 value={formData.schoolYear}
                 onValueChange={(value) => setFormData({ ...formData, schoolYear: value })}
@@ -424,7 +437,7 @@ const handleSectionChange = (sectionId: string) => {
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name <strong className="text-red-600">*</strong></Label>
+              <Label htmlFor="firstName" className="text-black dark:text-white">First Name <strong className="text-red-600">*</strong></Label>
               <Input
                 id="firstName"
                 value={formData.firstName}
@@ -436,24 +449,24 @@ const handleSectionChange = (sectionId: string) => {
                 }}
                 disabled={isSubmitting}
                 required
-                className={errors.firstName ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+                className={errors.firstName ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
               />
               {errors.firstName && (
                 <p className="text-sm text-red-500">{errors.firstName}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="middleName">Middle Name (Optional)</Label>
+              <Label htmlFor="middleName" className="text-black dark:text-white">Middle Name (Optional)</Label>
               <Input
                 id="middleName"
                 value={formData.middleName}
                 onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
                 disabled={isSubmitting}
-                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name <strong className="text-red-600">*</strong></Label>
+              <Label htmlFor="lastName" className="text-black dark:text-white">Last Name <strong className="text-red-600">*</strong></Label>
               <Input
                 id="lastName"
                 value={formData.lastName}
@@ -465,7 +478,7 @@ const handleSectionChange = (sectionId: string) => {
                 }}
                 disabled={isSubmitting}
                 required
-                className={errors.lastName ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+                className={errors.lastName ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
               />
               {errors.lastName && (
                 <p className="text-sm text-red-500">{errors.lastName}</p>
@@ -475,20 +488,20 @@ const handleSectionChange = (sectionId: string) => {
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2 col-span-2">
-              <Label htmlFor="course">Course <strong className="text-red-600">*</strong></Label>
+              <Label htmlFor="course" className="text-black dark:text-white">Course <strong className="text-red-600">*</strong></Label>
               <Select 
                 value={formData.courseId || ""} 
                 onValueChange={handleCourseChange}
                 disabled={loading || isSubmitting}
               >
                 <SelectTrigger 
-                  className={errors.course ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer"}
+                  className={errors.course ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
                 >
                   <SelectValue placeholder={loading ? "Loading courses..." : "Select course"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {courses.map((course) => (
-                    <SelectItem key={`course-${course.course_id}`} value={course.course_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                    <SelectItem key={`course-${course.course_id}`} value={course.course_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       <span className="font-medium">{course.course_name}</span>
                     </SelectItem>
                   ))}
@@ -499,14 +512,14 @@ const handleSectionChange = (sectionId: string) => {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="yearLevel">Year Level <strong className="text-red-600">*</strong></Label>
+              <Label htmlFor="yearLevel" className="text-black dark:text-white">Year Level <strong className="text-red-600">*</strong></Label>
               <Select
                 value={formData.yearLevelId || ""}
                 onValueChange={handleYearLevelChange}
                 disabled={!formData.courseId || loading || isSubmitting}
               >
                 <SelectTrigger 
-                  className={errors.yearLevel ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-one)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer"}
+                  className={errors.yearLevel ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-one)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
                 >
                   <SelectValue placeholder={
                     !formData.courseId 
@@ -516,9 +529,9 @@ const handleSectionChange = (sectionId: string) => {
                         : "Select year level"
                   } />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {filteredYearLevels.map((yearLevel) => (
-                    <SelectItem key={`yl-${yearLevel.year_level_id}`} value={yearLevel.year_level_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                    <SelectItem key={`yl-${yearLevel.year_level_id}`} value={yearLevel.year_level_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       <span>{yearLevel.name}</span>
                     </SelectItem>
                   ))}
@@ -535,14 +548,14 @@ const handleSectionChange = (sectionId: string) => {
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="section">Section <strong className="text-red-600">*</strong></Label>
+              <Label htmlFor="section" className="text-black dark:text-white">Section <strong className="text-red-600">*</strong></Label>
               <Select
                 value={formData.sectionId || ""}
                 onValueChange={handleSectionChange}
                 disabled={!formData.yearLevelId || loading || isSubmitting}
               >
                 <SelectTrigger 
-                  className={errors.section ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-one)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer"}
+                  className={errors.section ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-one)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
                 >
                   <SelectValue placeholder={
                     !formData.yearLevelId 
@@ -552,9 +565,9 @@ const handleSectionChange = (sectionId: string) => {
                         : "Select section"
                   } />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {filteredSections.map((section) => (
-                    <SelectItem key={`section-${section.section_id}`} value={section.section_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                    <SelectItem key={`section-${section.section_id}`} value={section.section_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       <span>{section.section_name}</span>
                     </SelectItem>
                   ))}
@@ -568,13 +581,13 @@ const handleSectionChange = (sectionId: string) => {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="birthday">Birthday <strong className="text-red-600">*</strong></Label>
+              <Label htmlFor="birthday" className="text-black dark:text-white">Birthday <strong className="text-red-600">*</strong></Label>
               <Input
                 id="birthday"
                 type="date"
                 value={formData.birthday || ""}
                 onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
-                className={errors.birthday ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+                className={errors.birthday ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
                 disabled={isSubmitting}
               />
               {errors.birthday && (
@@ -582,7 +595,7 @@ const handleSectionChange = (sectionId: string) => {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password <strong className="text-red-600">*</strong></Label>
+              <Label htmlFor="password" className="text-black dark:text-white">Password <strong className="text-red-600">*</strong></Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -590,7 +603,7 @@ const handleSectionChange = (sectionId: string) => {
                   value={formData.password || ""}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Password will be auto-generated"
-                  className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none pr-10"
+                  className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none pr-10 dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
                   disabled={isSubmitting}
                   readOnly
                 />
@@ -613,13 +626,13 @@ const handleSectionChange = (sectionId: string) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address" className="text-black dark:text-white">Address</Label>
             <Input
               id="address"
               value={formData.address || ""}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="Student address"
-              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
             />
           </div>
 
@@ -635,14 +648,14 @@ const handleSectionChange = (sectionId: string) => {
               variant="outline" 
               onClick={() => setOpen(false)} 
               disabled={isSubmitting}
-              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)]"
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
-              disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.course || !formData.yearLevel || !formData.section || !formData.birthday || isSubmitting}
-              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2"
+              disabled={!isFormValid || isSubmitting}
+              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
             >
               {isSubmitting ? (
                 <>

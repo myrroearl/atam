@@ -216,7 +216,8 @@ export default function ProfessorsPage() {
       p.department.toLowerCase().includes(search.toLowerCase());
     const matchesDepartment = departmentFilter === "all-department" || p.department === departmentFilter;
     const matchesFacultyType = facultyTypeFilter === "all-faculty" || p.facultyType === facultyTypeFilter;
-    const matchesStatus = statusFilter === "all-status" || p.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all-status" || (p.status || "").toLowerCase() === statusFilter;
     return matchesSearch && matchesDepartment && matchesFacultyType && matchesStatus;
   });
 
@@ -233,7 +234,7 @@ export default function ProfessorsPage() {
   }
 
   return (
-    <div className="p-5 space-y-6 w-full bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] transition-colors">
+    <div className="p-5 space-y-6 w-full bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold text-black dark:text-white">Professors Management</h1>
@@ -246,10 +247,6 @@ export default function ProfessorsPage() {
               {error}
             </div>
           )}
-          <Button variant="outline" className="flex items-center gap-2 bg-white border-none text-[var(--customized-color-one)] hover:bg-[var(--customized-color-four)] dark:bg-black dark:text-white dark:hover:bg-[var(--customized-color-five)] dark:hover:text-[var(--customized-color-one)]">
-            <Download className="w-4 h-4" />
-            Export
-          </Button>
           <AddProfessorModal onAdd={handleAddProfessor} />
         </div>
       </div>
@@ -270,9 +267,9 @@ export default function ProfessorsPage() {
             <SelectValue placeholder="All Department" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all-department">All Department</SelectItem>
+            <SelectItem value="all-department" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Department</SelectItem>
             {[...new Set(professors.map(p => p.department))].map(dep => (
-              <SelectItem key={dep} value={dep}>{dep}</SelectItem>
+              <SelectItem key={dep} value={dep} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">{dep}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -281,9 +278,9 @@ export default function ProfessorsPage() {
             <SelectValue placeholder="All Faculty Type" />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
-            <SelectItem value="all-faculty">All Faculty Type</SelectItem>
-            <SelectItem value="Full-Time">Full-Time</SelectItem>
-            <SelectItem value="Part-Time">Part-Time</SelectItem>
+            <SelectItem value="all-faculty" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Faculty Type</SelectItem>
+            <SelectItem value="Full-Time" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">Full-Time</SelectItem>
+            <SelectItem value="Part-Time" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">Part-Time</SelectItem>
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -291,11 +288,10 @@ export default function ProfessorsPage() {
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
-            <SelectItem value="all-status">All Status</SelectItem>
-            <SelectItem value="Active">Active</SelectItem>
-            <SelectItem value="Inactive">Inactive</SelectItem>
-            <SelectItem value="Resigned">Resigned</SelectItem>
-            <SelectItem value="On Leave">On Leave</SelectItem>
+            <SelectItem value="all-status" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Status</SelectItem>
+            <SelectItem value="active" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">Active</SelectItem>
+            <SelectItem value="inactive" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">Inactive</SelectItem>
+            <SelectItem value="suspended" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">Suspended</SelectItem>
           </SelectContent>
         </Select>
         <Button

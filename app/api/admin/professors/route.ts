@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         faculty_type,
         preferred_time,
         preferred_days,
+        status,
         created_at,
         updated_at,
         accounts!inner (
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
           department_name
         )
       `)
-      .eq('accounts.status', 'active')
+      .eq('status', 'active')
       .order('last_name', { ascending: true })
 
     if (error) {
@@ -95,11 +96,11 @@ export async function GET(request: NextRequest) {
       // Generate professor ID from prof_id (assuming it's numeric)
       const profId = prof.prof_id.toString().padStart(8, '0')
 
-      // Determine status based on account status
+      // Determine status based on professor status
       let status = "Active"
-      if (prof.accounts?.status === "inactive") {
+      if (prof.status === "inactive") {
         status = "Inactive"
-      } else if (prof.accounts?.status === "suspended") {
+      } else if (prof.status === "suspended") {
         status = "On Leave"
       }
 
@@ -150,6 +151,7 @@ export async function POST(request: NextRequest) {
       middleName,
       lastName,
       email,
+      password,
       department,
       facultyType,
       birthday,
@@ -170,9 +172,13 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Auto-generate password from birthday (format: MMDDYYYY)
+    // Use password from request body, or auto-generate from birthday (format: MMDDYYYY), or default
     let passwordHash = 'default_password'
-    if (birthday) {
+    if (password && password.trim() !== '') {
+      // Use password from frontend (usually in MM/DD/YYYY format)
+      passwordHash = password
+    } else if (birthday) {
+      // Fallback: auto-generate from birthday (format: MMDDYYYY)
       const date = new Date(birthday)
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const day = String(date.getDate()).padStart(2, '0')
@@ -460,22 +466,29 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Professor not found" }, { status: 404 })
     }
 
-    // Soft delete: Update account status to 'inactive' instead of deleting
-    const { error: deleteError } = await supabase
+    // Hard delete: remove professor then related account
+    const { error: profDeleteError } = await supabase
+      .from('professors')
+      .delete()
+      .eq('prof_id', prof_id)
+
+    if (profDeleteError) {
+      console.error("Professor delete error:", profDeleteError)
+      return NextResponse.json({ error: "Failed to delete professor" }, { status: 500 })
+    }
+
+    const { error: accountDeleteError } = await supabase
       .from('accounts')
-      .update({ 
-        status: 'inactive',
-        updated_at: new Date().toISOString()
-      })
+      .delete()
       .eq('account_id', professor.account_id)
 
-    if (deleteError) {
-      console.error("Professor archive error:", deleteError)
-      return NextResponse.json({ error: "Failed to archive professor" }, { status: 500 })
+    if (accountDeleteError) {
+      console.error("Account delete error:", accountDeleteError)
+      return NextResponse.json({ error: "Failed to delete associated account" }, { status: 500 })
     }
 
     return NextResponse.json({ 
-      message: "Professor archived successfully"
+      message: "Professor and account deleted successfully"
     })
   } catch (error) {
     console.error("API error:", error)

@@ -27,7 +27,7 @@ export function InteractiveBarChart({ data, title, showLegend = true }: Interact
       return (
         <div
           className={`px-3 py-2 rounded-lg shadow-lg ${
-            isDark ? "bg-[var(--darkmode-color-two)] text-white" : "bg-[var(--customized-color-five)] text-black"
+            isDark ? "bg-black text-white" : "bg-white text-black"
           }`}
         >
           <p className="font-medium">{label}</p>
@@ -73,18 +73,18 @@ export function InteractiveBarChart({ data, title, showLegend = true }: Interact
           )}
           <Bar
             dataKey="predicted"
-            fill={isDark ? "#F04848" : "#A13030"}
+            fill={isDark ? "#CC3B3B" : "#A13030"}
             name="Predicted Dropouts"
             radius={[4, 4, 0, 0]}
-            onMouseEnter={(data) => setActiveBar(data.year)}
+            onMouseEnter={(data: any) => setActiveBar(data.year)}
             onMouseLeave={() => setActiveBar(null)}
           />
           <Bar
             dataKey="actual"
-            fill={isDark ? "#508D4E" : "#1A5319"}
+            fill={isDark ? "var(--darkmode-color-two)" : "var(--customized-color-one)"}
             name="Actual Dropouts"
             radius={[4, 4, 0, 0]}
-            onMouseEnter={(data) => setActiveBar(data.year)}
+            onMouseEnter={(data: any) => setActiveBar(data.year)}
             onMouseLeave={() => setActiveBar(null)}
           />
         </BarChart>

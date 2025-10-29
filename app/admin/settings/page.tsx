@@ -20,11 +20,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] transition-colors">
+    <div className="flex h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] px-5 py-5">
+        <div className="bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] px-5 py-5 transition-colors">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <h1 className="text-3xl font-extrabold text-black dark:text-white">System Settings</h1>
@@ -34,7 +34,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-5 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)]">
+        <div className="flex-1 p-5 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
           <Tabs defaultValue="school-year" className="space-y-4">
             <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-[var(--darkmode-color-one)] border rounded-full p-0 h-full">
               <TabsTrigger
