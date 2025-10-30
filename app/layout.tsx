@@ -3,13 +3,14 @@ import { Inter } from "next/font/google";
 import "../styles/globals.css";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/components/providers/session-provider";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "PLP Academic Management",
   description: "Transform education with our AI-enhanced Academic Management System. Features real-time grade tracking, predictive analytics, leaderboards, and Google Classroom integration.",
-  keywords: "academic management, education, AI, grade tracking, student performance, analytics, plp, Pamantasan ng Lungsod ng Pasig, PLP",
+  keywords: "academic management, education, AI, grade tracking, student performance, analytics, plp, Pamantasan ng Lungsod ng Pasig, PLP, plp academic management system, plp academic management",
   authors: [{ name: "Atam Systems" }],
   robots: "index, follow",
   openGraph: {
@@ -48,6 +49,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster position="top-right" richColors />
           </ThemeProvider>
         </AuthProvider>
       </body>

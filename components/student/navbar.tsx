@@ -18,6 +18,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ThemeToggle } from "@/components/student/theme-toggle"
 import { signOut, useSession } from "next-auth/react"
+import { usePrivacy } from "@/contexts/privacy-context"
 import {
   GraduationCap,
   LayoutDashboard,
@@ -31,9 +32,11 @@ import {
   LogOut,
   User,
   Menu,
+  Shield,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+// Navigation items for the student portal
 const navigation = [
   { name: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
   { name: "Subjects", href: "/student/subjects", icon: BookOpen },
@@ -54,20 +57,31 @@ export function Navbar() {
   const { data: session, status } = useSession()
   const [displayName, setDisplayName] = useState<string>("")
   const [displayEmail, setDisplayEmail] = useState<string>("")
+  const { privacySettings } = usePrivacy()
+
+  // Refresh page if clicking current nav item, otherwise navigate normally
+  const handleNavigation = (href: string, e: React.MouseEvent) => {
+    if (pathname === href) {
+      e.preventDefault()
+      window.location.reload()
+    }
+  }
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/student" })
   }
 
-  // Don't render navbar if not authenticated
+  // Hide navbar during auth loading
   if (status === "loading") {
     return null
   }
 
+  // Hide navbar if not student role
   if (!session || session.user.role !== "student") {
     return null
     }
 
+  // Load latest notifications from API
   useEffect(() => {
     let active = true
     async function load() {
@@ -149,7 +163,7 @@ export function Navbar() {
                             pathname.startsWith(`${item.href}/`) ||
                             (item.name === "Subjects" && pathname === "/student/grade-reports")
             return (
-              <Link key={item.name} href={item.href}>
+              <Link key={item.name} href={item.href} onClick={(e) => handleNavigation(item.href, e)}>
                 <div className="relative group">
                   <Button
                     variant="ghost"
@@ -253,8 +267,18 @@ export function Navbar() {
             >
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none text-foreground">{displayName}</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm font-medium leading-none text-foreground">{displayName}</p>
+                    {privacySettings.profileVisibility === 'private' && (
+                      <Shield className="w-3 h-3 text-orange-500" />
+                    )}
+                  </div>
                   <p className="text-xs leading-none text-muted-foreground">{displayEmail}</p>
+                  {privacySettings.profileVisibility === 'private' && (
+                    <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                      Profile is private
+                    </p>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border" />
@@ -297,7 +321,10 @@ export function Navbar() {
                               pathname.startsWith(`${item.href}/`) ||
                               (item.name === "Subjects" && pathname === "/student/grade-reports")
               return (
-                <Link key={item.name} href={item.href} onClick={() => setMobileMenuOpen(false)}>
+                <Link key={item.name} href={item.href} onClick={(e) => {
+                  handleNavigation(item.href, e)
+                  setMobileMenuOpen(false)
+                }}>
                   <Button
                     variant="ghost"
                     className={cn(

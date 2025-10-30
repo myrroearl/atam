@@ -60,6 +60,50 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user.role !== 'student') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const accountId = session.user.account_id;
+    if (!accountId) {
+      return NextResponse.json({ error: 'Account ID not found in session' }, { status: 400 });
+    }
+
+    const body = await request.json();
+    const { action, description, metadata } = body;
+
+    if (!action) {
+      return NextResponse.json({ error: 'Action is required' }, { status: 400 });
+    }
+
+    // Insert the activity log
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .insert({
+        account_id: accountId,
+        action: action,
+        description: description || null,
+        created_at: new Date().toISOString()
+      })
+      .select();
+
+    if (error) {
+      console.error('Supabase error inserting activity log:', error);
+      return NextResponse.json({ error: 'Failed to log activity' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, log: data[0] });
+
+  } catch (error) {
+    console.error('API error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 // Helper function to infer activity type from action text
 function inferActivityType(action: string): string {
   const actionLower = action.toLowerCase();
@@ -75,6 +119,15 @@ function inferActivityType(action: string): string {
   if (actionLower.includes('logout')) return 'logout';
   if (actionLower.includes('profile') || actionLower.includes('update')) return 'profile_update';
   
+  // Bookmark activities
+  if (actionLower.includes('bookmark')) return 'bookmark_activity';
+  
+  // Student link clicks
+  if (actionLower.includes('student_link_click') || actionLower.includes('clicked on')) return 'student_link_click';
+  
+  // Resource link clicks
+  if (actionLower.includes('resource_link_click') || actionLower.includes('opened resource')) return 'link_opened';
+  
   return 'general_activity';
 }
 
@@ -89,7 +142,10 @@ function getIconForActivityType(activityType: string) {
     'privacy_settings_update': 'Eye',
     'notification_preferences': 'Bell',
     'login': 'LogIn',
-    'logout': 'LogOut'
+    'logout': 'LogOut',
+    'bookmark_activity': 'Bookmark',
+    'student_link_click': 'ExternalLink',
+    'link_opened': 'ExternalLink'
   };
   return iconMap[activityType] || 'Activity';
 }
@@ -104,7 +160,10 @@ function getColorForActivityType(activityType: string) {
     'privacy_settings_update': 'text-orange-500',
     'notification_preferences': 'text-indigo-500',
     'login': 'text-green-500',
-    'logout': 'text-gray-500'
+    'logout': 'text-gray-500',
+    'bookmark_activity': 'text-yellow-500',
+    'student_link_click': 'text-purple-500',
+    'link_opened': 'text-green-500'
   };
   return colorMap[activityType] || 'text-gray-500';
 }
@@ -119,7 +178,10 @@ function getBgColorForActivityType(activityType: string) {
     'privacy_settings_update': 'bg-orange-50 dark:bg-orange-950/20',
     'notification_preferences': 'bg-indigo-50 dark:bg-indigo-950/20',
     'login': 'bg-green-50 dark:bg-green-950/20',
-    'logout': 'bg-gray-50 dark:bg-gray-950/20'
+    'logout': 'bg-gray-50 dark:bg-gray-950/20',
+    'bookmark_activity': 'bg-yellow-50 dark:bg-yellow-950/20',
+    'student_link_click': 'bg-purple-50 dark:bg-purple-950/20',
+    'link_opened': 'bg-green-50 dark:bg-green-950/20'
   };
   return bgColorMap[activityType] || 'bg-gray-50 dark:bg-gray-950/20';
 }
@@ -134,7 +196,10 @@ function getBorderColorForActivityType(activityType: string) {
     'privacy_settings_update': 'border-orange-200 dark:border-orange-800',
     'notification_preferences': 'border-indigo-200 dark:border-indigo-800',
     'login': 'border-green-200 dark:border-green-800',
-    'logout': 'border-gray-200 dark:border-gray-800'
+    'logout': 'border-gray-200 dark:border-gray-800',
+    'bookmark_activity': 'border-yellow-200 dark:border-yellow-800',
+    'student_link_click': 'border-purple-200 dark:border-purple-800',
+    'link_opened': 'border-green-200 dark:border-green-800'
   };
   return borderColorMap[activityType] || 'border-gray-200 dark:border-gray-800';
 }

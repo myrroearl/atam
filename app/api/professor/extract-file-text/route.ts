@@ -2,8 +2,20 @@ import { NextResponse } from 'next/server';
 import mammoth from 'mammoth';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-// Use legacy build for Node.js compatibility
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import os from 'os';
+import path from 'path';
+import { promises as fs } from 'fs';
+
+function normalizeExtractedText(input: string): string {
+  const withUnixNewlines = input.replace(/\r\n?|\u2028|\u2029/g, '\n');
+  const collapsedSpaces = withUnixNewlines.replace(/[\t\u00a0]+/g, ' ');
+  const trimmedLines = collapsedSpaces
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join('\n');
+  return trimmedLines.trim();
+}
 
 export async function POST(request: Request) {
   try {
@@ -40,31 +52,26 @@ export async function POST(request: Request) {
     switch (fileExtension) {
       case 'pdf':
         try {
-          // Use pdfjs-dist for PDF parsing with Node.js compatibility
-          // Convert Buffer to Uint8Array as required by pdfjs-dist
-          const uint8Array = new Uint8Array(fileBuffer);
+          // Dynamically import pdf-parse at runtime to avoid bundler test file resolution
+          const { default: parsePdf } = await import('pdf-parse');
           
-          // Use disableAutoFetch to prevent issues in Node.js
-          const loadingTask = pdfjsLib.getDocument({
-            data: uint8Array,
-            useSystemFonts: true,
-            disableAutoFetch: true,
-            disableStream: true,
-          });
+          // Extract text from PDF
+          const pdfData = await parsePdf(fileBuffer as any);
+          const rawPdfText = (pdfData as any).text || '';
           
-          const pdf = await loadingTask.promise;
-          const numPages = pdf.numPages;
+          // Convert to temporary .txt file for consistency and auditing if needed
+          const tmpDir = os.tmpdir();
+          const tmpTxtPath = path.join(tmpDir, `${Date.now()}-${Math.random().toString(36).slice(2)}.txt`);
+          await fs.writeFile(tmpTxtPath, rawPdfText, 'utf-8');
           
-          // Extract text from all pages
-          const textPromises = [];
-          for (let i = 1; i <= numPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items.map((item: any) => item.str).join(' ');
-            textPromises.push(pageText);
+          try {
+            // Read back from the .txt (ensures downstream text-only pipeline)
+            const txtContent = await fs.readFile(tmpTxtPath, 'utf-8');
+            extractedText = txtContent;
+          } finally {
+            // Clean up temp file
+            await fs.unlink(tmpTxtPath).catch(() => {});
           }
-          
-          extractedText = (await Promise.all(textPromises)).join('\n\n');
         } catch (error: any) {
           console.error('PDF parsing error:', error);
           return NextResponse.json(
@@ -97,8 +104,8 @@ export async function POST(request: Request) {
         );
     }
 
-    // Clean up the extracted text
-    extractedText = extractedText.trim();
+    // Normalize and validate the extracted text
+    extractedText = normalizeExtractedText(extractedText);
     
     if (!extractedText || extractedText.length < 100) {
       return NextResponse.json(

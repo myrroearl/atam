@@ -102,6 +102,17 @@ export function QuizGeneratorContent() {
         throw new Error('File size must be less than 10MB')
       }
       
+      // Additional validation for PDF files
+      if (fileExtension === 'pdf') {
+        // Check if file appears to be a valid PDF by checking the header
+        const arrayBuffer = await file.arrayBuffer()
+        const uint8Array = new Uint8Array(arrayBuffer)
+        const header = String.fromCharCode(...uint8Array.slice(0, 4))
+        if (header !== '%PDF') {
+          throw new Error('Invalid PDF file format. Please ensure the file is a valid PDF.')
+        }
+      }
+      
       // Upload file and extract text
       const formData = new FormData()
       formData.append('file', file)
@@ -510,7 +521,8 @@ export function QuizGeneratorContent() {
       setLoadingMessage("Creating Google Form...")
       
       // Store the Google Form link and questions
-      setGoogleFormLink(data.editLink)
+      const publicOrEditLink = data.link || data.editLink
+      setGoogleFormLink(publicOrEditLink)
       
       // Store quiz data for download with shortened title
       setQuizData({
@@ -532,7 +544,7 @@ export function QuizGeneratorContent() {
           body: JSON.stringify({
             tool_type: "quiz-generator",
             request_text: activeTab === "file-upload" ? `File: ${uploadedFileName}` : finalPrompt,
-            generated_output: data.editLink || "Quiz generated successfully",
+            generated_output: publicOrEditLink || "Quiz generated successfully",
             success: true,
           }),
         })
@@ -653,6 +665,9 @@ export function QuizGeneratorContent() {
                       <div>
                         <p className="text-sm font-medium">Upload your course materials</p>
                         <p className="text-xs text-muted-foreground">PDF, TXT, or DOCX files supported</p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          PDF files will be automatically processed for text extraction
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <input
@@ -679,7 +694,7 @@ export function QuizGeneratorContent() {
                               {isExtracting ? (
                                 <>
                                   <Clock className="mr-2 h-4 w-4 animate-spin" />
-                                  Extracting...
+                                  {uploadedFileName?.toLowerCase().endsWith('.pdf') ? 'Processing PDF...' : 'Extracting...'}
                                 </>
                               ) : (
                                 <>
@@ -692,20 +707,49 @@ export function QuizGeneratorContent() {
                         </label>
                       </div>
                       {uploadedFileName && (
-                        <div className="flex items-center justify-center gap-2 mt-2 p-2 bg-green-50 dark:bg-green-950/20 rounded">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span className="text-sm text-green-700 dark:text-green-300">{uploadedFileName}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setUploadedFile(null)
-                              setUploadedFileName("")
-                              setExtractedText("")
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                        <div className="mt-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <div>
+                                <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                                  {uploadedFileName}
+                                </span>
+                                {extractedText && (
+                                  <p className="text-xs text-green-600 dark:text-green-400">
+                                    {extractedText.length.toLocaleString()} characters extracted
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setUploadedFile(null)
+                                setUploadedFileName("")
+                                setExtractedText("")
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Text Preview */}
+                      {extractedText && (
+                        <div className="mt-4 space-y-2">
+                          <Label className="text-sm font-medium">Extracted Text Preview</Label>
+                          <div className="max-h-32 overflow-y-auto p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border">
+                            <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                              {extractedText.substring(0, 500)}
+                              {extractedText.length > 500 && '...'}
+                            </p>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Preview shows first 500 characters. Full text ({extractedText.length.toLocaleString()} characters) will be used for quiz generation.
+                          </p>
                         </div>
                       )}
                     </div>

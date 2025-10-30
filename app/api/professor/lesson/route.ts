@@ -13,6 +13,7 @@ interface LessonPlanRequest {
   learningGoal: string;
   topic: string;
   customRequirements?: string;
+  teachingStyle?: string[];
 }
 
 interface LessonPlanResponse {
@@ -20,6 +21,7 @@ interface LessonPlanResponse {
   gradeLevel: string;
   duration: string;
   subject: string;
+  summary?: string;
   objectives: string[];
   materials: string[];
   activities: Array<{
@@ -28,12 +30,13 @@ interface LessonPlanResponse {
     description: string;
   }>;
   assessment: string[];
+  extensions?: string[];
 }
 
 export async function POST(request: NextRequest) {
   const body: LessonPlanRequest = await request.json();
     
-  const { gradeLevel, subject, duration, classSize, learningGoal, topic, customRequirements } = body;
+  const { gradeLevel, subject, duration, classSize, learningGoal, topic, customRequirements, teachingStyle } = body;
   try {
     
 
@@ -46,6 +49,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the prompt for Gemini
+    const teachingStyleText = teachingStyle && teachingStyle.length > 0 
+      ? `\n- Teaching Style Preferences: ${teachingStyle.join(', ')}` 
+      : '';
+      
     const prompt = `
 You are an expert educational curriculum designer. Create a comprehensive lesson plan based on the following requirements:
 
@@ -55,24 +62,36 @@ You are an expert educational curriculum designer. Create a comprehensive lesson
 - Duration: ${duration} hours
 - Class Size: ${classSize || 'Not specified'}
 - Learning Goal: ${learningGoal}
-- Topic: ${topic}
-${customRequirements ? `- Custom Requirements: ${customRequirements}` : ''}
+- Topic: ${topic}${teachingStyleText}${customRequirements ? `\n- Custom Requirements: ${customRequirements}` : ''}
 
 **Instructions:**
 1. Create a detailed lesson plan that follows best educational practices
-2. Include engaging activities appropriate for the grade level
-3. Ensure activities fit within the specified duration
-4. Include formative and summative assessments
-5. Provide a comprehensive materials list
-6. Each phase provide a script to guide the professor in the lesson.
+2. Align the lesson structure and activities with the selected teaching style preferences (${teachingStyle?.join(', ') || 'general education best practices'})
+3. Include engaging activities appropriate for the grade level
+4. Ensure activities fit within the specified duration
+5. Include formative and summative assessments
+6. Provide a comprehensive materials list
+7. Use clear and professional formatting in descriptions:
+   - Use **bold text** for key concepts, terms, and important points (e.g., **HashMap**, **O(1) complexity**)
+   - Use bullet points (- item) for lists of multiple concepts or items
+   - Use numbered lists (1. First step, 2. Second step) for sequential instructions
+   - Avoid mixing bullet points with bold sub-headings; use either lists OR paragraph form with bold terms
+   - Keep descriptions clear and conversational
+8. For objectives, assessment, and extensions: Write clear, complete sentences without markdown formatting
+   - These fields should be readable as plain text with proper capitalization
+   - If you must emphasize, use **bold** sparingly for key terms only
+   - Keep each item concise and professional
+9. Add a brief lesson summary/introduction that explains what students will learn and why
+10. Include optional extended activities for advanced students
 
 **IMPORTANT: Return your response as a valid JSON object with this exact structure:**
 
 {
-  "title": "Engaging lesson title",
+  "title": "Engaging and descriptive lesson title",
   "gradeLevel": "${gradeLevel}",
   "duration": "${duration} hours",
   "subject": "${subject}",
+  "summary": "A brief 2-3 sentence overview of the lesson and what students will learn.",
   "objectives": [
     "Specific learning objective 1",
     "Specific learning objective 2",
@@ -87,28 +106,32 @@ ${customRequirements ? `- Custom Requirements: ${customRequirements}` : ''}
     {
       "phase": "Opening (X minutes)",
       "type": "Engagement",
-      "description": "Detailed description of the opening activity"
+      "description": "Use clear paragraph form with **bold terms** OR bullet points. Example: 'Introduce the topic by asking thought-provoking questions about **core concepts**. Engage students with a quick demonstration showing **real-world applications**.' Or use: '- Ask opening questions\n- Show brief demo\n- Explain **key concept**'"
     },
     {
       "phase": "Main Activity (X minutes)",
       "type": "Direct Instruction",
-      "description": "Detailed description of the main teaching activity"
+      "description": "Use either paragraph form with **bold terms** for emphasis OR organize as bullet/numbered list. Keep formatting consistent within each description."
     },
     {
       "phase": "Practice (X minutes)",
       "type": "Guided Practice",
-      "description": "Detailed description of practice activity"
+      "description": "Provide detailed practice instructions. Use **bold** to highlight important steps or concepts, but choose either paragraph form OR list form, not both mixed together."
     },
     {
       "phase": "Closure (X minutes)",
       "type": "Wrap-up",
-      "description": "Detailed description of closure activity"
+      "description": "Summarize key points. Use **bold** for takeaway concepts. Keep formatting clean and professional."
     }
   ],
   "assessment": [
     "Formative assessment strategy",
     "Summative assessment strategy",
     "Additional assessment method"
+  ],
+  "extensions": [
+    "Optional extended activity for advanced students 1",
+    "Optional extended activity for advanced students 2"
   ]
 }
 

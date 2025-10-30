@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     console.log('Making request to Google Apps Script with:', { templateId, slideCount, userEmail: session.user.email });
     
     // Call your Google Apps Script web app URL
-    const response = await fetch('https://script.google.com/macros/s/AKfycbyweEslxhUSElgH0zuUd2wODdNhKM0Uq6x-0bXasfFkFKkBxnQQ0sLuflZ4wxSuCId6RQ/exec', {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbyqdyCuClFj60-r-QMaqX9YrjyTuFIWr7ezWciWUkClWWK8LjTlu2b8CL10c9-CMrM/exec', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

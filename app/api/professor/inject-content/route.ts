@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
     
     // Call your Google Apps Script web app URL (replace with your actual deployment URL)
-    const response = await fetch('https://script.google.com/macros/s/AKfycbw_L-iDhWFtJeiY1TkcZaYn7t8d2npfobzgaTNR_mbkz_M8o1U2bryNVHH0AGih25j1uA/exec', {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbyaEyp_r8QNAxJL6f7-vyAjFgXHl2mdEiWMVSwmnC7UZs7q8NGPYzRzM3xDEFUxLjKF/exec', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

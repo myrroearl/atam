@@ -1,13 +1,31 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { supabaseServer } from "@/lib/student/supabaseServer"
 
 // GET - Fetch personalized learning resources for student
 export async function GET(request: NextRequest) {
   try {
-    // For now, we'll use a mock student ID. In production, this would come from authentication
-    const mockStudentId = 1 // This should be replaced with actual student ID from session
-    
-    console.log('Fetching personalized resources for student:', mockStudentId)
+    // Get authenticated student
+    const session = await getServerSession(authOptions)
+    if (!session || session.user.role !== "student") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Get student ID from database
+    const { data: student, error: studentError } = await supabaseServer
+      .from("students")
+      .select("student_id")
+      .eq("account_id", Number(session.user.account_id))
+      .single()
+
+    if (studentError || !student) {
+      console.error("Student lookup error:", studentError)
+      return NextResponse.json({ error: "Failed to resolve student" }, { status: 500 })
+    }
+
+    const studentId = student.student_id
+    console.log('Fetching personalized resources for student:', studentId)
     
     // Step 1: Get student's grade entries with topics and performance data
     const { data: gradeEntries, error: gradeEntriesError } = await supabaseServer
@@ -24,7 +42,7 @@ export async function GET(request: NextRequest) {
           subjects (subject_name, subject_code)
         )
       `)
-      .eq('student_id', mockStudentId)
+      .eq('student_id', studentId)
       .not('topics', 'is', null)
       .order('date_recorded', { ascending: false })
       .limit(100)
@@ -79,11 +97,13 @@ export async function GET(request: NextRequest) {
     console.log(`Extracted ${allTopics.size} topics, ${lowPerformanceTopics.size} low-performance topics`)
     console.log('Student topics:', Array.from(allTopics))
 
-    // Step 4: Fetch learning resources that match student's topics
+    // Step 4: Fetch ALL learning resources applicable to students
     const topicsArray = Array.from(allTopics)
     const lowPerfTopicsArray = Array.from(lowPerformanceTopics)
     
-    let resourcesQuery = supabaseServer
+    console.log('Fetching all active learning resources for students')
+    
+    const { data: resources, error: resourcesError } = await supabaseServer
       .from('learning_resources')
       .select(`
         id,
@@ -100,19 +120,8 @@ export async function GET(request: NextRequest) {
         is_active
       `)
       .eq('is_active', true)
-
-    // If we have topics, filter by them
-    if (topicsArray.length > 0) {
-      console.log('Filtering resources by topics:', topicsArray)
-      // Use PostgreSQL array overlap operator to find resources with matching topics
-      resourcesQuery = resourcesQuery.overlaps('topics', topicsArray)
-    } else {
-      console.log('No topics found, fetching all active resources')
-    }
-
-    const { data: resources, error: resourcesError } = await resourcesQuery
       .order('created_at', { ascending: false })
-      .limit(50)
+      // Remove limit to get ALL resources
 
     if (resourcesError) {
       console.error('Error fetching learning resources:', resourcesError)
@@ -121,34 +130,39 @@ export async function GET(request: NextRequest) {
 
     console.log(`Found ${resources?.length || 0} matching learning resources`)
 
-    // Step 5: Score and prioritize resources based on relevance
+    // Step 5: Score and prioritize ALL resources based on relevance
     const scoredResources = resources?.map((resource: any) => {
-      let relevanceScore = 0
+      let relevanceScore = 5 // Base score for all resources
       let isLowPerformance = false
       
       // Check if resource topics match student's topics
       if (resource.topics && Array.isArray(resource.topics)) {
         resource.topics.forEach((resourceTopic: string) => {
           if (allTopics.has(resourceTopic)) {
-            relevanceScore += 10
+            relevanceScore += 15 // Higher bonus for topic matches
             
-            // Bonus points for low-performance topics
+            // Extra bonus points for low-performance topics
             if (lowPerformanceTopics.has(resourceTopic)) {
-              relevanceScore += 20
+              relevanceScore += 25
               isLowPerformance = true
             }
           }
         })
       }
       
-      // If no topic matches but we have resources, give a base score
-      if (relevanceScore === 0) {
-        relevanceScore = 1
-      }
-      
-      // Add engagement score
+      // Add engagement score based on likes/dislikes
       const engagement = (resource.likes || 0) - (resource.dislikes || 0)
-      relevanceScore += Math.max(0, engagement / 100)
+      relevanceScore += Math.max(0, engagement / 50) // Reduced divisor for more impact
+      
+      // Add variety bonus for different resource types
+      const typeBonus = {
+        'video': 2,
+        'course': 3,
+        'book': 2,
+        'article': 1,
+        'document': 1
+      }
+      relevanceScore += typeBonus[resource.type as keyof typeof typeBonus] || 1
       
       return {
         ...resource,
@@ -157,7 +171,7 @@ export async function GET(request: NextRequest) {
         studentTopics: topicsArray,
         lowPerformanceTopics: lowPerfTopicsArray
       }
-    }).filter((resource: any) => resource.relevanceScore > 0) // Only include relevant resources
+    }) || [] // Include ALL resources, no filtering
 
     console.log(`After scoring: ${scoredResources.length} resources with relevance score > 0`)
 
@@ -167,12 +181,27 @@ export async function GET(request: NextRequest) {
       if (b.relevanceScore !== a.relevanceScore) {
         return b.relevanceScore - a.relevanceScore
       }
-      // Then randomize within same relevance score
+      // Then randomize within same relevance score for fresh content on each load
       return Math.random() - 0.5
     })
 
-    // Step 7: Limit and format response
-    const personalizedResources = scoredResources.slice(0, 20).map((resource: any) => ({
+    // Step 7: Create a mix of highly relevant and diverse resources
+    const highlyRelevant = scoredResources
+      .filter((r: any) => r.relevanceScore >= 20) // High relevance resources
+      .sort(() => Math.random() - 0.5) // Randomize within high relevance
+    
+    const diverseResources = scoredResources
+      .filter((r: any) => r.relevanceScore < 20) // Other resources
+      .sort(() => Math.random() - 0.5) // Randomize for variety
+    
+    // Mix 70% highly relevant with 30% diverse resources
+    const mixedResources = [
+      ...highlyRelevant.slice(0, Math.ceil(highlyRelevant.length * 0.7)),
+      ...diverseResources.slice(0, Math.ceil(diverseResources.length * 0.3))
+    ].sort(() => Math.random() - 0.5) // Final shuffle for variety
+    
+    // Step 8: Format response - return more resources for better pagination
+    const personalizedResources = mixedResources.map((resource: any) => ({
       id: resource.id,
       title: resource.title,
       description: resource.description,
@@ -188,7 +217,7 @@ export async function GET(request: NextRequest) {
       isLowPerformance: resource.isLowPerformance
     }))
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       resources: personalizedResources,
       studentTopics: topicsArray,
       lowPerformanceTopics: lowPerfTopicsArray,
@@ -202,6 +231,14 @@ export async function GET(request: NextRequest) {
           : 0
       }
     })
+
+    // Add cache control headers to prevent caching and ensure fresh content
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    response.headers.set('Surrogate-Control', 'no-store')
+
+    return response
 
   } catch (error) {
     console.error('Error in personalized resources API:', error)

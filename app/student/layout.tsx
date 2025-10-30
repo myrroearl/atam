@@ -4,6 +4,7 @@ import "@/styles/globals.css"
 import "@/app/styles/student.css"
 import { LayoutWrapper } from "./layoutWrapper"
 import { ProfileProvider } from "@/contexts/profile-context"
+import { PrivacyProvider } from "@/contexts/privacy-context"
 
 export const metadata: Metadata = {
   title: "Student Dashboard",
@@ -20,9 +21,11 @@ export default function StudentLayout({
 }) {
   return (
     <ProfileProvider>
-      <LayoutWrapper>
-        {children}
-      </LayoutWrapper>
+      <PrivacyProvider>
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
+      </PrivacyProvider>
     </ProfileProvider>
   )
 }

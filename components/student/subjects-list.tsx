@@ -5,10 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { StatsCard } from "@/components/ui/stats-card"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useRouter } from "next/navigation"
 import { BookOpen, Users, Star, TrendingUp, Award, ChevronDown, FileText, AlertTriangle, BarChart } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
+import { convertPercentageToGPA, calculateGPA } from "@/lib/student/grade-calculations"
 type ApiClass = {
   class_id: number
   subjects: { subject_id: number; subject_code: string; subject_name: string; units: number | null } | null
@@ -58,7 +60,8 @@ export function SubjectsList() {
         const [subjectsRes, gradesRes, entriesRes] = await Promise.all([
           fetch('/api/student/subjects', { cache: 'no-store' }),
           fetch('/api/student/grades', { cache: 'no-store' }),
-          fetch('/api/student/entries', { cache: 'no-store' })
+          fetch('/api/student/entries', { cache: 'no-store' }),
+          
         ])
         
         if (!subjectsRes.ok || !gradesRes.ok || !entriesRes.ok) {
@@ -144,8 +147,9 @@ export function SubjectsList() {
       const computedGrade = totalWeight > 0 ? (totalWeightedGrade / totalWeight) * 100 : 0
       
       // Calculate progress based on completed works vs total works
+      // A work is considered completed if it has a score (even if it's 0 or failing)
       const totalWorks = subjectEntries.length
-      const completedWorks = subjectEntries.filter(w => w && w.score != null).length
+      const completedWorks = subjectEntries.filter(w => w && w.score != null && w.max_score != null).length
       const progress = totalWorks > 0 ? (completedWorks / totalWorks) * 100 : 0
       
       return {
@@ -167,9 +171,10 @@ export function SubjectsList() {
   )
   
   // Calculate KPI stats with error handling
+  // A work is considered completed if it has both score and max_score (even if failing)
   const totalCompletedWorks = subjects.reduce((sum, subject) => {
     try {
-      return sum + (subject.works || []).filter(w => w && w.score != null).length
+      return sum + (subject.works || []).filter(w => w && w.score != null && w.max_score != null).length
     } catch {
       return sum
     }
@@ -183,14 +188,12 @@ export function SubjectsList() {
     }
   }, 0)
   
+  // Calculate weighted average grade by units using grade-calculations.ts
   const avgGrade = subjects.length > 0 
-    ? Math.round(subjects.reduce((sum, subject) => {
-        try {
-          return sum + (subject.grade || 0)
-        } catch {
-          return sum
-        }
-      }, 0) / subjects.length)
+    ? Math.round(calculateGPA(subjects.map(subject => ({
+        percentage: subject.grade || 0,
+        units: subject.units || 3
+      }))))
     : 0
   
   const overallProgress = totalWorks > 0 ? Math.round((totalCompletedWorks / totalWorks) * 100) : 0
@@ -200,7 +203,7 @@ export function SubjectsList() {
   };
 
   const handleGradeReports = () => {
-    router.push('/student/grade-reports');
+    router.push('/student/subjects/grades/grade-reports');
   };
 
   const handleSubjectClick = (subject: Subject) => {
@@ -326,50 +329,34 @@ export function SubjectsList() {
         <>
           {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <BookOpen className="w-5 h-5 text-blue-500" />
-              <div>
-                <p className="text-2xl font-bold">{filteredSubjects.length}</p>
-                <p className="text-sm text-muted-foreground">Active Courses</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Award className="w-5 h-5 text-emerald-500" />
-              <div>
-                <p className="text-2xl font-bold">{avgGrade}%</p>
-                <p className="text-sm text-muted-foreground">Avg Grade</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-purple-500" />
-              <div>
-                <p className="text-2xl font-bold">{overallProgress}%</p>
-                <p className="text-sm text-muted-foreground">Progress</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl hover:shadow-xl transition-all duration-300">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Star className="w-5 h-5 text-yellow-500" />
-              <div>
-                <p className="text-2xl font-bold">{totalCompletedWorks}</p>
-                <p className="text-sm text-muted-foreground">Completed</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Active Courses"
+          value={filteredSubjects.length}
+          description="Active courses"
+          icon={BookOpen}
+          iconColor="text-blue-500"
+        />
+        <StatsCard
+          title="Avg Grade"
+          value={`${avgGrade}%`}
+          description="Average grade"
+          icon={Award}
+          iconColor="text-emerald-500"
+        />
+        <StatsCard
+          title="Progress"
+          value={`${overallProgress}%`}
+          description="Overall progress"
+          icon={TrendingUp}
+          iconColor="text-purple-500"
+        />
+        <StatsCard
+          title="Completed"
+          value={totalCompletedWorks}
+          description="Completed works"
+          icon={Star}
+          iconColor="text-yellow-500"
+        />
       </div>
 
 
@@ -387,7 +374,7 @@ export function SubjectsList() {
           <div key={subject.id || `subject-${index}`} className="no-underline">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-card-lg h-full cursor-pointer hover:shadow-xl transition-all duration-300">
+                <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg dark:shadow-card-lg rounded-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-card-lg dark:hover:shadow-card-lg h-full cursor-pointer hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
               <CardHeader>
                 <div className="flex-1">
                     <CardTitle className="text-lg">{subject.name}</CardTitle>
@@ -420,7 +407,7 @@ export function SubjectsList() {
                 <div className="pt-2 border-t">
                   <div className="flex items-center justify-between text-sm mb-2">
                     <span className="text-muted-foreground">Works</span>
-                    <span>{subject.works.filter(w => w.score != null).length}/{subject.works.length}</span>
+                    <span>{subject.works.filter(w => w && w.score != null && w.max_score != null).length}/{subject.works.length}</span>
                   </div>
                   <Progress value={subject.progress} className="h-1" />
                 </div>

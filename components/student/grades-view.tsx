@@ -13,7 +13,6 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 type ApiClass = {
   class_id: number
@@ -24,14 +23,14 @@ type GradeRow = {
   grade: number | null
 }
 
-// Grade conversion function (e.g., German/Austrian style where 1 is best)
+// Import the precise GPA conversion function and grade calculation utilities
+import { convertPercentageToPreciseGPA, calculateWeightedAverage } from "@/lib/student/grade-calculations";
+import { calculateIndividualSubjectGrade } from "@/lib/student/subject-grade-calculator";
+
+// Grade conversion function using precise GPA calculation
 const convertPercentToGradeScale = (percentage: number | null): string => {
   if (percentage === null || !isFinite(percentage)) return "N/A";
-  if (percentage >= 90) return "1.0";
-  if (percentage >= 80) return "2.0";
-  if (percentage >= 70) return "3.0";
-  if (percentage >= 60) return "4.0";
-  return "5.0";
+  return convertPercentageToPreciseGPA(percentage).toFixed(2);
 };
 
 // Helper component to render grade status icons
@@ -52,6 +51,7 @@ type Subject = {
   classRank: number
   works: any[]
   icon: any
+  units: number
 }
 
 type Assignment = {
@@ -62,14 +62,14 @@ type Assignment = {
   component?: any;
 };
 
-function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDialog, setShowGradeReportsDialog, handleGradeReports, entriesBySubject }: { 
+function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, entriesBySubject, apiSubjects, apiEntries }: { 
   subjects: Subject[]; 
   selectedSubjectId: number | 'overall' | null; 
   onBack: () => void;
-  showGradeReportsDialog: boolean;
-  setShowGradeReportsDialog: (show: boolean) => void;
   handleGradeReports: () => void;
   entriesBySubject: Record<number, Assignment[]>;
+  apiSubjects: ApiClass[];
+  apiEntries: any[];
 }) {
   if (selectedSubjectId === 'overall') {
     if (subjects.length === 0) {
@@ -79,7 +79,15 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
         </div>
       );
     }
-    const overallAverage = subjects.reduce((acc, s) => acc + s.grade, 0) / subjects.length;
+    // Calculate overall average using the same method as dashboard GWA
+    // Use the units stored in the subject object
+    const allSubjectsWithGrades = subjects.map(s => ({
+      percentage: s.grade,
+      units: s.units // Use actual units from subject object
+    }));
+    
+    // Calculate weighted average using the same function as dashboard GWA
+    const overallAverage = calculateWeightedAverage(allSubjectsWithGrades);
     const bestSubject = subjects.reduce((best, s) => (s.grade > best.grade ? s : best), subjects[0]);
     const improvementSubject = subjects.reduce((worst, s) => (s.grade < worst.grade ? s : worst), subjects[0]);
     const gradeData = subjects.map(s => ({
@@ -118,42 +126,17 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
             <ArrowLeft className="w-4 h-4" />
             Back to Subjects
           </Button>
-          <AlertDialog open={showGradeReportsDialog} onOpenChange={setShowGradeReportsDialog}>
-            <AlertDialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg">
-                <GraduationCap className="w-4 h-4 mr-2" />
-                Grade Reports
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="sm:max-w-md">
-              <AlertDialogHeader className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                    <GraduationCap className="w-5 h-5 text-white" />
-                  </div>
-                  <AlertDialogTitle className="text-xl font-bold">View Grade Reports</AlertDialogTitle>
-                </div>
-                <AlertDialogDescription className="text-muted-foreground">
-                  Do you want to view the complete grade reports?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
-                <AlertDialogCancel className="w-full sm:w-auto order-2 sm:order-1">
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={handleGradeReports} 
-                  className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                >
-                  Yes, View Reports
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button 
+            onClick={handleGradeReports}
+            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg"
+          >
+            <GraduationCap className="w-4 h-4 mr-2" />
+            Grade Reports
+          </Button>
         </div>
         
         {/* Overall Performance Summary */}
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl rounded-2xl">
+        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="text-2xl">Overall Academic Performance</CardTitle>
             <CardDescription>A comprehensive summary of your grades across all subjects.</CardDescription>
@@ -186,7 +169,7 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
 
         {/* Performance Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl rounded-2xl">
+          <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
             <CardHeader>
               <CardTitle>Best Performing Subject</CardTitle>
             </CardHeader>
@@ -203,7 +186,7 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
             </CardContent>
           </Card>
           
-          <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl rounded-2xl">
+          <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
             <CardHeader>
               <CardTitle>Needs Improvement</CardTitle>
             </CardHeader>
@@ -222,7 +205,7 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
         </div>
 
         {/* Grade Distribution Chart */}
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl rounded-2xl">
+        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle>Grade Distribution</CardTitle>
             <CardDescription>Breakdown of your grades across all subjects</CardDescription>
@@ -249,113 +232,120 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
           </CardContent>
         </Card>
 
-        {/* Progress vs Target Comparison */}
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl rounded-2xl">
-          <CardHeader>
-            <CardTitle>Progress vs Goal Comparison</CardTitle>
-            <CardDescription>How your current progress compares to your goals</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChartRecharts data={progressData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    borderColor: 'hsl(var(--border))',
-                  }}
-                />
-                <Bar dataKey="progress" fill="hsl(var(--primary))" name="Current Progress" />
-                <Bar dataKey="target" fill="hsl(var(--chart-2))" name="Goal Progress" />
-                <Bar dataKey="grade" fill="hsl(var(--chart-3))" name="Current Grade" />
-              </BarChartRecharts>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
 
-        {/* Subject Performance Comparison */}
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl rounded-2xl">
+        {/* Subject Achievement Analysis */}
+        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
           <CardHeader>
-            <CardTitle>Subject Performance Comparison</CardTitle>
-            <CardDescription>Your current grades vs. goal grades for each subject.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChartRecharts data={gradeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    borderColor: 'hsl(var(--border))',
-                  }}
-                />
-                <Bar dataKey="grade" fill="hsl(var(--primary))" name="Current Grade" />
-                <Bar dataKey="target" fill="hsl(var(--chart-2))" name="Goal Grade" />
-              </BarChartRecharts>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Performance Insights */}
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-2xl rounded-2xl border-purple-200 dark:border-purple-800">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                <Brain className="w-3 h-3 text-white" />
-              </div>
-              <span>Overall Performance Insights</span>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="w-5 h-5 text-blue-500" />
+              Subject Achievement Analysis
             </CardTitle>
-            <CardDescription>AI-powered analysis of your academic performance</CardDescription>
+            <CardDescription>Detailed analysis of your performance across all subjects with achievement insights</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-                <div className="flex items-start space-x-3">
-                  <TrendingUp className="w-5 h-5 text-green-500 mt-0.5" />
-                  <div>
-                    <p className="font-medium">Strong Subjects</p>
-                    <p className="text-sm text-muted-foreground">
-                      {subjects.filter(s => s.grade >= 85).length} subjects with grades 85% or higher. 
-                      {subjects.filter(s => s.grade >= 85).length > 0 && 
-                        ` ${subjects.filter(s => s.grade >= 85).map(s => s.name).join(', ')} are your strongest areas.`
-                      }
-                    </p>
-                  </div>
-                </div>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Achievement Status Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {gradeData.map((subject, index) => {
+                  const achievement = subject.grade >= subject.target ? 'exceeded' : 
+                                   subject.grade >= subject.target * 0.9 ? 'on-track' : 'needs-improvement';
+                  const achievementColor = achievement === 'exceeded' ? 'emerald' : 
+                                         achievement === 'on-track' ? 'blue' : 'orange';
+                  
+                  return (
+                    <div key={subject.name} className={`p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-lg ${
+                      achievement === 'exceeded' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' :
+                      achievement === 'on-track' ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' :
+                      'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
+                    }`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-sm text-foreground truncate">{subject.name}</h4>
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          achievement === 'exceeded' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' :
+                          achievement === 'on-track' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
+                          'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
+                        }`}>
+                          {achievement === 'exceeded' ? 'Exceeded' : 
+                           achievement === 'on-track' ? 'On Track' : 'Needs Focus'}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">Current Grade</span>
+                          <span className="font-bold text-sm">{subject.grade.toFixed(1)}%</span>
+                        </div>
+                        <Progress value={subject.grade} className="h-2" />
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">Target Grade</span>
+                          <span className="font-bold text-sm">{subject.target.toFixed(1)}%</span>
+                        </div>
+                        <Progress value={subject.target} className="h-2" />
+                        
+                        <div className="pt-2 border-t border-border/50">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Gap</span>
+                            <span className={`font-medium ${
+                              subject.grade >= subject.target ? 'text-emerald-600 dark:text-emerald-400' : 
+                              'text-orange-600 dark:text-orange-400'
+                            }`}>
+                              {subject.grade >= subject.target ? '+' : ''}{(subject.grade - subject.target).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="p-4 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-                <div className="flex items-start space-x-3">
-                  <Target className="w-5 h-5 text-blue-500 mt-0.5" />
-                  <div>
-                    <p className="font-medium">Goal Achievement</p>
-                    <p className="text-sm text-muted-foreground">
-                      {subjects.filter(s => s.grade >= s.target).length} out of {subjects.length} subjects 
-                      are meeting or exceeding your goal grades.
-                    </p>
+              
+              {/* Achievement Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-border">
+                <div className="text-center p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Trophy className="w-5 h-5 text-emerald-600" />
+                    <span className="font-semibold text-emerald-700 dark:text-emerald-300">Exceeded Goals</span>
                   </div>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                    {gradeData.filter(s => s.grade >= s.target).length}
+                  </p>
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                    {gradeData.length > 0 ? Math.round((gradeData.filter(s => s.grade >= s.target).length / gradeData.length) * 100) : 0}% of subjects
+                  </p>
                 </div>
-              </div>
-              <div className="p-4 rounded-lg bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
-                <div className="flex items-start space-x-3">
-                  <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5" />
-                  <div>
-                    <p className="font-medium">Focus Areas</p>
-                    <p className="text-sm text-muted-foreground">
-                      {subjects.filter(s => s.grade < 75).length} subjects need attention. 
-                      {subjects.filter(s => s.grade < 75).length > 0 && 
-                        ` Focus on ${subjects.filter(s => s.grade < 75).map(s => s.name).join(', ')}.`
-                      }
-                    </p>
+                
+                <div className="text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Target className="w-5 h-5 text-blue-600" />
+                    <span className="font-semibold text-blue-700 dark:text-blue-300">On Track</span>
                   </div>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {gradeData.filter(s => s.grade >= s.target * 0.9 && s.grade < s.target).length}
+                  </p>
+                  <p className="text-sm text-blue-600 dark:text-blue-400">
+                    {gradeData.length > 0 ? Math.round((gradeData.filter(s => s.grade >= s.target * 0.9 && s.grade < s.target).length / gradeData.length) * 100) : 0}% of subjects
+                  </p>
+                </div>
+                
+                <div className="text-center p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <AlertTriangle className="w-5 h-5 text-orange-600" />
+                    <span className="font-semibold text-orange-700 dark:text-orange-300">Needs Focus</span>
+                  </div>
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    {gradeData.filter(s => s.grade < s.target * 0.9).length}
+                  </p>
+                  <p className="text-sm text-orange-600 dark:text-orange-400">
+                    {gradeData.length > 0 ? Math.round((gradeData.filter(s => s.grade < s.target * 0.9).length / gradeData.length) * 100) : 0}% of subjects
+                  </p>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
+
+      
       </div>
     );
   }
@@ -384,41 +374,16 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
           <ArrowLeft className="w-4 h-4" />
           Back to Subjects
         </Button>
-        <AlertDialog open={showGradeReportsDialog} onOpenChange={setShowGradeReportsDialog}>
-          <AlertDialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg">
-              <GraduationCap className="w-4 h-4 mr-2" />
-              Grade Reports
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="sm:max-w-md">
-            <AlertDialogHeader className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-white" />
-                </div>
-                <AlertDialogTitle className="text-xl font-bold">View Grade Reports</AlertDialogTitle>
-              </div>
-              <AlertDialogDescription className="text-muted-foreground">
-                Do you want to view the complete grade reports?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
-              <AlertDialogCancel className="w-full sm:w-auto order-2 sm:order-1">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleGradeReports} 
-                className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-              >
-                Yes, View Reports
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button 
+          onClick={handleGradeReports}
+          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg"
+        >
+          <GraduationCap className="w-4 h-4 mr-2" />
+          Grade Reports
+        </Button>
       </div>
       
-      <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl rounded-2xl overflow-hidden">
+      <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300 overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
           <CardTitle className="text-2xl flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
@@ -449,7 +414,7 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
         </CardContent>
       </Card>
       
-      <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl rounded-2xl">
+      <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
         <CardHeader>
           <CardTitle>Subject Statistics</CardTitle>
         </CardHeader>
@@ -480,7 +445,7 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
           <TabsTrigger value="overview">Overview</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl rounded-2xl">
+          <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
             <CardHeader>
               <CardTitle>Works</CardTitle>
             </CardHeader>
@@ -494,8 +459,8 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, showGradeReportsDial
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {assignments.map((item: Assignment) => (
-                    <TableRow key={item.name}>
+                  {assignments.map((item: Assignment, index: number) => (
+                    <TableRow key={`${item.name}-${index}`}>
                       <TableCell className="font-medium">{item.name}</TableCell>
                       <TableCell>{item.score !== null ? `${item.score}/${item.total}` : "N/A"}</TableCell>
                       <TableCell>
@@ -531,7 +496,6 @@ export function GradesView() {
   const searchParams = useSearchParams();
   const [selectedSemester, setSelectedSemester] = useState('1st Sem');
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | 'overall' | null>(null);
-  const [showGradeReportsDialog, setShowGradeReportsDialog] = useState(false);
 
   useEffect(() => {
     const subjectId = searchParams.get('subject');
@@ -547,7 +511,15 @@ export function GradesView() {
   };
 
   const handleGradeReports = () => {
-    router.push('/student/grade-reports');
+    console.log('Grade Reports button clicked - navigating to /student/subjects/grades/grade-reports');
+    
+    try {
+      router.push('/student/subjects/grades/grade-reports');
+    } catch (error) {
+      console.error('Router push failed:', error);
+      // Fallback to window.location
+      window.location.href = '/student/subjects/grades/grade-reports';
+    }
   };
 
   const [apiSubjects, setApiSubjects] = useState<ApiClass[]>([])
@@ -611,55 +583,40 @@ export function GradesView() {
     const subj = c.subjects
     const subjectId = subj?.subject_id || c.class_id
     const worksForSubject = entriesBySubject[subjectId] || []
-    const gradedWorks = worksForSubject.filter(w => 
-      w.status === 'Graded' && w.score !== null && w.component && w.component.weight_percentage != null
+    
+    // Get all grade entries for this subject from apiEntries
+    const subjectEntries = apiEntries.filter(entry => 
+      entry.classes?.subject_id === subjectId
     )
     
-    // Group works by component and calculate weighted grades
-    const componentGroups: Record<string, { works: Assignment[], weight: number, componentName: string }> = {}
+    // Get the actual student ID from the entries (assuming all entries are for the current student)
+    const currentStudentId = subjectEntries.length > 0 ? subjectEntries[0].student_id : 1
     
-    gradedWorks.forEach(work => {
-      const componentId = work.component.component_id || 'unknown'
-      const weight = Number(work.component.weight_percentage) || 0
-      const componentName = work.component.component_name || 'Unknown'
-      
-      if (!componentGroups[componentId]) {
-        componentGroups[componentId] = {
-          works: [],
-          weight: weight,
-          componentName: componentName
-        }
-      }
-      componentGroups[componentId].works.push(work)
-    })
-    
-    // Calculate weighted average for each component, then overall weighted grade
-    let totalWeightedGrade = 0
-    let totalWeight = 0
-    
-    Object.values(componentGroups).forEach(component => {
-      if (component.works.length > 0 && component.weight > 0) {
-        const componentTotalScore = component.works.reduce((sum, work) => sum + (work.score as number), 0)
-        const componentTotalPossible = component.works.reduce((sum, work) => sum + work.total, 0)
-        const componentPercentage = componentTotalPossible > 0 ? (componentTotalScore / componentTotalPossible) * 100 : 0
-        
-        totalWeightedGrade += (componentPercentage * component.weight) / 100
-        totalWeight += component.weight
-      }
-    })
-    
-    const computedPercent = totalWeight > 0 ? (totalWeightedGrade / totalWeight) * 100 : 0
+    // Use the subject grade calculator for consistent calculation
+    const calculatedGrade = calculateIndividualSubjectGrade(
+      currentStudentId, // Use actual student ID from the data
+      subjectId,
+      apiEntries, // Pass all entries, calculator will filter by student and subject
+      subjectEntries.map(entry => entry.grade_components).filter(comp => comp != null)
+    )
+
+    // Calculate progress based on completed works vs total works
+    // A work is considered completed if it has a score (even if it's 0 or failing)
+    const totalWorks = subjectEntries.length
+    const completedWorks = subjectEntries.filter(w => w && w.score != null && w.max_score != null).length
+    const progress = totalWorks > 0 ? (completedWorks / totalWorks) * 100 : 0
 
     return {
       id: subjectId,
       name: subj?.subject_name || 'Subject',
       code: subj?.subject_code || 'N/A',
-      progress: 0,
+      progress: Math.round(progress),
       target: 85,
-      grade: Number.isFinite(computedPercent) ? computedPercent : 0,
+      grade: calculatedGrade.percentage,
       classRank: sectionRankings[subjectId] || 0,
       works: worksForSubject,
       icon: BookOpen,
+      units: subj?.units || 3, // Store actual units for consistency
     }
   })
 
@@ -674,7 +631,7 @@ export function GradesView() {
       {error && <p className="text-sm text-red-500">{error}</p>}
       <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
       <aside className="hidden md:flex flex-col gap-4 sticky top-20">
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl p-4">
+        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg dark:shadow-card-lg rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300 p-4">
           <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
             <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
               <BookOpen className="w-3 h-3 text-white" />
@@ -735,10 +692,10 @@ export function GradesView() {
           subjects={filteredSubjects} 
           selectedSubjectId={selectedSubjectId} 
           onBack={handleBack}
-          showGradeReportsDialog={showGradeReportsDialog}
-          setShowGradeReportsDialog={setShowGradeReportsDialog}
           handleGradeReports={handleGradeReports}
           entriesBySubject={entriesBySubject}
+          apiSubjects={apiSubjects}
+          apiEntries={apiEntries}
         />
       </main>
       </div>

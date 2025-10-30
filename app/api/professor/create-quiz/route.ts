@@ -8,7 +8,7 @@ const API_KEY = 'AIzaSyDSnDgk8LUcsArTuJ_7uwHWCUlrYqH1vmM';
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 // Google Apps Script Web App URL
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_FnO6wzz2-ZUpJWnfNUzCGSdlt4UgOu4W-AR_U769IE3Rw6qju45GMSP4bRvzHcgO/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQNOI8d02XEj7T11r0zC0ilfTMANJOqwyC9C-6dvX4l2F-6nDQ0JF5AJY3yTZJKxnU/exec';
 
 export async function POST(request: Request) {
   try {
