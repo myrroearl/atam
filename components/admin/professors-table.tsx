@@ -2,8 +2,10 @@ import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SquarePen, Trash } from "lucide-react";
+import { SquarePen, Trash, MoreVertical, Edit } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { EditProfessorModal } from "@/components/admin/edit-professor-modal";
+import {DeleteProfessorModal} from "@/components/admin/delete-professor-modal";
 
 interface Professor {
   id: string;
@@ -39,6 +41,8 @@ interface ProfessorsTableProps {
 export function ProfessorsTable({ professors, onDeleteProfessor, onEditProfessor, currentPage, setCurrentPage, loading }: ProfessorsTableProps) {
   const [editingProfessor, setEditingProfessor] = useState<Professor | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [deletingProfessor, setDeletingProfessor] = useState<Professor | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const pageSize = 10;
   const totalPages = Math.ceil(professors.length / pageSize);
   const paginatedProfessors = professors.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -51,9 +55,14 @@ export function ProfessorsTable({ professors, onDeleteProfessor, onEditProfessor
     if (onEditProfessor && updatedProfessor) onEditProfessor(updatedProfessor);
     setShowEditModal(false);
   };
-  const handleDelete = (professorId: string) => {
+  const handleDelete = (prof: Professor) => {
+    setDeletingProfessor(prof);
+    setShowDeleteModal(true);
+  };
+  const handleDeleteConfirm = (professorId: string) => {
     if (onDeleteProfessor) onDeleteProfessor(professorId);
-    setShowEditModal(false);
+    setShowDeleteModal(false);
+    setDeletingProfessor(null);
   };
 
   return (
@@ -128,30 +137,58 @@ export function ProfessorsTable({ professors, onDeleteProfessor, onEditProfessor
                     <td className="px-2 py-2 text-sm text-black dark:text-white">
                       <Badge
                         variant={
-                          prof.status === "Active"
+                          (prof.status || "").toLowerCase() === "active"
                             ? "default"
-                            : prof.status === "Resigned"
+                            : (prof.status || "").toLowerCase() === "inactive"
                               ? "destructive"
-                              : prof.status === "On Leave"
+                              : (prof.status || "").toLowerCase() === "suspended"
                                 ? "secondary"
                                 : "outline"
                         }
                         className={
-                          prof.status === "Active"
+                          (prof.status || "").toLowerCase() === "active"
                             ? "bg-green-100 text-green-800 hover:bg-green-100"
-                            : prof.status === "Resigned"
+                            : (prof.status || "").toLowerCase() === "inactive"
                               ? "bg-red-100 text-red-800 hover:bg-red-100"
-                              : prof.status === "On Leave"
+                              : (prof.status || "").toLowerCase() === "suspended"
                                 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
                                 : "bg-gray-100 text-gray-800 hover:bg-gray-100"
                         }
                       >
-                        {prof.status}
+                        {(() => {
+                          const s = (prof.status || "").toLowerCase();
+                          return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+                        })()}
                       </Badge>
                     </td>
                     <td className="px-2 py-2 text-sm text-black dark:text-white">
                       <div className="flex items-center gap-2 justify-end">
-                        <Button
+                      <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-gray-600 hover:!text-[var(--customized-color-one)] hover:bg-[var(--customized-color-four)] dark:hover:text-gray-300"
+                              onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleEdit(prof) }}
+                            >
+                              <MoreVertical className="h-5 w-5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-24" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleEdit(prof)}} className="flex items-center gap-2 focus:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] cursor-pointer">
+                              <Edit className="h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDelete(prof) }} 
+                              className="flex items-center gap-2 text-red-500 focus:bg-red-50 focus:text-red-500 cursor-pointer"
+                            >
+                              <Trash className="h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {/* <Button
                           variant="outline"
                           size="sm"
                           onClick={(e) => {
@@ -168,13 +205,13 @@ export function ProfessorsTable({ professors, onDeleteProfessor, onEditProfessor
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleDelete(prof.id)
+                            handleDelete(prof)
                           }}
                           className="flex items-center gap-1 bg-red-50 border-none text-red-500 hover:bg-red-500 hover:text-red-50 dark:bg-black dark:text-white dark:hover:bg-[var(--customized-color-five)] dark:hover:text-red-500"
                         >
                           <Trash className="w-3 h-3" />
                           Delete
-                        </Button>
+                        </Button> */}
                       </div>
                     </td>
                   </tr>
@@ -221,6 +258,12 @@ export function ProfessorsTable({ professors, onDeleteProfessor, onEditProfessor
         open={showEditModal}
         onOpenChange={setShowEditModal}
         onSave={handleSave}
+      />
+      <DeleteProfessorModal
+        professor={deletingProfessor}
+        open={showDeleteModal}
+        onOpenChange={setShowDeleteModal}
+        onDelete={handleDeleteConfirm}
       />
     </>
   );

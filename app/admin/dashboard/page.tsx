@@ -3,7 +3,8 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useTheme } from "next-themes"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { PiStudentBold, PiCalendarDotsBold } from "react-icons/pi";
@@ -38,14 +39,36 @@ export default function AdminDashboard() {
   const { data: dashboardData, loading, error, refreshData } = useDashboardData()
   const [notifications, setNotifications] = useState<Announcement[]>([])
   const [notificationsLoading, setNotificationsLoading] = useState(true)
+  const { theme } = useTheme()
+
+  // Dynamic colors based on theme
+  const getSegmentColors = () => {
+    const isDark = theme === 'dark'
+    return {
+      high: {
+        color: isDark ? "var(--darkmode-color-one)" : "var(--customized-color-one)",
+        textColor: isDark ? "black" : "white"
+      },
+      low: {
+        color: isDark ? "var(--darkmode-color-two)" : "var(--customized-color-three)", 
+        textColor: isDark ? "black" : "white"
+      },
+      medium: {
+        color: isDark ? "var(--darkmode-color-three)" : "var(--customized-color-two)",
+        textColor: isDark ? "black" : "white"
+      }
+    }
+  }
+
+  const segmentColors = getSegmentColors()
 
   const donutSegments = [
     {
       key: "high",
       label: "High Risk",
       percent: 64,
-      color: "#1A5319",
-      textColor: "var(--customized-color-five)",
+      color: segmentColors.high.color,
+      textColor: segmentColors.high.textColor,
       value: 734,
       change: "+10% from last month",
       cx: "120",
@@ -67,8 +90,8 @@ export default function AdminDashboard() {
       key: "low",
       label: "Low Risk",
       percent: 22,
-      color: "#80AF81",
-      textColor: "var(--customized-color-five)",
+      color: segmentColors.low.color,
+      textColor: segmentColors.low.textColor,
       value: 900,
       change: "+10% from last month",
       dasharray: `${2 * Math.PI * 90 * 0.22} ${2 * Math.PI * 90 * 0.78}`,
@@ -86,8 +109,8 @@ export default function AdminDashboard() {
       key: "medium",
       label: "Medium Risk",
       percent: 18,
-      color: "#508D4E",
-      textColor: "var(--customized-color-five)",
+      color: segmentColors.medium.color,
+      textColor: segmentColors.medium.textColor,
       value: 230,
       change: "-10% from last month",
       dasharray: `${2 * Math.PI * 90 * 0.18} ${2 * Math.PI * 90 * 0.90}`,
@@ -159,7 +182,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--customized-color-five] dark:bg-[var(--darkmode-color-five)] transition-colors">
+    <div className="min-h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
       <div className="space-y-4 p-5 w-full">
         {/* Welcome Header */}
         <div className="flex items-center justify-between">
@@ -198,47 +221,38 @@ export default function AdminDashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative">
           {/* Active Students Card */}
-          <Card className="bg-white dark:bg-black border-0 transition-transform duration-500 hover:-translate-y-2 group shadow-md dark:shadow-lg">
+          <Card className="bg-white dark:bg-black border-0 transition-transform duration-500 hover:-translate-y-2 group shadow-md dark:shadow-2xl">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-gray-700 dark:text-gray-400 tracking-wide">Active Students</p>
-                  {loading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-                      <span className="text-sm text-gray-400">Loading...</span>
+                  <p className="text-2xl font-bold text-black dark:text-white">
+                    {dashboardData?.dashboard_stats.active_students.total.toLocaleString() || '0'}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      {(dashboardData?.dashboard_stats.active_students.growth_percentage ?? 0) >= 0 ? (
+                        <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-600" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-600" />
+                      )}
+                      <span className={`text-xs font-light ${
+                        (dashboardData?.dashboard_stats.active_students.growth_percentage ?? 0) >= 0 
+                          ? 'text-green-500 dark:text-green-700' 
+                          : 'text-red-500 dark:text-red-700'
+                      }`}>
+                        {(dashboardData?.dashboard_stats.active_students.growth_percentage ?? 0) >= 0 ? '+' : ''}
+                        {dashboardData?.dashboard_stats.active_students.growth_percentage || 0}%
+                      </span>
                     </div>
-                  ) : (
-                    <>
-                      <p className="text-2xl font-bold text-black dark:text-white">
-                        {dashboardData?.dashboard_stats.active_students.total.toLocaleString() || '0'}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          {(dashboardData?.dashboard_stats.active_students.growth_percentage ?? 0) >= 0 ? (
-                            <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-700" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-700" />
-                          )}
-                          <span className={`text-xs font-light ${
-                            (dashboardData?.dashboard_stats.active_students.growth_percentage ?? 0) >= 0 
-                              ? 'text-green-500 dark:text-green-800' 
-                              : 'text-red-500 dark:text-red-800'
-                          }`}>
-                            {(dashboardData?.dashboard_stats.active_students.growth_percentage ?? 0) >= 0 ? '+' : ''}
-                            {dashboardData?.dashboard_stats.active_students.growth_percentage || 0}%
-                          </span>
-                        </div>
-                        <span className={`text-xs font-light ${
-                          (dashboardData?.dashboard_stats.active_students.growth_percentage ?? 0) >= 0 
-                            ? 'text-green-500 dark:text-green-800' 
-                            : 'text-red-500 dark:text-red-800'
-                        }`}>
-                          {dashboardData?.dashboard_stats.active_students.period || 'from last semester'}
-                        </span>
-                      </div>
-                    </>
-                  )}
+                    <span className={`text-xs font-light ${
+                      (dashboardData?.dashboard_stats.active_students.growth_percentage ?? 0) >= 0 
+                        ? 'text-green-500 dark:text-green-700' 
+                        : 'text-red-500 dark:text-red-700'
+                    }`}>
+                      {dashboardData?.dashboard_stats.active_students.period || 'from last semester'}
+                    </span>
+                  </div>
                 </div>
                 <div className="w-12 h-12 bg-[var(--customized-color-two)] text-white rounded-full group-hover:scale-110 transition-all duration-500 flex items-center justify-center align-middle dark:bg-[var(--darkmode-color-two)] dark:text-black">
                   <PiStudentBold className="w-7 h-7" />
@@ -253,42 +267,33 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-gray-700 dark:text-gray-400 tracking-wide">Active Professors</p>
-                  {loading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-                      <span className="text-sm text-gray-400">Loading...</span>
+                  <p className="text-2xl font-bold text-black dark:text-white">
+                    {dashboardData?.dashboard_stats.active_professors.total.toLocaleString() || '0'}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      {(dashboardData?.dashboard_stats.active_professors.growth_percentage ?? 0) >= 0 ? (
+                        <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-600" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-600" />
+                      )}
+                      <span className={`text-xs font-light ${
+                        (dashboardData?.dashboard_stats.active_professors.growth_percentage ?? 0) >= 0 
+                          ? 'text-green-500 dark:text-green-700' 
+                          : 'text-red-500 dark:text-red-800'
+                      }`}>
+                        {(dashboardData?.dashboard_stats.active_professors.growth_percentage ?? 0) >= 0 ? '+' : ''}
+                        {dashboardData?.dashboard_stats.active_professors.growth_percentage || 0}%
+                      </span>
                     </div>
-                  ) : (
-                    <>
-                      <p className="text-2xl font-bold text-black dark:text-white">
-                        {dashboardData?.dashboard_stats.active_professors.total.toLocaleString() || '0'}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          {(dashboardData?.dashboard_stats.active_professors.growth_percentage ?? 0) >= 0 ? (
-                            <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-700" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-700" />
-                          )}
-                          <span className={`text-xs font-light ${
-                            (dashboardData?.dashboard_stats.active_professors.growth_percentage ?? 0) >= 0 
-                              ? 'text-green-500 dark:text-green-800' 
-                              : 'text-red-500 dark:text-red-800'
-                          }`}>
-                            {(dashboardData?.dashboard_stats.active_professors.growth_percentage ?? 0) >= 0 ? '+' : ''}
-                            {dashboardData?.dashboard_stats.active_professors.growth_percentage || 0}%
-                          </span>
-                        </div>
-                        <span className={`text-xs font-light ${
-                          (dashboardData?.dashboard_stats.active_professors.growth_percentage ?? 0) >= 0 
-                            ? 'text-green-500 dark:text-green-800' 
-                            : 'text-red-500 dark:text-red-800'
-                        }`}>
-                          {dashboardData?.dashboard_stats.active_professors.period || 'from last school year'}
-                        </span>
-                      </div>
-                    </>
-                  )}
+                    <span className={`text-xs font-light ${
+                      (dashboardData?.dashboard_stats.active_professors.growth_percentage ?? 0) >= 0 
+                        ? 'text-green-500 dark:text-green-700' 
+                        : 'text-red-500 dark:text-red-800'
+                    }`}>
+                      {dashboardData?.dashboard_stats.active_professors.period || 'from last school year'}
+                    </span>
+                  </div>
                 </div>
                 <div className="w-12 h-12 bg-[var(--customized-color-three)] text-white rounded-full group-hover:scale-110 transition-all duration-500 flex items-center justify-center align-middle dark:bg-[var(--darkmode-color-three)] dark:text-black">
                   <FaChalkboardTeacher className="w-7 h-7" />
@@ -303,42 +308,33 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-gray-700 dark:text-gray-400 tracking-wide">Top Performing Students</p>
-                  {loading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-                      <span className="text-sm text-gray-400">Loading...</span>
+                  <p className="text-2xl font-bold text-black dark:text-white">
+                    {dashboardData?.dashboard_stats.top_performers.total.toLocaleString() || '0'}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      {(dashboardData?.dashboard_stats.top_performers.growth_percentage ?? 0) >= 0 ? (
+                        <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-600" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-600" />
+                      )}
+                      <span className={`text-xs font-light ${
+                        (dashboardData?.dashboard_stats.top_performers.growth_percentage ?? 0) >= 0 
+                          ? 'text-green-500 dark:text-green-700' 
+                          : 'text-red-500 dark:text-red-700'
+                      }`}>
+                        {(dashboardData?.dashboard_stats.top_performers.growth_percentage ?? 0) >= 0 ? '+' : ''}
+                        {dashboardData?.dashboard_stats.top_performers.growth_percentage || 0}%
+                      </span>
                     </div>
-                  ) : (
-                    <>
-                      <p className="text-2xl font-bold text-black dark:text-white">
-                        {dashboardData?.dashboard_stats.top_performers.total.toLocaleString() || '0'}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          {(dashboardData?.dashboard_stats.top_performers.growth_percentage ?? 0) >= 0 ? (
-                            <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-700" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-700" />
-                          )}
-                          <span className={`text-xs font-light ${
-                            (dashboardData?.dashboard_stats.top_performers.growth_percentage ?? 0) >= 0 
-                              ? 'text-green-500 dark:text-green-800' 
-                              : 'text-red-500 dark:text-red-800'
-                          }`}>
-                            {(dashboardData?.dashboard_stats.top_performers.growth_percentage ?? 0) >= 0 ? '+' : ''}
-                            {dashboardData?.dashboard_stats.top_performers.growth_percentage || 0}%
-                          </span>
-                        </div>
-                        <span className={`text-xs font-light ${
-                          (dashboardData?.dashboard_stats.top_performers.growth_percentage ?? 0) >= 0 
-                            ? 'text-green-500 dark:text-green-800' 
-                            : 'text-red-500 dark:text-red-800'
-                        }`}>
-                          {dashboardData?.dashboard_stats.top_performers.period || 'from last semester'}
-                        </span>
-                      </div>
-                    </>
-                  )}
+                    <span className={`text-xs font-light ${
+                      (dashboardData?.dashboard_stats.top_performers.growth_percentage ?? 0) >= 0 
+                        ? 'text-green-500 dark:text-green-700' 
+                        : 'text-red-500 dark:text-red-700'
+                    }`}>
+                      {dashboardData?.dashboard_stats.top_performers.period || 'from last semester'}
+                    </span>
+                  </div>
                 </div>
                 <div className="w-12 h-12 bg-[var(--customized-color-two)] text-white rounded-full group-hover:scale-110 transition-all duration-500 flex items-center justify-center align-middle dark:bg-[var(--darkmode-color-two)] dark:text-black">
                   <PiStudentBold className="w-7 h-7" />
@@ -353,42 +349,33 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-gray-700 dark:text-gray-400 tracking-wide">Unauthorized Logs</p>
-                  {loading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-                      <span className="text-sm text-gray-400">Loading...</span>
+                  <p className="text-2xl font-bold text-black dark:text-white">
+                    {dashboardData?.dashboard_stats.unauthorized_logs.total.toLocaleString() || '0'}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      {(dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage ?? 0) >= 0 ? (
+                        <TriangleAlert className="w-4 h-4 text-red-600 dark:text-red-600" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-green-600 dark:text-green-600" />
+                      )}
+                      <span className={`text-xs font-light ${
+                        (dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage ?? 0) >= 0 
+                          ? 'text-red-500 dark:text-red-700' 
+                          : 'text-green-500 dark:text-green-700'
+                      }`}>
+                        {(dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage ?? 0) >= 0 ? '+' : ''}
+                        {dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage || 0}%
+                      </span>
                     </div>
-                  ) : (
-                    <>
-                      <p className="text-2xl font-bold text-black dark:text-white">
-                        {dashboardData?.dashboard_stats.unauthorized_logs.total.toLocaleString() || '0'}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          {(dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage ?? 0) >= 0 ? (
-                            <TriangleAlert className="w-4 h-4 text-red-600 dark:text-red-700" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 text-green-600 dark:text-green-700" />
-                          )}
-                          <span className={`text-xs font-light ${
-                            (dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage ?? 0) >= 0 
-                              ? 'text-red-500 dark:text-red-800' 
-                              : 'text-green-500 dark:text-green-800'
-                          }`}>
-                            {(dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage ?? 0) >= 0 ? '+' : ''}
-                            {dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage || 0}%
-                          </span>
-                        </div>
-                        <span className={`text-xs font-light ${
-                          (dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage ?? 0) >= 0 
-                            ? 'text-red-500 dark:text-red-800' 
-                            : 'text-green-500 dark:text-green-800'
-                        }`}>
-                          {dashboardData?.dashboard_stats.unauthorized_logs.period || 'from last 24 hours'}
-                        </span>
-                      </div>
-                    </>
-                  )}
+                    <span className={`text-xs font-light ${
+                      (dashboardData?.dashboard_stats.unauthorized_logs.growth_percentage ?? 0) >= 0 
+                        ? 'text-red-500 dark:text-red-700' 
+                        : 'text-green-500 dark:text-green-700'
+                    }`}>
+                      {dashboardData?.dashboard_stats.unauthorized_logs.period || 'from last 24 hours'}
+                    </span>
+                  </div>
                 </div>
                 <div className="w-12 h-12 bg-[var(--customized-color-three)] text-white rounded-full group-hover:scale-110 transition-all duration-500 flex items-center justify-center align-middle dark:bg-[var(--darkmode-color-three)] dark:text-black">
                   <AlertTriangle className="w-7 h-7" />
@@ -464,34 +451,34 @@ export default function AdminDashboard() {
                 <div className="flex flex-col gap-8 pl-10">
                   {/* Low Risk */}
                   <div className="flex items-center gap-4">
-                    <span className="w-5 h-5 rounded-full" style={{ background: "#80AF81" }}></span>
+                    <span className="w-5 h-5 rounded-full" style={{ backgroundColor: segmentColors.low.color }}></span>
                     <div>
                       <div className="text-2xl font-semibold text-black dark:text-white text-center">900</div>
                       <div className="flex gap-1">
-                        <TrendingUp className="w-4 h-4 text-red-500 dark:text-red-700 inline" />
-                        <div className="text-xs text-red-500 dark:text-red-800 font-light">+10% from last month</div>
+                        <TrendingUp className="w-4 h-4 text-red-500 dark:text-red-600 inline" />
+                        <div className="text-xs text-red-500 dark:text-red-700 font-light">+10% from last month</div>
                       </div>
                     </div>
                   </div>
                   {/* Medium Risk */}
                   <div className="flex items-center gap-4">
-                    <span className="w-5 h-5 rounded-full" style={{ background: "#508D4E" }}></span>
+                    <span className="w-5 h-5 rounded-full" style={{ backgroundColor: segmentColors.medium.color }}></span>
                     <div>
                       <div className="text-2xl font-semibold text-black dark:text-white text-center">230</div>
                       <div className="flex gap-1">
-                        <TrendingDown className="w-4 h-4 text-green-500 dark:text-green-700 inline" />
-                        <div className="text-xs text-green-500 dark:text-green-800 font-light">-10% from last month</div>
+                        <TrendingDown className="w-4 h-4 text-green-500 dark:text-green-600 inline" />
+                        <div className="text-xs text-green-500 dark:text-green-700 font-light">-10% from last month</div>
                       </div>
                     </div>
                   </div>
                   {/* High Risk */}
                   <div className="flex items-center gap-4">
-                    <span className="w-5 h-5 rounded-full" style={{ background: "#1A5319" }}></span>
+                    <span className="w-5 h-5 rounded-full" style={{ backgroundColor: segmentColors.high.color }}></span>
                     <div>
                       <div className="text-2xl font-bold text-black dark:text-white text-center">734</div>
                       <div className="flex gap-1">
-                        <TrendingUp className="w-4 h-4 text-red-500 dark:text-red-700 inline" />
-                        <div className="text-xs text-red-500 dark:text-red-800 font-light">+10% from last month</div>
+                        <TrendingUp className="w-4 h-4 text-red-500 dark:text-red-600 inline" />
+                        <div className="text-xs text-red-500 dark:text-red-700 font-light">+10% from last month</div>
                       </div>
                     </div>
                   </div>
@@ -514,7 +501,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Right Column - Alerts */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 h-90">
             <Card className="bg-white dark:bg-black border-0 shadow-md transition-all duration-200 w-full">
               <CardHeader className="">
                 <div className="space-y-1">
@@ -523,12 +510,7 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {notificationsLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">Loading notifications...</span>
-                  </div>
-                ) : notifications.length === 0 ? (
+                {notifications.length === 0 ? (
                   <div className="text-center py-8">
                     <AlertCircle className="w-12 h-12 mx-auto text-gray-400 mb-2" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">No notifications yet</p>
@@ -538,25 +520,19 @@ export default function AdminDashboard() {
                   notifications.map((notification, index) => {
                     const isUrgent = notification.type === 'urgent'
                     const isAnnouncement = notification.type === 'announcement'
+                    const isGeneral = notification.type === 'general'
+                    const isReminder = notification.type === 'reminder'
+                    const isEvent = notification.type === 'event'
                     const isUnread = !notification.status || notification.status === 'unread'
                     
-                    // Get color based on type
-                    const getBorderColor = () => {
-                      if (isUrgent) return 'border-red-500/20'
-                      if (isAnnouncement) return 'border-[var(--customized-color-one)]/20'
-                      return 'border-[var(--customized-color-two)]/20'
-                    }
-                    
-                    const getBgColor = () => {
-                      if (isUrgent) return 'from-red-500/10 to-transparent'
-                      if (isAnnouncement) return 'from-[var(--customized-color-one)]/10 to-transparent'
-                      return 'from-[var(--customized-color-two)]/10 to-transparent'
-                    }
-                    
+                    // Get icon color based on type
                     const getIconColor = () => {
-                      if (isUrgent) return 'text-red-500'
-                      if (isAnnouncement) return 'text-[var(--customized-color-one)]'
-                      return 'text-[var(--customized-color-two)]'
+                      if (isUrgent) return 'text-red-500 dark:text-red-600'
+                      if (isAnnouncement) return 'text-blue-500 dark:text-blue-600'
+                      if (isGeneral) return 'text-emerald-500 dark:text-emerald-600'
+                      if (isReminder) return 'text-yellow-500 dark:text-yellow-600'
+                      if (isEvent) return 'text-purple-500 dark:text-purple-600'
+                      return 'text-[var(--customized-color-two)] dark:text-[var(--darkmode-color-two)]'
                     }
 
                     return (
@@ -564,45 +540,35 @@ export default function AdminDashboard() {
                         key={notification.notification_id}
                         role="article" 
                         aria-label={`${notification.type || 'Notification'}: ${notification.message.substring(0, 50)}...`}
-                        className={`flex items-start gap-4 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md p-3 ${
-                          isUnread ? 'border-l-4' : ''
-                        } ${getBorderColor()} bg-gradient-to-r ${getBgColor()}`}
+                        className={`flex items-start gap-4 transition-all duration-200 rounded-lg hover:bg-[var(--customized-color-five)] hover:border-none dark:hover:bg-[var(--darkmode-color-five)] dark:!border-[var(--darkmode-color-four)] p-3 border border-[var(--customized-color-four)]`}
+                        title={notification.receiver}
                       >
-                        <div className="flex-1 min-w-0 space-y-1 pl-2">
+                        <div className="flex-1 min-w-0 space-y-1">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-700 dark:text-gray-400 capitalize">
+                              <span className={`text-xs capitalize font-semibold ${getIconColor()}`}>
                                 {notification.type || 'Notification'}
                               </span>
                               {isUnread && (
                                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                               )}
                             </div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-gray-400 dark:text-gray-400">
                               {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                             </span>
                           </div>
-                          <p className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">
-                            {notification.message.length > 60 
-                              ? `${notification.message.substring(0, 60)}...` 
-                              : notification.message
-                            }
-                          </p>
-                          <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-2">
+                          <p className="text-xs text-black dark:text-gray-300 leading-relaxed line-clamp-2">
                             {notification.message}
                           </p>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <PiCalendarDotsBold className={`w-4 h-4 ${getIconColor()}`} />
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                              <PiCalendarDotsBold className={`w-4 h-4 text-gray-400`} />
+                              <p className="text-xs text-gray-400 dark:text-gray-400">
                                 {new Date(notification.created_at).toLocaleDateString()}
                               </p>
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                To: {notification.receiver}
-                              </span>
-                              <Badge variant="outline" className="text-xs capitalize">
+                              <Badge variant="outline" className="text-xs capitalize text-black dark:text-white border border-gray-400 dark:border-gray-800">
                                 {notification.receiver_role}
                               </Badge>
                             </div>
@@ -612,13 +578,14 @@ export default function AdminDashboard() {
                     )
                   })
                 )}
-
-                <Link href="/admin/announcements">
-                  <Button className="w-full text-[#0A0A0A] border hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] hover:border-[var(--customized-color-five)] bg-white border-[var(--customized-color-four)] rounded-lg py-3 font-medium transition-colors duration-300">
+              </CardContent>
+              <CardFooter className="w-full">
+                <Link href="/admin/announcements" className="w-full">
+                  <Button className="w-full text-white border-none hover:bg-[var(--customized-color-two)] hover:text-white hover:border-none bg-[var(--customized-color-one)] border-[var(--customized-color-four)] rounded-lg py-3 font-medium transition-colors duration-300 dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black">
                     View All Alerts
                   </Button>
                 </Link>
-              </CardContent>
+              </CardFooter>
             </Card>
           </div>
         </div>

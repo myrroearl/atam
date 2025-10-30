@@ -97,6 +97,24 @@ export default function AuditLogsPage() {
       }
 
       const data = await response.json()
+      
+      // Log exact timestamp data received from API
+      console.log('\n🔍 ═══════════════════════════════════════════════════════════');
+      console.log('🔍 FRONTEND: Received audit log data from API');
+      console.log('🔍 ═══════════════════════════════════════════════════════════');
+      
+      if (data.logs && data.logs.length > 0) {
+        data.logs.forEach((log: any, index: number) => {
+          console.log(`\n📝 Log #${index + 1}: ${log.action}`);
+          console.log(`   🆔 Log ID: ${log.log_id}`);
+          console.log(`   👤 User: ${log.user_name} (${log.email})`);
+          console.log(`   🕐 created_at: ${log.created_at || 'Not set'}`);
+        });
+        console.log('\n🔍 ═══════════════════════════════════════════════════════════');
+        console.log(`🔍 Total logs received: ${data.logs.length}`);
+        console.log('🔍 ═══════════════════════════════════════════════════════════\n');
+      }
+      
       setLogs(data.logs || [])
       setPagination(data.pagination)
     } catch (error) {
@@ -178,6 +196,50 @@ export default function AuditLogsPage() {
     }
   }
 
+  // Format timestamp similar to formatSchedule in classes
+  const formatTimestamp = (timestamp: string) => {
+    if (!timestamp) {
+      return {
+        date: 'No date',
+        time: 'No time',
+        raw: 'No timestamp'
+      };
+    }
+    
+    // Debug logging for timestamp display
+    console.log('🔍 AUDIT LOGS: Displaying timestamp data:', {
+      timestamp,
+      type: typeof timestamp
+    });
+
+    // Extract time from ISO format (2025-10-01T17:00:00+00:00) and convert to 12-hour format
+    const time = timestamp.split('T')[1]?.split('+')[0]?.substring(0, 5) || '';
+    const date = timestamp.split('T')[0] || '';
+    
+    // Convert to 12-hour format
+    const formatTo12Hour = (time24: string) => {
+      if (!time24) return '';
+      const [hours, minutes] = time24.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+      return `${hour12}:${minutes} ${ampm}`;
+    };
+    
+    const time12 = formatTo12Hour(time);
+    
+    // Format date
+    const [year, month, day] = date.split('-');
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const formattedDate = `${monthNames[parseInt(month) - 1]} ${day}, ${year}`;
+    
+    return {
+      date: formattedDate,
+      time: time12,
+      raw: timestamp
+    };
+  }
+
   if (status === "loading" || loading) {
     return <AuditLogsPageSkeleton />
   }
@@ -197,47 +259,51 @@ export default function AuditLogsPage() {
 
         {/* Filters */}
         <Card className="bg-transparent border-0 shadow-none">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="flex items-center w-full gap-2">
             {/* Search */}
-            <div className="relative lg:col-span-2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <div className="relative min-w-[750px] text-[11px] !border-none">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3" />
               <Input
                 type="text"
                 placeholder="Search by user, action, or description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-9 text-[11px] placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:text-[11px] !border-none !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none bg-white dark:bg-black"
               />
             </div>
 
             {/* Role Filter */}
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="min-w-[100px] text-[11px] pr-[8px] pl-[8px] bg-white dark:bg-black !border-none !outline-none focus:!outline-none focus:!border-none focus:!ring-0 focus:!ring-offset-0">
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="professor">Professor</SelectItem>
-                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="all" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">All Roles</SelectItem>
+                <SelectItem value="admin" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">Admin</SelectItem>
+                <SelectItem value="professor" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">Professor</SelectItem>
+                <SelectItem value="student" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">Student</SelectItem>
               </SelectContent>
             </Select>
 
-            {/* Start Date */}
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              placeholder="Start date"
-            />
-
-            {/* End Date */}
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              placeholder="End date"
-            />
+            <div className="flex items-center">
+              {/* Start Date */}
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                placeholder="Start date"
+                className="text-[11px] placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:text-[11px] !border-none !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none bg-white dark:bg-black col-span-1"
+              />
+              <span className="text-black text-[11px] text-center mx-2">to</span>
+              {/* End Date */}
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                placeholder="End date"
+                className="text-[11px] placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:text-[11px] !border-none !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none bg-white dark:bg-black"
+              />
+            </div>
           </div>
 
           {/* Action Filter and Clear Filters */}
@@ -314,10 +380,20 @@ export default function AuditLogsPage() {
                       <td className="px-2 py-2 text-sm text-black dark:text-white">
                         <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
                           <div>
-                            <div>{format(new Date(log.created_at), "MMM dd, yyyy")}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {format(new Date(log.created_at), "hh:mm a")}
-                            </div>
+                            {(() => {
+                              const formatted = formatTimestamp(log.created_at);
+                              return (
+                                <>
+                                  <div>{formatted.date}</div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    {formatted.time}
+                                  </div>
+                                  <div className="text-[10px] text-gray-400 dark:text-gray-600 mt-1 font-mono">
+                                    {formatted.raw}
+                                  </div>
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       </td>

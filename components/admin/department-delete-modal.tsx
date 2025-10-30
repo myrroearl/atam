@@ -94,33 +94,33 @@ export default function DepartmentDeleteModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-[500px] dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader className="space-y-1">
-          <DialogTitle className="flex items-center text-xl gap-2 text-red-600 font-bold dark:text-red-500">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Delete Department
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
-            Are you sure you want to delete <strong className="text-black dark:text-white">{department.department_name}</strong>?
+          <DialogDescription className="text-sm text-gray-500">
+            Are you sure you want to delete <strong>{department.department_name}</strong>?
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="space-y-2 bg-red-50 p-4 rounded-lg">
-            <Alert className="border-none p-0 bg-red-50">
-              <AlertDescription className="text-orange-800 dark:text-orange-400 font-semibold text-sm">
+          <div className="space-y-2 p-0 rounded-lg">
+            <div className="border-none p-0">
+              <p className="text-red-600 dark:text-red-500 font-semibold text-sm">
                 This action will permanently delete the department and its grading components.
-              </AlertDescription>
-            </Alert>
+              </p>
+            </div>
 
             {/* Department info */}
             <div className="space-y-1">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Department:</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{department.department_name}</span>
+                <span className="text-gray-500 dark:text-gray-400">Department:</span>
+                <span className="font-semibold text-black dark:text-white">{department.department_name}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Dean:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{department.dean_name}</span>
+                <span className="text-gray-500 dark:text-gray-400">Dean:</span>
+                <span className="font-medium text-black dark:text-white">{department.dean_name}</span>
               </div>
             </div>
           </div>
@@ -133,14 +133,14 @@ export default function DepartmentDeleteModal({
               variant="outline"
               onClick={handleClose}
               disabled={isDeleting}
-              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%]"
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%] dark:border-[var(--darkmode-color-four)] dark:bg-transparent dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:text-white dark:hover:border-none"
             >
               No, keep it
             </Button>
             <Button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-500 text-white border-none w-[50%]"
+              className="bg-red-600 hover:bg-red-700 text-white border-none w-[50%] dark:bg-red-800 dark:hover:bg-red-600 dark:hover:text-white dark:border-none"
             >
               {isDeleting ? (
                 <>

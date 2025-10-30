@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { SquarePen, Loader2 } from "lucide-react";
 
 interface Class {
   id: string;
@@ -100,6 +101,8 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
   const [filteredProfessors, setFilteredProfessors] = useState<Professor[]>([]);
 
   const [loading, setLoading] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [originalData, setOriginalData] = useState<any>(null);
 
   // Load data when modal opens
   useEffect(() => {
@@ -149,7 +152,7 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
       console.log('🔍 Formatted schedule_end:', formattedEnd);
       console.log('🔍 ═══════════════════════════════════════════════════════════\n');
 
-      setFormData({
+      const initialData = {
         name: classData.name,
         courseId: classData.course_id ? classData.course_id.toString() : "",
         subjectId: classData.subject_id ? classData.subject_id.toString() : "",
@@ -158,9 +161,27 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
         professorId: classData.prof_id ? classData.prof_id.toString() : "",
         scheduleStart: formattedStart,
         scheduleEnd: formattedEnd,
-      });
+      };
+      setFormData(initialData);
+      setOriginalData(initialData);
+      setHasChanges(false);
     }
   }, [open, classData]);
+
+  // Check for changes whenever formData changes
+  useEffect(() => {
+    if (originalData) {
+      const changed = formData.name !== originalData.name ||
+                     formData.courseId !== originalData.courseId ||
+                     formData.subjectId !== originalData.subjectId ||
+                     formData.sectionId !== originalData.sectionId ||
+                     formData.departmentId !== originalData.departmentId ||
+                     formData.professorId !== originalData.professorId ||
+                     formData.scheduleStart !== originalData.scheduleStart ||
+                     formData.scheduleEnd !== originalData.scheduleEnd
+      setHasChanges(changed)
+    }
+  }, [formData, originalData])
 
   const fetchAllData = async () => {
     try {
@@ -364,20 +385,23 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="font-bold text-black">Edit Class</DialogTitle>
-          <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">Update the class information</DialogDescription>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white flex items-center gap-2">
+            <SquarePen className="w-5 h-5" />
+            Edit Class
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-500">Update the class information below.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Class Name <span className="text-red-500">*</span></Label>
+            <Label htmlFor="name" className="text-black dark:text-white">Class Name</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g., Programming 1 - BSIT-1A"
-              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               required
               disabled={loading}
             />
@@ -385,7 +409,7 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
 
           {/* Course Selection - Drives Subject and Section filters */}
           <div className="space-y-2">
-            <Label htmlFor="course">Course <span className="text-red-500">*</span></Label>
+            <Label htmlFor="course" className="text-black dark:text-white">Course</Label>
             <Select
               value={formData.courseId}
               onValueChange={(value) => {
@@ -398,12 +422,12 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
               }}
               disabled={loading}
             >
-              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer">
+              <SelectTrigger className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                 <SelectValue placeholder="Select Course (e.g., BSIT, BSCS)" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                 {courses.map((course) => (
-                  <SelectItem key={course.course_id} value={course.course_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                  <SelectItem key={course.course_id} value={course.course_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                     {course.course_code} - {course.course_name}
                   </SelectItem>
                 ))}
@@ -414,18 +438,18 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
           <div className="grid grid-cols-2 gap-4">
             {/* Subject - Filtered by Course */}
             <div className="space-y-2">
-              <Label htmlFor="subject">Subject <span className="text-red-500">*</span></Label>
+              <Label htmlFor="subject" className="text-black dark:text-white">Subject</Label>
               <Select
                 value={formData.subjectId}
                 onValueChange={(value) => setFormData({ ...formData, subjectId: value })}
                 disabled={!formData.courseId || loading}
               >
-                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer">
+                <SelectTrigger className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                   <SelectValue placeholder={!formData.courseId ? "Select course first" : "Select Subject"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {filteredSubjects.map((subject) => (
-                    <SelectItem key={subject.subject_id} value={subject.subject_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                    <SelectItem key={subject.subject_id} value={subject.subject_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       {subject.subject_code} - {subject.subject_name}
                     </SelectItem>
                   ))}
@@ -435,18 +459,18 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
 
             {/* Section - Filtered by Course */}
             <div className="space-y-2">
-              <Label htmlFor="section">Section <span className="text-red-500">*</span></Label>
+              <Label htmlFor="section" className="text-black dark:text-white">Section</Label>
               <Select
                 value={formData.sectionId}
                 onValueChange={(value) => setFormData({ ...formData, sectionId: value })}
                 disabled={!formData.courseId || loading}
               >
-                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer">
+                <SelectTrigger className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                   <SelectValue placeholder={!formData.courseId ? "Select course first" : "Select Section"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {filteredSections.map((section) => (
-                    <SelectItem key={section.section_id} value={section.section_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                    <SelectItem key={section.section_id} value={section.section_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       {section.name}
                     </SelectItem>
                   ))}
@@ -457,7 +481,7 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
 
           {/* Department Selection - Drives Professor filter */}
           <div className="space-y-2">
-            <Label htmlFor="department">Department (Optional)</Label>
+            <Label htmlFor="department" className="text-black dark:text-white">Department (Optional)</Label>
             <Select
               value={formData.departmentId}
               onValueChange={(value) => {
@@ -469,12 +493,12 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
               }}
               disabled={loading}
             >
-              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer">
+              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                 <SelectValue placeholder="Select Department (e.g., CCS)" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                 {departments.map((dept) => (
-                  <SelectItem key={dept.department_id} value={dept.department_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                  <SelectItem key={dept.department_id} value={dept.department_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                     {dept.department_name}
                   </SelectItem>
                 ))}
@@ -484,19 +508,19 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
 
           {/* Professor - Filtered by Department */}
           <div className="space-y-2">
-            <Label htmlFor="professor">Professor <strong className="text-red-500">*</strong></Label>
+            <Label htmlFor="professor" className="text-black dark:text-white">Professor</Label>
             <Select
               value={formData.professorId}
               onValueChange={(value) => setFormData({ ...formData, professorId: value })}
               disabled={!formData.departmentId || loading}
             >
-              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer">
+              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                 <SelectValue placeholder={!formData.departmentId ? "Select department first" : "Select Professor or leave unassigned"} />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
+                <SelectItem value="unassigned" className="dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Unassigned</SelectItem>
                 {filteredProfessors.map((professor) => (
-                  <SelectItem key={professor.prof_id} value={professor.prof_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                  <SelectItem key={professor.prof_id} value={professor.prof_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                     {professor.name}
                   </SelectItem>
                 ))}
@@ -507,48 +531,55 @@ export function EditClassModal({ classData, open, onOpenChange, onSave }: EditCl
           {/* Schedule */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="scheduleStart">Schedule Start</Label>
+              <Label htmlFor="scheduleStart" className="text-black dark:text-white">Schedule Start</Label>
               <Input
                 id="scheduleStart"
                 type="datetime-local"
                 value={formData.scheduleStart}
                 onChange={(e) => setFormData({ ...formData, scheduleStart: e.target.value })}
-                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"  
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"  
                 disabled={loading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="scheduleEnd">Schedule End</Label>
+              <Label htmlFor="scheduleEnd" className="text-black dark:text-white">Schedule End</Label>
               <Input
                 id="scheduleEnd"
                 type="datetime-local"
                 value={formData.scheduleEnd}
                 onChange={(e) => setFormData({ ...formData, scheduleEnd: e.target.value })}
-                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
                 disabled={loading}
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%]"
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isDisabled || loading}
-              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 w-[50%]"
+              disabled={!hasChanges || loading}
+              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
             >
-              {loading ? "Updating..." : "Update Class"}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Class"
+              )}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

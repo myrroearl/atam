@@ -33,8 +33,8 @@ interface DepartmentCardProps {
 
 // Color variations for department cards
 const cardColors = [
-  "bg-[var(--customized-color-two)]",
-  "bg-[var(--customized-color-three)]",
+  "bg-[var(--customized-color-two)] dark:bg-[var(--darkmode-color-two)]",
+  "bg-[var(--customized-color-three)] dark:bg-[var(--darkmode-color-three)]",
 ]
 
 export default function DepartmentCard({ 
@@ -114,7 +114,7 @@ export default function DepartmentCard({
           </div>
         </div>
       </CardContent>
-      <Separator />
+      <Separator className="bg-gray-200 h-[1px] dark:bg-gray-700" />
       <CardFooter className="p-4 flex justify-end flex-shrink-0">
         {/* <Button 
           onClick={handleViewCourses}
@@ -127,7 +127,7 @@ export default function DepartmentCard({
           <Button 
             variant="outline" 
             onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEdit(department) }}
-            className="flex items-center gap-2 bg-[var(--customized-color-five)] border-none text-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] hover:text-white dark:bg-black dark:text:white dark:hover:bg-[var(--customized-color-five)] dark:hover:text-[var(--customized-color-one)] w-full"
+            className="flex items-center gap-2 bg-[var(--customized-color-five)] border-none text-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] hover:text-white dark:bg-[var(--darkmode-color-five)] dark:text-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:hover:text-black w-full"
           >
             <SquarePen className="w-4 h-4" />
             Edit
@@ -135,7 +135,7 @@ export default function DepartmentCard({
           <Button 
             variant="outline" 
             onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(department) }}
-            className="flex items-center gap-2 bg-red-50 border-none text-red-500 hover:bg-red-500 hover:text-red-50 dark:bg-black dark:text:white dark:hover:bg-[var(--customized-color-five)] dark:hover:text-red-500 w-full"
+            className="flex items-center gap-2 bg-red-100 border-none text-red-500 hover:bg-red-500 hover:text-red-50 dark:bg-[var(--delete-color-one)] dark:text-red-300 dark:hover:bg-red-500 dark:hover:text-black w-full"
           >
             <Trash className="w-4 h-4" />
             Delete

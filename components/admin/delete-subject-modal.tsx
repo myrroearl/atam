@@ -11,8 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { AlertTriangle, Loader2 } from "lucide-react"
-import { Alert, AlertDescription } from "../ui/alert"
+import { AlertTriangle, Loader2, Trash2 } from "lucide-react"
 
 interface Subject {
   subject_id: number
@@ -78,91 +77,70 @@ export default function DeleteSubjectModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[470px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-bold text-black">
+      <DialogContent className="sm:max-w-[500px] dark:bg-black border-none transition-colors duration-300" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Delete Subject
           </DialogTitle>
-          <DialogDescription className="text-gray-500 text-sm">
-            Are you sure you want to proceed with deleting <strong>"{subject?.subject_name}"</strong>?
+          <DialogDescription className="text-sm text-gray-500 dark:text-gray-600">
+            Are you sure you want to delete <strong>{subject?.subject_name}</strong>?
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="flex gap-1 text-xs">
-            <strong>Note:</strong>
-            <p>This action will permanently remove the subject from the database.</p>
-          </div>
-
-          <Alert className="border-none p-0">
-            <AlertDescription className="text-red-800 font-semibold">
-              Deleting this subject will permanently lost following:
-            </AlertDescription>
-          </Alert>
-
-          <div className="">
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span className="text-black dark:text-gray-400">Subject Code:</span>
-                <span className="text-gray-500 dark:text-white">{subject?.subject_code}</span>
+          <div className="space-y-2 p-0 rounded-lg">
+            <div className="border-none p-0">
+              <p className="text-red-900 dark:text-orange-400 font-semibold text-sm">
+                This action will permanently delete the subject and all associated data.
+              </p>
+            </div>
+            {/* Subject info */}
+            <div className="space-y-1">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Subject Code:</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{subject?.subject_code}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-black dark:text-gray-400">Subject Name:</span>
-                <span className="text-gray-500 dark:text-white">{subject?.subject_name}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Subject Name:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{subject?.subject_name}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-black dark:text-gray-400">Units:</span>
-                <span className="text-gray-500 dark:text-white">{subject?.units}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Units:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{subject?.units}</span>
               </div>
             </div>
           </div>
         </div>
         
-        {/* <div className="py-4">
-          {subject && (
-            <div className="bg-[var(--customized-color-five)] dark:bg-[var(--try-five)] border border-[var(--customized-color-four)] dark:border-gray-700 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex-1">
-                  <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                    <p><strong>Subject Code:</strong> {subject.subject_code}</p>
-                    <p><strong>Subject Name:</strong> {subject.subject_name}</p>
-                    <p><strong>Units:</strong> {subject.units}</p>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    This action will permanently remove the subject from the database.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div> */}
         
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={isLoading}
-            className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%]"
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="button"
-            variant="outline"
-            onClick={handleDelete}
-            disabled={isLoading}
-            className="bg-red-600 hover:bg-red-500 text-white border-none w-[50%] hover:text-white"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              "Delete Subject"
-            )}
-          </Button>
+        <DialogFooter className="w-full">
+          <div className="flex w-full justify-between gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isLoading}
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%]"
+            >
+              No, keep it
+            </Button>
+            <Button
+              onClick={handleDelete}
+              disabled={isLoading}
+              className="bg-red-600 hover:bg-red-500 text-white border-none w-[50%] flex items-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  Yes, Delete it
+                </>
+              )}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

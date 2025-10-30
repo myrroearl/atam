@@ -100,22 +100,29 @@ export async function DELETE(
       return NextResponse.json({ error: "Student not found" }, { status: 404 })
     }
 
-    // Soft delete: Update account status to 'inactive' instead of deleting
-    const { error: deleteError } = await supabase
+    // Hard delete: remove student then related account
+    const { error: studentDeleteError } = await supabase
+      .from('students')
+      .delete()
+      .eq('student_id', student_id)
+
+    if (studentDeleteError) {
+      console.error("Student delete error:", studentDeleteError)
+      return NextResponse.json({ error: "Failed to delete student" }, { status: 500 })
+    }
+
+    const { error: accountDeleteError } = await supabase
       .from('accounts')
-      .update({ 
-        status: 'inactive',
-        updated_at: new Date().toISOString()
-      })
+      .delete()
       .eq('account_id', student.account_id)
 
-    if (deleteError) {
-      console.error("Student archive error:", deleteError)
-      return NextResponse.json({ error: "Failed to archive student" }, { status: 500 })
+    if (accountDeleteError) {
+      console.error("Account delete error:", accountDeleteError)
+      return NextResponse.json({ error: "Failed to delete associated account" }, { status: 500 })
     }
 
     return NextResponse.json({ 
-      message: "Student archived successfully"
+      message: "Student and account deleted successfully"
     })
   } catch (error) {
     console.error("API error:", error)

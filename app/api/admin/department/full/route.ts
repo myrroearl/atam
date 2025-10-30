@@ -8,12 +8,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET - Fetch a specific department with its grading components
-// If checkDeletion=true, also return counts of related data that will be deleted
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// POST - Create a new department with grading components
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -21,11 +17,106 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    const departmentId = params.id
-    const { searchParams } = new URL(request.url)
-    const checkDeletion = searchParams.get('checkDeletion') === 'true'
+    const body = await request.json()
+    const { department, gradeComponents } = body
 
-    const { data: department, error } = await supabase
+    // Validate required fields
+    if (!department.department_name || !department.dean_name) {
+      return NextResponse.json({ 
+        error: "Department name and dean name are required" 
+      }, { status: 400 })
+    }
+
+    // Validate grading components
+    if (!gradeComponents || gradeComponents.length === 0) {
+      return NextResponse.json({ 
+        error: "At least one grading component is required" 
+      }, { status: 400 })
+    }
+
+    // Validate total weight percentage
+    const totalWeight = gradeComponents.reduce((sum: number, comp: any) => 
+      sum + (comp.weight_percentage || 0), 0
+    )
+
+    if (Math.abs(totalWeight - 100) > 0.01) { // Allow for small floating point differences
+      return NextResponse.json({ 
+        error: `Total weight percentage must equal 100%. Current total: ${totalWeight}%` 
+      }, { status: 400 })
+    }
+
+    // Validate individual components
+    for (const component of gradeComponents) {
+      if (!component.component_name || !component.weight_percentage) {
+        return NextResponse.json({ 
+          error: "All grading components must have a name and weight percentage" 
+        }, { status: 400 })
+      }
+
+      if (component.weight_percentage <= 0 || component.weight_percentage > 100) {
+        return NextResponse.json({ 
+          error: "Weight percentage must be between 0 and 100" 
+        }, { status: 400 })
+      }
+    }
+
+    // Check if department name already exists
+    const { data: existingDept } = await supabase
+      .from('departments')
+      .select('department_id')
+      .eq('department_name', department.department_name)
+      .single()
+
+    if (existingDept) {
+      return NextResponse.json({ 
+        error: "Department with this name already exists" 
+      }, { status: 409 })
+    }
+
+    // Start transaction-like operation
+    // First, create the department
+    const { data: newDepartment, error: deptError } = await supabase
+      .from('departments')
+      .insert([{
+        department_name: department.department_name,
+        description: department.description || null,
+        dean_name: department.dean_name
+      }])
+      .select()
+      .single()
+
+    if (deptError) {
+      console.error("Database error creating department:", deptError)
+      return NextResponse.json({ error: "Failed to create department" }, { status: 500 })
+    }
+
+    // Then, create the grading components
+    const componentsToInsert = gradeComponents.map((component: any) => ({
+      department_id: newDepartment.department_id,
+      component_name: component.component_name,
+      weight_percentage: component.weight_percentage
+    }))
+
+    const { error: componentsError } = await supabase
+      .from('grade_components')
+      .insert(componentsToInsert)
+
+    if (componentsError) {
+      console.error("Database error creating grade components:", componentsError)
+      
+      // Rollback: delete the department if grade components failed
+      await supabase
+        .from('departments')
+        .delete()
+        .eq('department_id', newDepartment.department_id)
+      
+      return NextResponse.json({ 
+        error: "Failed to create grading components" 
+      }, { status: 500 })
+    }
+
+    // Fetch the complete department with its grade components
+    const { data: completeDepartment, error: fetchError } = await supabase
       .from('departments')
       .select(`
         *,
@@ -36,89 +127,32 @@ export async function GET(
           created_at
         )
       `)
-      .eq('department_id', departmentId)
+      .eq('department_id', newDepartment.department_id)
       .single()
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: "Department not found" }, { status: 404 })
-      }
-      console.error("Database error:", error)
-      return NextResponse.json({ error: "Failed to fetch department" }, { status: 500 })
+    if (fetchError) {
+      console.error("Error fetching complete department:", fetchError)
+      // Department was created successfully, just return the basic info
+      return NextResponse.json({ 
+        message: "Department created successfully with grading components",
+        department: newDepartment,
+        gradeComponents: componentsToInsert
+      }, { status: 201 })
     }
 
-    // If checkDeletion is true, get counts of all related data
-    if (checkDeletion) {
-      const deletionImpact = {
-        courses: 0,
-        yearLevels: 0,
-        semesters: 0,
-        subjects: 0,
-        sections: 0,
-        gradeComponents: department.grade_components?.length || 0
-      }
+    return NextResponse.json({ 
+      message: "Department created successfully with grading components",
+      department: completeDepartment
+    }, { status: 201 })
 
-      // Get courses
-      const { data: courses } = await supabase
-        .from('courses')
-        .select('course_id')
-        .eq('department_id', departmentId)
-
-      const courseIds = courses?.map(c => c.course_id) || []
-      deletionImpact.courses = courseIds.length
-
-      if (courseIds.length > 0) {
-        // Get year levels
-        const { data: yearLevels } = await supabase
-          .from('year_level')
-          .select('year_level_id')
-          .in('course_id', courseIds)
-
-        const yearLevelIds = yearLevels?.map(yl => yl.year_level_id) || []
-        deletionImpact.yearLevels = yearLevelIds.length
-
-        if (yearLevelIds.length > 0) {
-          // Get semesters
-          const { data: semesters } = await supabase
-            .from('semester')
-            .select('semester_id')
-            .in('year_level_id', yearLevelIds)
-
-          deletionImpact.semesters = semesters?.length || 0
-        }
-
-        // Get subjects
-        const { data: subjects } = await supabase
-          .from('subjects')
-          .select('subject_id')
-          .in('course_id', courseIds)
-
-        deletionImpact.subjects = subjects?.length || 0
-
-        // Get sections
-        const { data: sections } = await supabase
-          .from('sections')
-          .select('section_id')
-          .in('course_id', courseIds)
-
-        deletionImpact.sections = sections?.length || 0
-      }
-
-      return NextResponse.json({ department, deletionImpact })
-    }
-
-    return NextResponse.json({ department })
   } catch (error) {
     console.error("API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
-// PUT - Update a department
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// PUT - Update a department with its grading components
+export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -126,22 +160,60 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    const departmentId = params.id
     const body = await request.json()
-    const { department_name, description, dean_name } = body
+    const { department_id, department, gradeComponents } = body
 
     // Validate required fields
-    if (!department_name || !dean_name) {
+    if (!department_id) {
+      return NextResponse.json({ 
+        error: "Department ID is required" 
+      }, { status: 400 })
+    }
+
+    if (!department.department_name || !department.dean_name) {
       return NextResponse.json({ 
         error: "Department name and dean name are required" 
       }, { status: 400 })
+    }
+
+    // Validate grading components
+    if (!gradeComponents || gradeComponents.length === 0) {
+      return NextResponse.json({ 
+        error: "At least one grading component is required" 
+      }, { status: 400 })
+    }
+
+    // Validate total weight percentage
+    const totalWeight = gradeComponents.reduce((sum: number, comp: any) => 
+      sum + (comp.weight_percentage || 0), 0
+    )
+
+    if (Math.abs(totalWeight - 100) > 0.01) {
+      return NextResponse.json({ 
+        error: `Total weight percentage must equal 100%. Current total: ${totalWeight}%` 
+      }, { status: 400 })
+    }
+
+    // Validate individual components
+    for (const component of gradeComponents) {
+      if (!component.component_name || component.weight_percentage === undefined) {
+        return NextResponse.json({ 
+          error: "All grading components must have a name and weight percentage" 
+        }, { status: 400 })
+      }
+
+      if (component.weight_percentage <= 0 || component.weight_percentage > 100) {
+        return NextResponse.json({ 
+          error: "Weight percentage must be between 0 and 100" 
+        }, { status: 400 })
+      }
     }
 
     // Check if department exists
     const { data: existingDept } = await supabase
       .from('departments')
       .select('department_id')
-      .eq('department_id', departmentId)
+      .eq('department_id', department_id)
       .single()
 
     if (!existingDept) {
@@ -154,8 +226,8 @@ export async function PUT(
     const { data: duplicateDept } = await supabase
       .from('departments')
       .select('department_id')
-      .eq('department_name', department_name)
-      .neq('department_id', departmentId)
+      .eq('department_name', department.department_name)
+      .neq('department_id', department_id)
       .single()
 
     if (duplicateDept) {
@@ -164,95 +236,87 @@ export async function PUT(
       }, { status: 409 })
     }
 
-    // Update department
-    const { data: updatedDepartment, error } = await supabase
+    // Start transaction-like operation
+    // First, update the department
+    const { data: updatedDepartment, error: deptError } = await supabase
       .from('departments')
       .update({
-        department_name,
-        description: description || null,
-        dean_name,
+        department_name: department.department_name,
+        description: department.description || null,
+        dean_name: department.dean_name,
         updated_at: new Date().toISOString()
       })
-      .eq('department_id', departmentId)
+      .eq('department_id', department_id)
       .select()
       .single()
 
-    if (error) {
-      console.error("Database error:", error)
+    if (deptError) {
+      console.error("Database error updating department:", deptError)
       return NextResponse.json({ error: "Failed to update department" }, { status: 500 })
     }
 
+    // Delete existing grade components
+    const { error: deleteError } = await supabase
+      .from('grade_components')
+      .delete()
+      .eq('department_id', department_id)
+
+    if (deleteError) {
+      console.error("Database error deleting grade components:", deleteError)
+      return NextResponse.json({ 
+        error: "Failed to update grading components" 
+      }, { status: 500 })
+    }
+
+    // Insert new grade components
+    const componentsToInsert = gradeComponents.map((component: any) => ({
+      department_id: department_id,
+      component_name: component.component_name,
+      weight_percentage: component.weight_percentage
+    }))
+
+    const { error: componentsError } = await supabase
+      .from('grade_components')
+      .insert(componentsToInsert)
+
+    if (componentsError) {
+      console.error("Database error creating grade components:", componentsError)
+      return NextResponse.json({ 
+        error: "Failed to update grading components" 
+      }, { status: 500 })
+    }
+
+    // Fetch the complete updated department with its grade components
+    const { data: completeDepartment, error: fetchError } = await supabase
+      .from('departments')
+      .select(`
+        *,
+        grade_components (
+          component_id,
+          component_name,
+          weight_percentage,
+          created_at
+        )
+      `)
+      .eq('department_id', department_id)
+      .single()
+
+    if (fetchError) {
+      console.error("Error fetching complete department:", fetchError)
+      // Department was updated successfully, just return the basic info
+      return NextResponse.json({ 
+        message: "Department updated successfully with grading components",
+        department: updatedDepartment
+      })
+    }
+
     return NextResponse.json({ 
-      message: "Department updated successfully",
-      department: updatedDepartment 
+      message: "Department updated successfully with grading components",
+      department: completeDepartment
     })
 
   } catch (error) {
     console.error("API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
-  }
-}
-
-// DELETE - Soft delete a department (set status to 'inactive')
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    console.log('🗑️ DELETE department API called with ID:', params.id)
-    
-    const session = await getServerSession(authOptions)
-
-    if (!session || session.user.role !== "admin") {
-      console.log('❌ Unauthorized access attempt')
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
-    }
-
-    const departmentId = params.id
-    console.log('🔍 Checking department existence for ID:', departmentId)
-
-    // Check if department exists
-    const { data: existingDept, error: checkError } = await supabase
-      .from('departments')
-      .select('department_id, department_name')
-      .eq('department_id', departmentId)
-      .single()
-
-    if (checkError || !existingDept) {
-      console.log('❌ Department not found')
-      return NextResponse.json({ 
-        error: "Department not found" 
-      }, { status: 404 })
-    }
-
-    console.log('✅ Department exists:', existingDept.department_name)
-
-    // Soft delete: Update status to 'inactive'
-    console.log('📦 Archiving department (soft delete)...')
-    const { error: archiveError } = await supabase
-      .from('departments')
-      .update({ 
-        status: 'inactive',
-        updated_at: new Date().toISOString()
-      })
-      .eq('department_id', departmentId)
-
-    if (archiveError) {
-      console.error("❌ Error archiving department:", archiveError)
-      return NextResponse.json({ 
-        error: "Failed to archive department" 
-      }, { status: 500 })
-    }
-
-    console.log('✅ Department archived successfully')
-    return NextResponse.json({ 
-      message: "Department archived successfully" 
-    })
-
-  } catch (error) {
-    console.error("❌ API error:", error)
-    return NextResponse.json({ 
-      error: "Internal server error" 
-    }, { status: 500 })
   }
 }

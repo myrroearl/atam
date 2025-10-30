@@ -56,6 +56,15 @@ export function AddSectionModal({ isOpen, onClose, onSuccess }: AddSectionModalP
   const [errors, setErrors] = useState<Record<string, string | undefined>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [existingSections, setExistingSections] = useState<any[]>([])
+  const [isFormValid, setIsFormValid] = useState(false)
+
+  // Validate form whenever formData changes
+  useEffect(() => {
+    const isValid = formData.name.trim().length > 0 && 
+                   formData.course.trim() !== "" && 
+                   formData.yearLevel.trim() !== ""
+    setIsFormValid(isValid)
+  }, [formData])
 
   // Fetch existing sections
   const fetchExistingSections = async () => {
@@ -292,16 +301,15 @@ export function AddSectionModal({ isOpen, onClose, onSuccess }: AddSectionModalP
     }
   }
 
-  const isFormValid = formData.name.trim() !== "" && formData.course.trim() !== "" && formData.yearLevel.trim() !== ""
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="font-bold text-black">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-black border-none transition-colors duration-300" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Create Section
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">
+          <DialogDescription className="text-sm text-gray-500 dark:text-gray-600">
             Select a course and year level to auto-format the section name, then customize as needed.
           </DialogDescription>
         </DialogHeader>
@@ -315,13 +323,13 @@ export function AddSectionModal({ isOpen, onClose, onSuccess }: AddSectionModalP
               disabled={loading || isSubmitting}
             >
               <SelectTrigger
-                className={errors.course ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer"}
+                className={errors.course ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
               >
                 <SelectValue placeholder={loading ? "Loading courses..." : "Select Course"} />
               </SelectTrigger>    
-              <SelectContent>
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                 {courses.map((course) => (
-                  <SelectItem key={course.course_id} value={course.course_name} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                  <SelectItem key={course.course_id} value={course.course_name} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       <span className="font-medium">{course.course_name}</span>
                   </SelectItem>
                 ))}
@@ -340,7 +348,7 @@ export function AddSectionModal({ isOpen, onClose, onSuccess }: AddSectionModalP
               disabled={!formData.courseId || loading || isSubmitting}
             >
               <SelectTrigger
-                className={errors.yearLevel ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer"}
+                className={errors.yearLevel ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
               >
                 <SelectValue placeholder={
                   !formData.courseId 
@@ -350,9 +358,9 @@ export function AddSectionModal({ isOpen, onClose, onSuccess }: AddSectionModalP
                       : "Select Year Level"
                 } />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                 {filteredYearLevels.map((yearLevel) => (
-                  <SelectItem key={yearLevel.year_level_id} value={yearLevel.name} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                  <SelectItem key={yearLevel.year_level_id} value={yearLevel.name} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                     <span>{yearLevel.name}</span>
                   </SelectItem>
                 ))}
@@ -374,7 +382,7 @@ export function AddSectionModal({ isOpen, onClose, onSuccess }: AddSectionModalP
               placeholder="e.g., BSIT-1A (auto-filled when course and year level are selected)"
               value={formData.name}
               onChange={(e) => handleSectionNameChange(e.target.value)}
-              className={errors.name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+              className={errors.name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
               disabled={isSubmitting}
             />
             {errors.name && (
@@ -394,14 +402,14 @@ export function AddSectionModal({ isOpen, onClose, onSuccess }: AddSectionModalP
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)]"
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={!isFormValid || isSubmitting}
-              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2"
+              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
             >
               {isSubmitting ? (
                 <>

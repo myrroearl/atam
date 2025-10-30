@@ -85,47 +85,48 @@ export function DeleteSectionModal({ section, open, onOpenChange, onDelete }: De
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-black font-bold">
+      <DialogContent className="sm:max-w-[500px] dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Delete Section
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-500">
-            Are you sure you want to proceed with deleting <strong>"{section.name}"</strong>?
+          <DialogDescription className="text-sm text-gray-500 dark:text-gray-600">
+            Are you sure you want to delete <strong>{section.name}</strong>?
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <Alert className="border-none p-0">
-            <AlertDescription className="text-red-800 font-semibold">
-              Deleting this section will permanently lost following:
-            </AlertDescription>
-          </Alert>
+          <div className="space-y-2 p-0 rounded-lg">
+            <div className="border-none p-0">
+              <p className="text-red-900 dark:text-orange-400 font-semibold text-sm">
+                This action will permanently delete the section and all associated data.
+              </p>
+            </div>
 
-          <div className="">
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span className="text-black dark:text-gray-400">Name:</span>
-                <span className="text-gray-500 dark:text-white">{section.name}</span>
+            {/* Section info */}
+            <div className="space-y-1">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Section Name:</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{section.name}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-black dark:text-gray-400">Course:</span>
-                <span className="text-gray-500 dark:text-white">{section.course}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Course:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{section.course}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-black dark:text-gray-400">Year Level:</span>
-                <span className="text-gray-500 dark:text-white">{section.yearLevel}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Year Level:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{section.yearLevel}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-black dark:text-gray-400">Department:</span>
-                <span className="text-gray-500 dark:text-white">{section.department}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Department:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{section.department}</span>
               </div>
             </div>
           </div>
         </div>
 
         <DialogFooter className="w-full">
-          <div className="flex w-full justify-between gap-2">
+          <div className="flex w-full justify-between gap-3">
             <Button
               type="button"
               variant="outline"
@@ -133,7 +134,7 @@ export function DeleteSectionModal({ section, open, onOpenChange, onDelete }: De
               disabled={isDeleting}
               className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%]"
             >
-              No, keep it.
+              No, keep it
             </Button>
             <Button
               onClick={handleDelete}
@@ -146,7 +147,7 @@ export function DeleteSectionModal({ section, open, onOpenChange, onDelete }: De
                   Deleting...
                 </>
               ) : (
-                "Yes, Delete!"
+                "Yes, Delete it"
               )}
             </Button>
           </div>

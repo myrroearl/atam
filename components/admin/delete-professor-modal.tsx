@@ -12,34 +12,52 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Student } from "@/types/student"
 
-interface DeleteStudentModalProps {
-  student: Student | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onDelete: (studentId: string) => void;
+interface Professor {
+  id: string
+  name: string
+  email: string
+  department: string
+  subjects: string[]
+  sections: string[]
+  facultyType: string
+  status: string
+  avatar: string
+  prof_id: number
+  account_id: number
+  department_id: number
+  birthday?: string
+  address?: string
+  contact_number?: string
+  created_at: string
+  updated_at: string
 }
 
-export function DeleteStudentModal({ student, open, onOpenChange, onDelete }: DeleteStudentModalProps) {
+interface DeleteProfessorModalProps {
+  professor: Professor | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDelete: (professorId: string) => void;
+}
+
+export function DeleteProfessorModal({ professor, open, onOpenChange, onDelete }: DeleteProfessorModalProps) {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDelete = async () => {
-    if (!student) return
+    if (!professor) return
 
     setIsDeleting(true)
 
     try {
-      // Archive the student by updating their status in the students table to 'inactive'
+      // Archive the professor by updating their status in the professors table to 'inactive'
       const response = await fetch('/api/admin/archive', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          type: 'students',
-          id: student.student_id,
+          type: 'professors',
+          id: professor.prof_id,
           action: 'archive'
         })
       })
@@ -47,17 +65,15 @@ export function DeleteStudentModal({ student, open, onOpenChange, onDelete }: De
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to archive student')
+        throw new Error(result.error || 'Failed to archive professor')
       }
-
-      toast.success(`🗄️ Student "${student.name}" has been archived successfully.`)
-      onDelete(student.id)
+      onDelete(professor.id)
       onOpenChange(false)
 
     } catch (error) {
-      console.error('Error archiving student:', error)
+      console.error('Error archiving professor:', error)
       
-      const errorMessage = error instanceof Error ? error.message : "Failed to archive student"
+      const errorMessage = error instanceof Error ? error.message : "Failed to archive professor"
       toast.error(errorMessage)
     } finally {
       setIsDeleting(false)
@@ -70,17 +86,17 @@ export function DeleteStudentModal({ student, open, onOpenChange, onDelete }: De
     }
   }
 
-  if (!student) return null
+  if (!professor) return null
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px] dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader className="space-y-1">
           <DialogTitle className="font-bold text-black text-xl dark:text-white">
-            Delete Student
+            Delete Professor
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-500">
-            Are you sure you want to archive <strong>{student.name}</strong>?
+            Are you sure you want to archive <strong>{professor.name}</strong>?
           </DialogDescription>
         </DialogHeader>
 
@@ -88,35 +104,35 @@ export function DeleteStudentModal({ student, open, onOpenChange, onDelete }: De
           <div className="space-y-2 p-0 rounded-lg">
             <div className="border-none p-0">
               <p className="text-red-600 dark:text-red-500 font-semibold text-sm">
-                This action will archive the student and deactivate their account.
+                This action will archive the professor and deactivate their account.
               </p>
             </div>
 
-            {/* Student info */}
+            {/* Professor info */}
             <div className="space-y-1">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Student ID:</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{student.id}</span>
+                <span className="text-gray-600 dark:text-gray-400">Professor ID:</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{professor.prof_id}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Name:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{student.name}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{professor.name}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Email:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{student.email}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{professor.email}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Course:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{student.course}</span>
+                <span className="text-gray-600 dark:text-gray-400">Department:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{professor.department}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Year & Section:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{student.yearSection}</span>
+                <span className="text-gray-600 dark:text-gray-400">Faculty Type:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{professor.facultyType}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Status:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{student.status}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{professor.status}</span>
               </div>
             </div>
           </div>
@@ -125,7 +141,7 @@ export function DeleteStudentModal({ student, open, onOpenChange, onDelete }: De
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
               <p className="text-sm text-yellow-800 dark:text-yellow-400">
-                <strong>Note:</strong> The student can be restored from the archive later if needed. Their account will be deactivated but not permanently deleted.
+                <strong>Note:</strong> The professor can be restored from the archive later if needed. Their account will be deactivated but not permanently deleted.
               </p>
             </div>
           </div> */}

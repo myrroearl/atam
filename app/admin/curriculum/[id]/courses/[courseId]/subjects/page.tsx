@@ -130,8 +130,8 @@ export default function SubjectManagementPage() {
 
   // Color variations for course headers (reuse department/courses palette)
   const cardColors = [
-    "bg-[var(--customized-color-two)]",
-    "bg-[var(--customized-color-three)]",
+    "bg-[var(--customized-color-two)] dark:bg-[var(--darkmode-color-two)]",
+    "bg-[var(--customized-color-three)] dark:bg-[var(--darkmode-color-three)]",
   ]
 
   const headerColor = course ? cardColors[course.course_id % cardColors.length] : cardColors[0]
@@ -408,9 +408,9 @@ export default function SubjectManagementPage() {
     const hasSubjects = subjects.some(s => s.year_level_id === yearLevel.year_level_id)
     const hasSemesters = semesters.some(s => s.year_level_id === yearLevel.year_level_id)
     
-    if (hasSubjects || hasSemesters) {
-      toast.warning(`This year level has ${hasSubjects ? 'subjects' : ''}${hasSubjects && hasSemesters ? ' and ' : ''}${hasSemesters ? 'semesters' : ''}. Deleting will remove all associated data.`)
-    }
+    // if (hasSubjects || hasSemesters) {
+    //   toast.warning(`This year level has ${hasSubjects ? 'subjects' : ''}${hasSubjects && hasSemesters ? ' and ' : ''}${hasSemesters ? 'semesters' : ''}. Deleting will remove all associated data.`)
+    // }
     
     setSelectedYearLevel(yearLevel)
     setIsDeleteYearLevelModalOpen(true)
@@ -452,7 +452,7 @@ export default function SubjectManagementPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[var(--customized-color-five)] dark:bg-[var(--try-five)] transition-colors">
+      <div className="min-h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
         <div className="p-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
@@ -467,12 +467,12 @@ export default function SubjectManagementPage() {
 
   if (!department || !course) {
     return (
-      <div className="min-h-screen bg-[var(--customized-color-five)] dark:bg-[var(--try-five)] transition-colors">
+      <div className="min-h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
         <div className="p-8">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Data Not Found</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">The requested department or course could not be found.</p>
-            <Button onClick={handleBackToDepartments} className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white">
+            <Button onClick={handleBackToDepartments} className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Departments
             </Button>
@@ -483,7 +483,7 @@ export default function SubjectManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] transition-colors">
+    <div className="min-h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
       <div className="p-5 w-full space-y-6">
         {/* Header */}
         <div className="space-y-2">
@@ -491,7 +491,7 @@ export default function SubjectManagementPage() {
             <Button 
               onClick={handleBackToCourses}
               variant="outline"
-              className="group bg-white hover:bg-[var(--customized-color-four)] hover:text-[var(--customized-color-one)] border-none shadow md text-xs flex items-center gap-1 transition-all duration-300 pl-3 pr-3 transition-transform duration-500 hover:-translate-x-2"
+              className="group bg-white hover:bg-[var(--customized-color-four)] hover:text-[var(--customized-color-one)] border-none shadow md text-xs flex items-center gap-1 transition-all duration-300 pl-3 pr-3 transition-transform duration-500 hover:-translate-x-2 dark:bg-black dark:hover:bg-[var(--darkmode-color-four)] dark:hover:text-[var(--darkmode-color-one)] dark:hover:border-none"
             >
               <ArrowLeft className="w-3 h-3 transition-all duration-300 group-hover:-translate-x-1 group-hover:opacity-80" />
               Back to Courses
@@ -502,7 +502,7 @@ export default function SubjectManagementPage() {
         </div>
 
         {/* Year Level Tabs */}
-        <div className="bg-white rounded-md dark:border-gray-700">
+        <div className="bg-white dark:bg-black rounded-md dark:border-gray-700">
           <div className="flex items-center justify-between px-6 py-3">
             <Tabs value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))} className="flex-1">
               <TabsList className="h-auto p-0 bg-transparent rounded-none border-0">
@@ -512,7 +512,7 @@ export default function SubjectManagementPage() {
                       <TabsTrigger 
                         key={item.year}
                         value={item.year.toString()}
-                        className="flex-1 gap-1 px-6 py-2 text-sm font-medium rounded-lg border-b-2 border-transparent data-[state=active]:border-[var(--customized-color-one)] data-[state=active]:text-[var(--customized-color-one)] data-[state=active]:bg-[transparent] data-[state=active]:hover:bg-[var(--customized-color-four)] hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] text-gray-600 mr-2 dark:hover:text-gray-300"
+                        className="flex-1 gap-1 px-6 py-2 text-sm font-medium rounded-lg border-b-2 border-transparent data-[state=active]:border-[var(--customized-color-one)] data-[state=active]:text-[var(--customized-color-one)] data-[state=active]:bg-[transparent] data-[state=active]:hover:bg-[var(--customized-color-four)] hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] text-gray-600 mr-2 dark:text-gray-300 dark:hover:text-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-five)] dark:data-[state=active]:border-[var(--darkmode-color-one)] dark:data-[state=active]:text-[var(--darkmode-color-one)] dark:data-[state=active]:bg-[transparent] dark:data-[state=active]:hover:bg-[var(--darkmode-color-four)]"
                       >
                         {item.name}
                       </TabsTrigger>
@@ -523,7 +523,7 @@ export default function SubjectManagementPage() {
                   <Button 
                     onClick={handleAddYearLevel}
                     size="sm"
-                    className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white rounded-full p-2 h-[32px]"
+                    className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white rounded-full p-2 h-[32px] dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
                     disabled={isLoading}
                     title="Add New Year Level"
                   >
@@ -539,16 +539,16 @@ export default function SubjectManagementPage() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
-                      variant="outline" 
+                      variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 text-gray-600 border-none hover:!text-[var(--customized-color-one)] hover:bg-[var(--customized-color-five)] dark:hover:text-gray-300"
+                      className="h-8 w-8 p-0 text-gray-600 hover:!text-[var(--customized-color-one)] hover:bg-[var(--customized-color-five)] dark:text-gray-300 dark:hover:text-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-five)]"
                       disabled={isLoading}
                     >
                       <MoreVertical className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="flex items-center gap-2 focus:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] cursor-pointer" onClick={() => {
+                  <DropdownMenuContent align="end" className="w-60 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] border-none dark:border-none">
+                    <DropdownMenuItem className="flex items-center gap-2 focus:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-four)] cursor-pointer dark:focus:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-four)] dark:text-white" onClick={() => {
                       const currentYearLevelItem = availableYearLevels.find(item => item.year === selectedYear)
                       if (currentYearLevelItem) handleEditYearLevel(currentYearLevelItem.yearLevel)
                     }}>
@@ -560,7 +560,7 @@ export default function SubjectManagementPage() {
                         const currentYearLevelItem = availableYearLevels.find(item => item.year === selectedYear)
                         if (currentYearLevelItem) handleDeleteYearLevel(currentYearLevelItem.yearLevel)
                       }}
-                      className="flex items-center gap-2 text-red-500 focus:bg-red-50 focus:text-red-500 cursor-pointer"
+                      className="flex items-center gap-2 text-red-500 focus:bg-red-100 focus:text-red-500 cursor-pointer dark:text-red-500 dark:focus:bg-red-950 dark:focus:text-red-300"
                     >
                       <Trash className="w-4 h-4" />
                       Delete Current Year Level
@@ -584,17 +584,17 @@ export default function SubjectManagementPage() {
                   </h1>
                   <div className="flex items-center gap-2">
                     <strong className="text-white">Course Code: </strong>
-                    <p className="text-gray-300">{course.course_code}</p>
+                    <p className="text-gray-200 dark:text-gray-300">{course.course_code}</p>
                   </div>
                   {/* Enhanced Year Level Information */}
                   <div className="mt-3 flex items-center gap-6 text-sm">
                     <div className="flex items-center gap-2">
                       <strong className="text-white">Year Levels:</strong>
-                      <span className="text-gray-300">{yearLevels.length}</span>
+                      <span className="text-gray-200 dark:text-gray-300">{yearLevels.length}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <strong className="text-white">Total Subjects:</strong>
-                      <span className="text-gray-300">{subjects.length}</span>
+                      <span className="text-gray-200 dark:text-gray-300">{subjects.length}</span>
                     </div>
                     {/* <div className="flex items-center gap-2">
                       <strong className="text-white">Semesters:</strong>
@@ -609,7 +609,7 @@ export default function SubjectManagementPage() {
                     </div> */}
                     <div className="flex items-center gap-2">
                       <strong className="text-white">Total Units:</strong>
-                      <span className="text-gray-300">
+                      <span className="text-gray-200 dark:text-gray-300">
                         {subjects.reduce((sum, subject) => sum + (subject.units || 0), 0)}
                       </span>
                     </div>
@@ -649,7 +649,7 @@ export default function SubjectManagementPage() {
                       <div className="flex justify-end gap-3">
                         <Button 
                           onClick={handleAddSemester}
-                          className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-[var(--customized-color-one)]"
+                          className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-[var(--customized-color-one)] dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
                         >
                           <Plus className="w-5 h-5" />
                           New Semester
@@ -670,10 +670,10 @@ export default function SubjectManagementPage() {
                       ) : (
                         <div className="space-y-6">
                         {semesterDisplayData.map((semesterData) => (
-                          <div key={semesterData.semester_id} className="bg-white rounded-lg overflow-hidden border-none">
+                          <div key={semesterData.semester_id} className="bg-white dark:bg-black rounded-lg overflow-hidden border-none">
                             {/* Enhanced Semester Header - Clickable Accordion */}
                             <div 
-                              className="bg-white px-4 py-3 cursor-pointer rounded-lg transition-colors duration-200 border border-transparent focus:border-[var(--customized-color-one)]"
+                              className="bg-white dark:bg-black px-4 py-3 cursor-pointer rounded-lg transition-colors duration-200 border border-transparent focus:border-[var(--customized-color-one)] dark:focus:!border-[var(--darkmode-color-one)]"
                               role="button"
                               tabIndex={0}
                               aria-expanded={expandedSemesters.has(semesterData.semester_id)}
@@ -699,7 +699,7 @@ export default function SubjectManagementPage() {
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          className="h-8 w-8 p-0 text-gray-600 hover:!text-[var(--customized-color-one)] hover:bg-[var(--customized-color-five)]"
+                                          className="h-8 w-8 p-0 text-gray-600 hover:!text-[var(--customized-color-one)] hover:bg-[var(--customized-color-five)] dark:text-gray-300 dark:hover:text-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-five)]"
                                           onClick={(e) => { 
                                             e.stopPropagation(); 
                                             e.preventDefault(); 
@@ -709,14 +709,14 @@ export default function SubjectManagementPage() {
                                           <MoreVertical className="h-4 w-4" />
                                         </Button>
                                       </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end" className="w-48 bg-white">
-                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleEditSemester(semesterData)}} className="flex items-center gap-2 focus:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] cursor-pointer">
+                                      <DropdownMenuContent align="end" className="w-48 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] border-none dark:border-none">
+                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleEditSemester(semesterData)}} className="flex items-center gap-2 focus:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-four)] cursor-pointer dark:focus:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-four)] dark:text-white">
                                           <Edit className="h-4 w-4" />
                                           Edit Semester
                                         </DropdownMenuItem>
                                         <DropdownMenuItem 
                                           onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDeleteSemester(semesterData)}} 
-                                          className="flex items-center gap-2 text-red-500 focus:bg-red-50 focus:text-red-500 cursor-pointer"
+                                          className="flex items-center gap-2 text-red-500 focus:bg-red-100 focus:text-red-500 cursor-pointer dark:text-red-500 dark:focus:bg-red-950 dark:focus:text-red-300"
                                         >
                                           <Trash className="h-4 w-4" />
                                           Delete Semester
@@ -730,24 +730,24 @@ export default function SubjectManagementPage() {
                             
                             {/* Semester Content - Accordion */}
                             {expandedSemesters.has(semesterData.semester_id) && (
-                              <div className="p-0 transition-all duration-300 ease-in-out border-t border-gray-300">
+                              <div className="p-0 transition-all duration-300 ease-in-out border-t border-gray-300 dark:border-gray-700">
                                 {semesterData.subjects.length > 0 ? (
                                   <>
-                                    <div className="overflow-x-auto p-4 bg-white">
+                                    <div className="overflow-x-auto p-4 bg-white dark:bg-black">
                                       <table className="w-full rounded-t-lg border-none overflow-hidden">
-                                        <thead className="bg-[var(--customized-color-four)] rounded-lg dark:bg-gray-800 w-full">
+                                        <thead className="bg-[var(--customized-color-four)] dark:bg-[var(--darkmode-color-four)] rounded-lg w-full">
                                           <tr>
-                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Subject Code</th>
-                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Subject Name</th>
-                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Units</th>
-                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Year</th>
-                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider">Semester</th>
-                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-gray-400 tracking-wider w-[50px]"></th>
+                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-white tracking-wider">Subject Code</th>
+                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-white tracking-wider">Subject Name</th>
+                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-white tracking-wider">Units</th>
+                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-white tracking-wider">Year</th>
+                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-white tracking-wider">Semester</th>
+                                            <th className="text-left px-3 py-3 font-semibold text-black dark:text-white tracking-wider w-[50px]"></th>
                                           </tr>
                                         </thead>
-                                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                        <tbody className="bg-white dark:bg-black divide-y divide-gray-200 dark:divide-gray-800">
                                           {semesterData.subjects.map((subject) => (
-                                            <tr key={subject.subject_id} className="hover:bg-[var(--customized-color-five)] dark:hover:bg-gray-700">
+                                            <tr key={subject.subject_id} className="hover:bg-[var(--customized-color-five)] dark:hover:bg-[var(--darkmode-color-five)]">
                                               <td className="px-2 py-2 text-sm text-black dark:text-white">
                                                 {subject.subject_code}
                                               </td>
@@ -766,18 +766,18 @@ export default function SubjectManagementPage() {
                                               <td className="px-2 py-2 text-sm flex justify-end">
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-600 hover:!text-[var(--customized-color-one)] hover:bg-[var(--customized-color-four)] dark:text-gray-300 dark:hover:text-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-four)]">
                                                       <MoreVertical className="w-4 h-4" />
                                                     </Button>
                                                   </DropdownMenuTrigger>
-                                                  <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handleEditSubject(subject)} className="flex items-center gap-2 focus:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] cursor-pointer">
+                                                  <DropdownMenuContent align="end" className="bg-white dark:bg-[var(--darkmode-color-five)] border-none dark:border-none">
+                                                    <DropdownMenuItem onClick={() => handleEditSubject(subject)} className="flex items-center gap-2 focus:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] cursor-pointer dark:text-white dark:focus:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)]">
                                                       <Edit className="w-4 h-4 mr-2" />
                                                       Edit Subject
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem 
                                                       onClick={() => handleDeleteSubject(subject)}
-                                                      className="flex items-center gap-2 text-red-500 focus:bg-red-50 focus:text-red-500 cursor-pointer"
+                                                      className="flex items-center gap-2 text-red-500 focus:bg-red-50 focus:text-red-500 cursor-pointer dark:text-red-500 dark:focus:bg-red-50 dark:focus:text-red-500"
                                                     >
                                                       <Trash className="w-4 h-4 mr-2" />
                                                       Delete Subject
@@ -792,11 +792,11 @@ export default function SubjectManagementPage() {
                                     </div>
                                     
                                     {/* Add Subject Button */}
-                                    <div className="px-4 py-4 dark:bg-gray-800 w-full border-t border-gray-300">
+                                    <div className="px-4 py-4 dark:bg-black w-full border-t border-gray-300 dark:border-gray-700">
                                       <div className="flex justify-center w-full">
                                         <Button 
                                           onClick={() => handleAddSubject(semesterData)}
-                                          className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-none w-full"
+                                          className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-none w-full dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
                                         >
                                           <Plus className="w-4 h-4 mr-2" />
                                           New Subject
@@ -811,7 +811,7 @@ export default function SubjectManagementPage() {
                                     </p>
                                     <Button 
                                       onClick={() => handleAddSubject(semesterData)}
-                                      className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-none"
+                                      className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-none dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
                                     >
                                       <Plus className="w-4 h-4 mr-2" />
                                     New Subject
@@ -833,7 +833,7 @@ export default function SubjectManagementPage() {
                       <div className="flex justify-end gap-3">
                         <Button 
                           onClick={handleAddSemester}
-                          className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-[var(--customized-color-one)]"
+                          className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-[var(--customized-color-one)] dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           New Semester
@@ -853,7 +853,7 @@ export default function SubjectManagementPage() {
                           </p>
                           <Button 
                             onClick={handleAddYearLevel}
-                            className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-[var(--customized-color-one)]"
+                            className="bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-two)] border-[var(--customized-color-one)] dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
                           >
                             <Plus className="w-4 h-4 mr-2" />
                             Add Your First Year Level
@@ -979,7 +979,6 @@ export default function SubjectManagementPage() {
           onClose={() => setIsEditYearLevelModalOpen(false)}
           onSuccess={() => {
             fetchData()
-            toast.success("Year level updated successfully!")
           }}
           yearLevel={selectedYearLevel}
         />

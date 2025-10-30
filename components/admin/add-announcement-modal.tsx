@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
 import { Plus, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -33,6 +33,15 @@ export function AddAnnouncementModal({ onAdd }: AddAnnouncementModalProps) {
   const [loading, setLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isFormValid, setIsFormValid] = useState(false)
+
+  // Validate form whenever formData changes
+  useEffect(() => {
+    const isValid = formData.message.trim() !== "" && 
+                   formData.type !== "" &&
+                   (formData.send_to === "specific" ? formData.account_id !== "" : true)
+    setIsFormValid(isValid)
+  }, [formData])
 
   // Fetch users when modal opens
   useEffect(() => {
@@ -129,13 +138,16 @@ export function AddAnnouncementModal({ onAdd }: AddAnnouncementModalProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Announcement
+          <Plus className="w-4 h-4" />
+          New Announcement
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-black dark:text-white font-bold">Create New Announcement</DialogTitle>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto dark:bg-black border-none transition-colors duration-300" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">Create New Announcement</DialogTitle>
+          <DialogDescription className="text-sm text-gray-500 dark:text-gray-600">
+            Create and send announcements to users in the system.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -148,14 +160,14 @@ export function AddAnnouncementModal({ onAdd }: AddAnnouncementModalProps) {
               value={formData.send_to}
               onValueChange={(value) => setFormData({ ...formData, send_to: value, account_id: "" })}
             >
-              <SelectTrigger id="send_to">
+              <SelectTrigger id="send_to" className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                 <SelectValue placeholder="Select recipient type" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="specific">Specific User</SelectItem>
-                <SelectItem value="all_students">All Students</SelectItem>
-                <SelectItem value="all_professors">All Professors</SelectItem>
-                <SelectItem value="all_users">All Users (Students + Professors)</SelectItem>
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
+                <SelectItem value="specific" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Specific User</SelectItem>
+                <SelectItem value="all_students" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">All Students</SelectItem>
+                <SelectItem value="all_professors" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">All Professors</SelectItem>
+                <SelectItem value="all_users" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">All Users (Students + Professors)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -171,12 +183,12 @@ export function AddAnnouncementModal({ onAdd }: AddAnnouncementModalProps) {
                 onValueChange={(value) => setFormData({ ...formData, account_id: value })}
                 disabled={loading}
               >
-                <SelectTrigger id="receiver" className={errors.account_id ? "border-red-500" : ""}>
+                <SelectTrigger id="receiver" className={errors.account_id ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}>
                   <SelectValue placeholder={loading ? "Loading users..." : "Select receiver"} />
                 </SelectTrigger>
-                <SelectContent className="max-h-[200px]">
+                <SelectContent className="max-h-[200px] bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {users.map((user) => (
-                    <SelectItem key={user.account_id} value={user.account_id.toString()}>
+                    <SelectItem key={user.account_id} value={user.account_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       {user.email} ({user.role})
                     </SelectItem>
                   ))}
@@ -207,44 +219,25 @@ export function AddAnnouncementModal({ onAdd }: AddAnnouncementModalProps) {
 
           {/* Type Selection */}
           <div className="space-y-2">
-            <Label htmlFor="type" className="text-black dark:text-white">
-              Type <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={formData.type}
-              onValueChange={(value) => setFormData({ ...formData, type: value })}
-            >
-              <SelectTrigger id="type" className={errors.type ? "border-red-500" : ""}>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="general">General</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-                <SelectItem value="announcement">Announcement</SelectItem>
-                <SelectItem value="reminder">Reminder</SelectItem>
-                <SelectItem value="event">Event</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.type && <p className="text-red-500 text-sm">{errors.type}</p>}
-          </div>
-
-          {/* Status Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="status" className="text-black dark:text-white">
-              Status
-            </Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) => setFormData({ ...formData, status: value })}
-            >
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unread">Unread</SelectItem>
-                <SelectItem value="read">Read</SelectItem>
-              </SelectContent>
-            </Select>
+              <Label htmlFor="type" className="text-black dark:text-white">
+                Type <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.type}
+                onValueChange={(value) => setFormData({ ...formData, type: value })}
+              >
+                <SelectTrigger id="type" className={errors.type ? "border-red-500" : "border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
+                  <SelectItem value="general" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">General</SelectItem>
+                  <SelectItem value="urgent" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Urgent</SelectItem>
+                  <SelectItem value="announcement" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Announcement</SelectItem>
+                  <SelectItem value="reminder" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Reminder</SelectItem>
+                  <SelectItem value="event" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Event</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.type && <p className="text-red-500 text-sm">{errors.type}</p>}
           </div>
 
           {/* Message */}
@@ -257,7 +250,7 @@ export function AddAnnouncementModal({ onAdd }: AddAnnouncementModalProps) {
               placeholder="Enter announcement message..."
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              className={`min-h-[120px] ${errors.message ? "border-red-500" : ""}`}
+              className={`min-h-[120px] ${errors.message ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}`}
             />
             {errors.message && <p className="text-red-500 text-sm">{errors.message}</p>}
           </div>
@@ -269,14 +262,14 @@ export function AddAnnouncementModal({ onAdd }: AddAnnouncementModalProps) {
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isSubmitting}
-            className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)]"
+            className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white"
+            disabled={!isFormValid || isSubmitting}
+            className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
           >
             {isSubmitting ? (
               <>
@@ -284,7 +277,7 @@ export function AddAnnouncementModal({ onAdd }: AddAnnouncementModalProps) {
                 Creating...
               </>
             ) : (
-              "Create Announcement"
+              "Add Announcement"
             )}
           </Button>
         </div>

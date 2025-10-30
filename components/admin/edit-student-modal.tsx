@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Student } from "@/types/student"
 
@@ -77,14 +78,17 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
   const [filteredYearLevels, setFilteredYearLevels] = useState<YearLevel[]>([])
   const [filteredSections, setFilteredSections] = useState<Section[]>([])
   const [loading, setLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [existingStudents, setExistingStudents] = useState<any[]>([])
   const [errors, setErrors] = useState<Record<string, string | undefined>>({})
+  const [hasChanges, setHasChanges] = useState(false)
+  const [originalData, setOriginalData] = useState<any>(null)
 
   useEffect(() => {
     if (student) {
       const { firstName, middleName, lastName } = splitName(student.name);
       const { yearLevel, section } = splitYearSection(student.yearSection);
-      setFormData({
+      const initialData = {
         id: student.id,
         firstName,
         middleName,
@@ -104,7 +108,10 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
         // yearLevelId will be derived once sections are fetched
         yearLevelId: "",
         sectionId: student.section_id ? String(student.section_id) : "",
-      });
+      };
+      setFormData(initialData);
+      setOriginalData(initialData);
+      setHasChanges(false);
     }
     if (!open) {
       setFormData({
@@ -118,7 +125,7 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
         schoolYear: "",
         yearLevel: "",
         section: "",
-        status: "Enrolled",
+        status: "active",
         birthday: "",
         address: "",
         contactNumber: "",
@@ -127,8 +134,33 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
         yearLevelId: "",
         sectionId: "",
       });
+      setOriginalData(null);
+      setHasChanges(false);
     }
   }, [student, open]);
+
+  // Check for changes whenever formData changes
+  useEffect(() => {
+    if (originalData) {
+      const changed = formData.firstName !== originalData.firstName ||
+                     formData.middleName !== originalData.middleName ||
+                     formData.lastName !== originalData.lastName ||
+                     formData.email !== originalData.email ||
+                     formData.course !== originalData.course ||
+                     formData.yearLevel !== originalData.yearLevel ||
+                     formData.section !== originalData.section ||
+                     formData.status !== originalData.status ||
+                     formData.birthday !== originalData.birthday ||
+                     formData.address !== originalData.address ||
+                     formData.contactNumber !== originalData.contactNumber
+      setHasChanges(changed)
+    }
+  }, [formData, originalData]);
+
+  // Debug isSubmitting state
+  useEffect(() => {
+    console.log('isSubmitting state changed:', isSubmitting);
+  }, [isSubmitting]);
 
   // Fetch existing students for validation
   const fetchExistingStudents = async () => {
@@ -229,7 +261,7 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
     }
   }, [formData.sectionId, formData.yearLevelId, sections])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Check for duplicates before submitting (excluding current student)
@@ -243,44 +275,54 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
       return
     }
     
-    // Merge names and yearSection
-    const name = formData.middleName
-      ? `${formData.lastName}, ${formData.firstName} ${formData.middleName}`
-      : `${formData.lastName}, ${formData.firstName}`;
-    const yearSection = `${formData.yearLevel} & ${formData.section}`;
-    // Update internal IDs on the Student before handing off
-    const updated: Student = {
-      ...student!,
-      id: formData.id,
-      name,
-      email: formData.email,
-      course: formData.course,
-      schoolYear: formData.schoolYear,
-      yearSection,
-      status: formData.status,
-      birthday: formData.birthday || null,
-      address: formData.address || null,
-      contact_number: formData.contactNumber || null,
-      avatar: formData.avatar,
-      // keep existing db fields, but adjust ids if chosen
-      student_id: student!.student_id,
-      account_id: student!.account_id,
-      section_id: formData.sectionId ? parseInt(formData.sectionId) : student!.section_id,
-      course_id: formData.courseId ? parseInt(formData.courseId) : student!.course_id,
-      department_id: student!.department_id,
+    setIsSubmitting(true);
+    console.log('Setting isSubmitting to true');
+    
+    try {
+      // Add a small delay to show the loading state
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Merge names and yearSection
+      const name = formData.middleName
+        ? `${formData.lastName}, ${formData.firstName} ${formData.middleName}`
+        : `${formData.lastName}, ${formData.firstName}`;
+      const yearSection = `${formData.yearLevel} & ${formData.section}`;
+      // Update internal IDs on the Student before handing off
+      const updated: Student = {
+        ...student!,
+        id: formData.id,
+        name,
+        email: formData.email,
+        course: formData.course,
+        schoolYear: formData.schoolYear,
+        yearSection,
+        status: formData.status,
+        birthday: formData.birthday || null,
+        address: formData.address || null,
+        contact_number: formData.contactNumber || null,
+        avatar: formData.avatar,
+        // keep existing db fields, but adjust ids if chosen
+        student_id: student!.student_id,
+        account_id: student!.account_id,
+        section_id: formData.sectionId ? parseInt(formData.sectionId) : student!.section_id,
+        course_id: formData.courseId ? parseInt(formData.courseId) : student!.course_id,
+        department_id: student!.department_id,
+      }
+      onSave(updated);
+      onOpenChange(false);
+    } finally {
+      setIsSubmitting(false);
     }
-    onSave(updated);
-    onOpenChange(false);
   };
 
-  const isDisabled = !formData.id || !formData.firstName || !formData.lastName || !formData.email || !formData.course || !formData.schoolYear || !formData.yearLevel || !formData.section;
+  const isDisabled = !formData.id || !formData.firstName || !formData.lastName || !formData.email || !formData.course || !formData.schoolYear || !formData.yearLevel || !formData.section || !hasChanges;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle className="font-bold text-black">Edit Student</DialogTitle>
-          <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">Edit Student</DialogTitle>
+          <DialogDescription className="text-sm text-gray-500">
             Update the student information.
           </DialogDescription>
         </DialogHeader>
@@ -304,6 +346,17 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contactNumber">Contact Number</Label>
+              <Input
+                id="contactNumber"
+                value={formData.contactNumber}
+                onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
+                placeholder="+63 912 345 6789"
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               />
             </div>
           </div>
@@ -316,6 +369,7 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
                 value={formData.firstName}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                 required
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               />
             </div>
             <div className="space-y-2">
@@ -324,6 +378,7 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
                 id="middleName"
                 value={formData.middleName}
                 onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               />
             </div>
             <div className="space-y-2">
@@ -333,42 +388,42 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                 required
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="course">Course</Label>
-            <Select 
-              value={formData.courseId || ""}
-              onValueChange={(value) => {
-                const selected = courses.find(c => c.course_id.toString() === value)
-                setFormData(prev => ({
-                  ...prev,
-                  courseId: value,
-                  course: selected?.course_name || prev.course,
-                  yearLevel: "",
-                  yearLevelId: "",
-                  section: "",
-                  sectionId: "",
-                }))
-              }}
-              disabled={loading}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={loading ? "Loading courses..." : "Select course"} />
-              </SelectTrigger>
-              <SelectContent>
-                {courses.map(course => (
-                  <SelectItem key={`course-${course.course_id}`} value={course.course_id.toString()}>
-                    {course.course_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2 col-span-2">
+              <Label htmlFor="course">Course</Label>
+              <Select 
+                value={formData.courseId || ""}
+                onValueChange={(value) => {
+                  const selected = courses.find(c => c.course_id.toString() === value)
+                  setFormData(prev => ({
+                    ...prev,
+                    courseId: value,
+                    course: selected?.course_name || prev.course,
+                    yearLevel: "",
+                    yearLevelId: "",
+                    section: "",
+                    sectionId: "",
+                  }))
+                }}
+                disabled={loading}
+              >
+                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
+                  <SelectValue placeholder={loading ? "Loading courses..." : "Select course"} />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
+                  {courses.map(course => (
+                    <SelectItem key={`course-${course.course_id}`} value={course.course_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
+                      {course.course_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="yearLevel">Year Level</Label>
               <Select
@@ -385,18 +440,21 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
                 }}
                 disabled={!formData.courseId || loading}
               >
-                <SelectTrigger>
+                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                   <SelectValue placeholder={!formData.courseId ? "Select course first" : (filteredYearLevels.length ? "Select year level" : "No year levels available")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {filteredYearLevels.map(yl => (
-                    <SelectItem key={`yl-${yl.year_level_id}`} value={yl.year_level_id.toString()}>
+                    <SelectItem key={`yl-${yl.year_level_id}`} value={yl.year_level_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       {yl.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="section">Section</Label>
               <Select
@@ -411,41 +469,34 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
                 }}
                 disabled={!formData.yearLevelId || loading}
               >
-                <SelectTrigger>
+                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                   <SelectValue placeholder={!formData.yearLevelId ? "Select course and year level first" : (filteredSections.length ? "Select section" : "No sections available")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {filteredSections.map(section => (
-                    <SelectItem key={`section-${section.section_id}`} value={section.section_id.toString()}>
+                    <SelectItem key={`section-${section.section_id}`} value={section.section_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       {section.section_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) => setFormData({ ...formData, status: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Enrolled">Enrolled</SelectItem>
-                  <SelectItem value="Graduated">Graduated</SelectItem>
-                  <SelectItem value="Dropout">Dropout</SelectItem>
-                  <SelectItem value="Leave of Absence">Leave of Absence</SelectItem>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
+                  <SelectItem value="active" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Active</SelectItem>
+                  <SelectItem value="inactive" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Inactive</SelectItem>
+                  <SelectItem value="suspended" className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Suspended</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="birthday">Birthday</Label>
               <Input
@@ -453,8 +504,12 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
                 type="date"
                 value={formData.birthday}
                 onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               />
             </div>
+          </div>
+
+          <div>
             <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
               <Input
@@ -462,15 +517,7 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 placeholder="Student address"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contactNumber">Contact Number</Label>
-              <Input
-                id="contactNumber"
-                value={formData.contactNumber}
-                onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
-                placeholder="+63 912 345 6789"
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               />
             </div>
           </div>
@@ -482,11 +529,28 @@ export function EditStudentModal({ student, open, onOpenChange, onSave }: EditSt
           )}
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-green-700 hover:bg-green-800" disabled={isDisabled}>
-              Save Changes
+            <Button 
+              type="submit" 
+              disabled={!hasChanges || isSubmitting}
+              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Updating...</span>
+                </div>
+              ) : (
+                "Update Student"
+              )}
             </Button>
           </div>
         </form>

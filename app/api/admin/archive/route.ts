@@ -16,178 +16,182 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') // e.g., 'students', 'professors', 'courses'
-
-    let query;
-    let tableName;
-
-    switch (type) {
-      case 'students':
-        tableName = 'students';
-        query = supabase
-          .from('students')
-          .select(`
-            student_id,
-            first_name,
-            middle_name,
-            last_name,
-            birthday,
-            address,
-            contact_number,
-            accounts!inner (
-              account_id,
-              email,
-              status
-            ),
-            sections (
-              section_name,
-              year_level (name),
-              courses (course_name)
-            )
-          `)
-          .eq('accounts.status', 'inactive')
-          .order('updated_at', { ascending: false });
-        break;
-      case 'professors':
-        tableName = 'professors';
-        query = supabase
-          .from('professors')
-          .select(`
-            prof_id,
-            first_name,
-            middle_name,
-            last_name,
-            birthday,
-            address,
-            contact_number,
-            faculty_type,
-            accounts!inner (
-              account_id,
-              email,
-              status
-            ),
-            departments (department_name)
-          `)
-          .eq('accounts.status', 'inactive')
-          .order('updated_at', { ascending: false });
-        break;
-      case 'courses':
-        tableName = 'courses';
-        query = supabase
-          .from('courses')
-          .select(`
-            course_id,
-            course_code,
-            course_name,
-            description,
-            status,
-            departments (department_name)
-          `)
-          .eq('status', 'inactive')
-          .order('updated_at', { ascending: false });
-        break;
-      case 'departments':
-        tableName = 'departments';
-        query = supabase
-          .from('departments')
-          .select(`
-            department_id,
-            department_name,
-            dean_name,
-            description,
-            status
-          `)
-          .eq('status', 'inactive')
-          .order('updated_at', { ascending: false });
-        break;
-      case 'sections':
-        tableName = 'sections';
-        query = supabase
-          .from('sections')
-          .select(`
-            section_id,
+    // Fetch all archived data at once (unified table approach)
+    const [studentsResult, professorsResult, coursesResult, departmentsResult, 
+           sectionsResult, subjectsResult, classesResult, yearLevelResult, semesterResult] = await Promise.all([
+      // Students
+      supabase
+        .from('students')
+        .select(`
+          student_id,
+          first_name,
+          middle_name,
+          last_name,
+          birthday,
+          address,
+          contact_number,
+          status,
+          updated_at,
+          accounts!inner (
+            account_id,
+            email
+          ),
+          sections (
             section_name,
-            status,
             year_level (name),
             courses (course_name)
-          `)
-          .eq('status', 'inactive')
-          .order('updated_at', { ascending: false });
-        break;
-      case 'subjects':
-        tableName = 'subjects';
-        query = supabase
-          .from('subjects')
-          .select(`
-            subject_id,
-            subject_code,
-            subject_name,
-            units,
-            status,
-            courses (course_name),
-            year_level (name),
-            semester (semester_name)
-          `)
-          .eq('status', 'inactive')
-          .order('updated_at', { ascending: false });
-        break;
-      case 'classes':
-        tableName = 'classes';
-        query = supabase
-          .from('classes')
-          .select(`
-            class_id,
-            class_name,
-            status,
-            subjects (subject_name),
-            sections (section_name),
-            professors (first_name, last_name)
-          `)
-          .eq('status', 'inactive')
-          .order('updated_at', { ascending: false });
-        break;
-      case 'year_level':
-        tableName = 'year_level';
-        query = supabase
-          .from('year_level')
-          .select(`
-            year_level_id,
+          )
+        `)
+        .eq('status', 'inactive')
+        .order('updated_at', { ascending: false }),
+      
+      // Professors
+      supabase
+        .from('professors')
+        .select(`
+          prof_id,
+          first_name,
+          middle_name,
+          last_name,
+          birthday,
+          address,
+          contact_number,
+          faculty_type,
+          status,
+          updated_at,
+          accounts!inner (
+            account_id,
+            email
+          ),
+          departments (department_name)
+        `)
+        .eq('status', 'inactive')
+        .order('updated_at', { ascending: false }),
+      
+      // Courses
+      supabase
+        .from('courses')
+        .select(`
+          course_id,
+          course_code,
+          course_name,
+          description,
+          status,
+          updated_at,
+          departments (department_name)
+        `)
+        .eq('status', 'inactive')
+        .order('updated_at', { ascending: false }),
+      
+      // Departments
+      supabase
+        .from('departments')
+        .select(`
+          department_id,
+          department_name,
+          dean_name,
+          description,
+          status,
+          updated_at
+        `)
+        .eq('status', 'inactive')
+        .order('updated_at', { ascending: false }),
+      
+      // Sections
+      supabase
+        .from('sections')
+        .select(`
+          section_id,
+          section_name,
+          status,
+          updated_at,
+          year_level (name),
+          courses (course_name)
+        `)
+        .eq('status', 'inactive')
+        .order('updated_at', { ascending: false }),
+      
+      // Subjects
+      supabase
+        .from('subjects')
+        .select(`
+          subject_id,
+          subject_code,
+          subject_name,
+          units,
+          status,
+          updated_at,
+          courses (course_name),
+          year_level (name),
+          semester (semester_name)
+        `)
+        .eq('status', 'inactive')
+        .order('updated_at', { ascending: false }),
+      
+      // Classes
+      supabase
+        .from('classes')
+        .select(`
+          class_id,
+          class_name,
+          status,
+          updated_at,
+          subjects (subject_name),
+          sections (section_name),
+          professors (first_name, last_name)
+        `)
+        .eq('status', 'inactive')
+        .order('updated_at', { ascending: false }),
+      
+      // Year Level
+      supabase
+        .from('year_level')
+        .select(`
+          year_level_id,
+          name,
+          status,
+          updated_at,
+          courses (course_name, course_code)
+        `)
+        .eq('status', 'inactive')
+        .order('updated_at', { ascending: false }),
+      
+      // Semester
+      supabase
+        .from('semester')
+        .select(`
+          semester_id,
+          semester_name,
+          status,
+          updated_at,
+          year_level (
             name,
-            status,
-            courses (course_name, course_code)
-          `)
-          .eq('status', 'inactive')
-          .order('updated_at', { ascending: false });
-        break;
-      case 'semester':
-        tableName = 'semester';
-        query = supabase
-          .from('semester')
-          .select(`
-            semester_id,
-            semester_name,
-            status,
-            year_level (
-              name,
-              courses (course_name)
-            )
-          `)
-          .eq('status', 'inactive')
-          .order('updated_at', { ascending: false });
-        break;
-      default:
-        return NextResponse.json({ error: "Invalid archive type" }, { status: 400 });
+            courses (course_name)
+          )
+        `)
+        .eq('status', 'inactive')
+        .order('updated_at', { ascending: false })
+    ])
+
+    // Combine all data into a unified response
+    const allArchivedData: any = {
+      students: studentsResult.data || [],
+      professors: professorsResult.data || [],
+      courses: coursesResult.data || [],
+      departments: departmentsResult.data || [],
+      sections: sectionsResult.data || [],
+      subjects: subjectsResult.data || [],
+      classes: classesResult.data || [],
+      year_level: yearLevelResult.data || [],
+      semester: semesterResult.data || []
     }
 
-    const { data, error } = await query;
+    // Add record_type to each item for unified table display
+    Object.keys(allArchivedData).forEach(key => {
+      allArchivedData[key] = allArchivedData[key].map((item: any) => ({ ...item, record_type: key }))
+    })
 
-    if (error) {
-      console.error(`Database error fetching archived ${tableName}:`, error);
-      return NextResponse.json({ error: `Failed to fetch archived ${tableName}` }, { status: 500 });
-    }
-
-    return NextResponse.json({ [tableName]: data });
+    return NextResponse.json(allArchivedData);
   } catch (error) {
     console.error("API error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -218,31 +222,30 @@ export async function POST(request: NextRequest) {
       case 'students':
         tableName = 'students';
         idColumn = 'student_id';
-        // For students and professors, we need to update the 'accounts' table status
+        // Check if student exists
         const { data: studentData, error: studentError } = await supabase
           .from('students')
-          .select('account_id')
+          .select('student_id')
           .eq('student_id', id)
           .single();
         if (studentError || !studentData) {
           console.error("Student lookup error:", studentError);
           return NextResponse.json({ error: "Student not found" }, { status: 404 });
         }
-        accountId = studentData.account_id;
         break;
       case 'professors':
         tableName = 'professors';
         idColumn = 'prof_id';
+        // Check if professor exists
         const { data: professorData, error: professorError } = await supabase
           .from('professors')
-          .select('account_id')
+          .select('prof_id')
           .eq('prof_id', id)
           .single();
         if (professorError || !professorData) {
           console.error("Professor lookup error:", professorError);
           return NextResponse.json({ error: "Professor not found" }, { status: 404 });
         }
-        accountId = professorData.account_id;
         break;
       case 'courses':
         tableName = 'courses';
@@ -276,42 +279,20 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Invalid archive type" }, { status: 400 });
     }
 
-    if (action === 'archive') {
-      // Archive: set status to 'inactive'
-      let updateQuery;
-      if (accountId) {
-        // For students and professors, update the associated account status
-        updateQuery = supabase
-          .from('accounts')
-          .update({ status: 'inactive', updated_at: new Date().toISOString() })
-          .eq('account_id', accountId);
-      } else {
-        // For other entities, update their own status
-        updateQuery = supabase
-          .from(tableName)
-          .update({ status: 'inactive', updated_at: new Date().toISOString() })
-          .eq(idColumn, id);
-      }
-
-      const { error } = await updateQuery;
-
-      if (error) {
-        console.error(`Database error archiving ${tableName}:`, error);
-        return NextResponse.json({ error: `Failed to archive ${tableName}` }, { status: 500 });
-      }
-      return NextResponse.json({ message: `${tableName} archived successfully` });
-
-    } else if (action === 'restore') {
+    if (action === 'restore') {
       // Restore: set status to 'active'
       let updateQuery;
-      if (accountId) {
-        // For students and professors, update the associated account status
+      if (type === 'students') {
         updateQuery = supabase
-          .from('accounts')
+          .from('students')
           .update({ status: 'active', updated_at: new Date().toISOString() })
-          .eq('account_id', accountId);
+          .eq('student_id', id);
+      } else if (type === 'professors') {
+        updateQuery = supabase
+          .from('professors')
+          .update({ status: 'active', updated_at: new Date().toISOString() })
+          .eq('prof_id', id);
       } else {
-        // For other entities, update their own status
         updateQuery = supabase
           .from(tableName)
           .update({ status: 'active', updated_at: new Date().toISOString() })
@@ -325,23 +306,37 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `Failed to restore ${tableName}` }, { status: 500 });
       }
       return NextResponse.json({ message: `${tableName} restored successfully` });
+    } else if (action === 'archive') {
+      // Archive: set status to 'inactive'
+      let updateQuery;
+      if (type === 'students') {
+        updateQuery = supabase
+          .from('students')
+          .update({ status: 'inactive', updated_at: new Date().toISOString() })
+          .eq('student_id', id);
+      } else if (type === 'professors') {
+        updateQuery = supabase
+          .from('professors')
+          .update({ status: 'inactive', updated_at: new Date().toISOString() })
+          .eq('prof_id', id);
+      } else {
+        updateQuery = supabase
+          .from(tableName)
+          .update({ status: 'inactive', updated_at: new Date().toISOString() })
+          .eq(idColumn, id);
+      }
 
+      const { error } = await updateQuery;
+
+      if (error) {
+        console.error(`Database error archiving ${tableName}:`, error);
+        return NextResponse.json({ error: `Failed to archive ${tableName}` }, { status: 500 });
+      }
+      return NextResponse.json({ message: `${tableName} archived successfully` });
     } else if (action === 'permanent_delete') {
       // Permanent Delete - with special handling for entities with relationships
-      
       try {
-        if (accountId) {
-          // For students and professors, delete the account (which cascades to student/professor record)
-          const { error } = await supabase
-            .from('accounts')
-            .delete()
-            .eq('account_id', accountId);
-
-          if (error) {
-            console.error(`Database error permanently deleting account:`, error);
-            return NextResponse.json({ error: `Failed to permanently delete ${tableName}: ${error.message}` }, { status: 500 });
-          }
-        } else if (tableName === 'departments') {
+        if (tableName === 'departments') {
           // Special handling for departments - check for related data first
           const { data: courses, error: coursesError } = await supabase
             .from('courses')
@@ -376,31 +371,42 @@ export async function POST(request: NextRequest) {
             }, { status: 409 });
           }
 
-          // Check for grade components
-          const { data: gradeComponents, error: gcError } = await supabase
+          // Handle grade components: delete related grade_entries first, then grade_components
+          const { data: gradeComponents, error: gradeCompError } = await supabase
             .from('grade_components')
             .select('component_id')
             .eq('department_id', id);
 
-          if (gcError) {
-            console.error('Error checking grade components:', gcError);
+          if (gradeCompError) {
+            console.error('Error checking department grade components:', gradeCompError);
             return NextResponse.json({ error: 'Failed to check department relationships' }, { status: 500 });
           }
 
           if (gradeComponents && gradeComponents.length > 0) {
-            // Delete grade components first
-            const { error: deleteGcError } = await supabase
+            const componentIds = gradeComponents.map((gc: any) => gc.component_id);
+            // Delete grade_entries referencing these components (to satisfy FK)
+            const { error: delEntriesError } = await supabase
+              .from('grade_entries')
+              .delete()
+              .in('component_id', componentIds);
+
+            if (delEntriesError) {
+              console.error('Error deleting related grade entries:', delEntriesError);
+              return NextResponse.json({ error: 'Failed to delete related grade entries' }, { status: 500 });
+            }
+
+            // Delete grade_components for this department
+            const { error: delComponentsError } = await supabase
               .from('grade_components')
               .delete()
               .eq('department_id', id);
 
-            if (deleteGcError) {
-              console.error('Error deleting grade components:', deleteGcError);
+            if (delComponentsError) {
+              console.error('Error deleting grade components:', delComponentsError);
               return NextResponse.json({ error: 'Failed to delete grade components' }, { status: 500 });
             }
           }
 
-          // Now delete the department
           const { error } = await supabase
             .from('departments')
             .delete()
@@ -411,23 +417,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: `Failed to permanently delete department: ${error.message}` }, { status: 500 });
           }
         } else if (tableName === 'courses') {
-          // Check for related data
-          const { data: yearLevels, error: ylError } = await supabase
-            .from('year_level')
-            .select('year_level_id')
-            .eq('course_id', id);
-
-          if (ylError) {
-            console.error('Error checking course year levels:', ylError);
-            return NextResponse.json({ error: 'Failed to check course relationships' }, { status: 500 });
-          }
-
-          if (yearLevels && yearLevels.length > 0) {
-            return NextResponse.json({ 
-              error: `Cannot permanently delete course. It has ${yearLevels.length} year level(s). Please archive or delete all year levels first.` 
-            }, { status: 409 });
-          }
-
           const { data: sections, error: secError } = await supabase
             .from('sections')
             .select('section_id')
@@ -444,23 +433,6 @@ export async function POST(request: NextRequest) {
             }, { status: 409 });
           }
 
-          const { data: subjects, error: subjError } = await supabase
-            .from('subjects')
-            .select('subject_id')
-            .eq('course_id', id);
-
-          if (subjError) {
-            console.error('Error checking course subjects:', subjError);
-            return NextResponse.json({ error: 'Failed to check course relationships' }, { status: 500 });
-          }
-
-          if (subjects && subjects.length > 0) {
-            return NextResponse.json({ 
-              error: `Cannot permanently delete course. It has ${subjects.length} subject(s). Please archive or delete all subjects first.` 
-            }, { status: 409 });
-          }
-
-          // Now delete the course
           const { error } = await supabase
             .from('courses')
             .delete()
@@ -470,81 +442,7 @@ export async function POST(request: NextRequest) {
             console.error('Error deleting course:', error);
             return NextResponse.json({ error: `Failed to permanently delete course: ${error.message}` }, { status: 500 });
           }
-        } else if (tableName === 'year_level') {
-          // Check for related semesters
-          const { data: semesters, error: semError } = await supabase
-            .from('semester')
-            .select('semester_id')
-            .eq('year_level_id', id);
-
-          if (semError) {
-            console.error('Error checking year level semesters:', semError);
-            return NextResponse.json({ error: 'Failed to check year level relationships' }, { status: 500 });
-          }
-
-          if (semesters && semesters.length > 0) {
-            return NextResponse.json({ 
-              error: `Cannot permanently delete year level. It has ${semesters.length} semester(s). Please archive or delete all semesters first.` 
-            }, { status: 409 });
-          }
-
-          // Check for related sections
-          const { data: sections, error: secError } = await supabase
-            .from('sections')
-            .select('section_id')
-            .eq('year_level_id', id);
-
-          if (secError) {
-            console.error('Error checking year level sections:', secError);
-            return NextResponse.json({ error: 'Failed to check year level relationships' }, { status: 500 });
-          }
-
-          if (sections && sections.length > 0) {
-            return NextResponse.json({ 
-              error: `Cannot permanently delete year level. It has ${sections.length} section(s). Please archive or delete all sections first.` 
-            }, { status: 409 });
-          }
-
-          // Now delete the year level
-          const { error } = await supabase
-            .from('year_level')
-            .delete()
-            .eq('year_level_id', id);
-
-          if (error) {
-            console.error('Error deleting year level:', error);
-            return NextResponse.json({ error: `Failed to permanently delete year level: ${error.message}` }, { status: 500 });
-          }
-        } else if (tableName === 'semester') {
-          // Check for related subjects
-          const { data: subjects, error: subjError } = await supabase
-            .from('subjects')
-            .select('subject_id')
-            .eq('semester_id', id);
-
-          if (subjError) {
-            console.error('Error checking semester subjects:', subjError);
-            return NextResponse.json({ error: 'Failed to check semester relationships' }, { status: 500 });
-          }
-
-          if (subjects && subjects.length > 0) {
-            return NextResponse.json({ 
-              error: `Cannot permanently delete semester. It has ${subjects.length} subject(s). Please archive or delete all subjects first.` 
-            }, { status: 409 });
-          }
-
-          // Now delete the semester
-          const { error } = await supabase
-            .from('semester')
-            .delete()
-            .eq('semester_id', id);
-
-          if (error) {
-            console.error('Error deleting semester:', error);
-            return NextResponse.json({ error: `Failed to permanently delete semester: ${error.message}` }, { status: 500 });
-          }
         } else if (tableName === 'sections') {
-          // Check for students in this section
           const { data: students, error: studError } = await supabase
             .from('students')
             .select('student_id')
@@ -561,24 +459,6 @@ export async function POST(request: NextRequest) {
             }, { status: 409 });
           }
 
-          // Check for classes
-          const { data: classes, error: classError } = await supabase
-            .from('classes')
-            .select('class_id')
-            .eq('section_id', id);
-
-          if (classError) {
-            console.error('Error checking section classes:', classError);
-            return NextResponse.json({ error: 'Failed to check section relationships' }, { status: 500 });
-          }
-
-          if (classes && classes.length > 0) {
-            return NextResponse.json({ 
-              error: `Cannot permanently delete section. It has ${classes.length} class(es). Please archive or delete all classes first.` 
-            }, { status: 409 });
-          }
-
-          // Now delete the section
           const { error } = await supabase
             .from('sections')
             .delete()
@@ -587,69 +467,6 @@ export async function POST(request: NextRequest) {
           if (error) {
             console.error('Error deleting section:', error);
             return NextResponse.json({ error: `Failed to permanently delete section: ${error.message}` }, { status: 500 });
-          }
-        } else if (tableName === 'subjects') {
-          // Check for classes using this subject
-          const { data: classes, error: classError } = await supabase
-            .from('classes')
-            .select('class_id')
-            .eq('subject_id', id);
-
-          if (classError) {
-            console.error('Error checking subject classes:', classError);
-            return NextResponse.json({ error: 'Failed to check subject relationships' }, { status: 500 });
-          }
-
-          if (classes && classes.length > 0) {
-            return NextResponse.json({ 
-              error: `Cannot permanently delete subject. It has ${classes.length} class(es). Please archive or delete all classes first.` 
-            }, { status: 409 });
-          }
-
-          // Now delete the subject
-          const { error } = await supabase
-            .from('subjects')
-            .delete()
-            .eq('subject_id', id);
-
-          if (error) {
-            console.error('Error deleting subject:', error);
-            return NextResponse.json({ error: `Failed to permanently delete subject: ${error.message}` }, { status: 500 });
-          }
-        } else if (tableName === 'classes') {
-          // Check for grade entries
-          const { data: grades, error: gradeError } = await supabase
-            .from('grade_entries')
-            .select('grade_id')
-            .eq('class_id', id);
-
-          if (gradeError) {
-            console.error('Error checking class grade entries:', gradeError);
-            return NextResponse.json({ error: 'Failed to check class relationships' }, { status: 500 });
-          }
-
-          if (grades && grades.length > 0) {
-            // Delete grade entries first
-            const { error: deleteGradeError } = await supabase
-              .from('grade_entries')
-              .delete()
-              .eq('class_id', id);
-
-            if (deleteGradeError) {
-              console.error('Error deleting grade entries:', deleteGradeError);
-              return NextResponse.json({ error: 'Failed to delete grade entries' }, { status: 500 });
-            }
-          }
-
-          // Now delete the class
-          const { error } = await supabase
-            .from('classes')
-            .delete()
-            .eq('class_id', id);
-
-          if (error) {
-            console.error('Error deleting class:', error);
-            return NextResponse.json({ error: `Failed to permanently delete class: ${error.message}` }, { status: 500 });
           }
         } else {
           // For other entities, directly delete the record
@@ -671,11 +488,9 @@ export async function POST(request: NextRequest) {
           error: `Failed to permanently delete ${tableName}: ${error instanceof Error ? error.message : 'Unknown error'}` 
         }, { status: 500 });
       }
-
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
-
   } catch (error) {
     console.error("API error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, User, GraduationCap, TrendingUp, BookOpen, Award, Calendar, Mail, Phone, MapPin } from "lucide-react"
 import { toast } from "sonner"
 import Image from "next/image"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface StudentPerformance {
   // Basic info
@@ -103,6 +105,8 @@ export default function StudentPerformancePage() {
   const router = useRouter()
   const [student, setStudent] = useState<StudentPerformance | null>(null)
   const [loading, setLoading] = useState(true)
+  const [yearLevelFilter, setYearLevelFilter] = useState<string>("__all__")
+  const [semesterFilter, setSemesterFilter] = useState<string>("__all__")
 
   useEffect(() => {
     const fetchStudentPerformance = async () => {
@@ -129,7 +133,7 @@ export default function StudentPerformancePage() {
 
   if (loading) {
     return (
-      <div className="p-5 space-y-4 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] transition-colors">
+      <div className="p-5 space-y-4 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
         <div className="flex items-center justify-center h-64">
           <div className="text-lg text-gray-600 dark:text-gray-400">Loading student performance...</div>
         </div>
@@ -139,7 +143,7 @@ export default function StudentPerformancePage() {
 
   if (!student) {
     return (
-      <div className="p-5 space-y-4 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] transition-colors">
+      <div className="p-5 space-y-4 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
         <div className="flex items-center justify-center h-64">
           <div className="text-lg text-gray-600 dark:text-gray-400">Student not found</div>
         </div>
@@ -153,7 +157,7 @@ export default function StudentPerformancePage() {
 
   const getGradeColor = (grade?: number) => {
     if (!grade) return "bg-gray-100 text-gray-800"
-    if (grade >= 95) return "bg-green-100 text-green-800"
+    if (grade >= 1.00) return "bg-green-100 text-green-800"
     if (grade >= 90) return "bg-blue-100 text-blue-800"
     if (grade >= 85) return "bg-yellow-100 text-yellow-800"
     if (grade >= 80) return "bg-orange-100 text-orange-800"
@@ -163,7 +167,7 @@ export default function StudentPerformancePage() {
 
   const getGradeStatus = (grade?: number) => {
     if (!grade) return "No Grade"
-    if (grade >= 95) return "Excellent"
+    if (grade >= 1.00) return "Excellent"
     if (grade >= 90) return "Very Good"
     if (grade >= 85) return "Good"
     if (grade >= 80) return "Satisfactory"
@@ -172,21 +176,19 @@ export default function StudentPerformancePage() {
   }
 
   return (
-    <div className="p-5 space-y-4 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)] transition-colors">
+    <div className="p-5 space-y-6 w-full bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="space-y-2">
         <Button
           variant="outline"
           onClick={() => router.back()}
-          className="bg-white dark:bg-black border-none hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] dark:hover:bg-[var(--darkmode-color-two)]"
+          className="group bg-white hover:bg-[var(--customized-color-four)] hover:text-[var(--customized-color-one)] border-none shadow md text-xs flex items-center gap-1 transition-all duration-300 pl-3 pr-3 transition-transform duration-500 hover:-translate-x-2"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          <ArrowLeft className="w-5 h-5 transition-all duration-300 group-hover:-translate-x-1 group-hover:opacity-80" />
+          Back to Student List
         </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-extrabold text-black dark:text-white">Student Performance</h1>
-          <p className="text-lg text-gray-700 dark:text-gray-400 font-light">Academic performance and detailed analysis</p>
-        </div>
+        <h1 className="text-3xl font-extrabold text-black dark:text-white">Student Performance</h1>
+        <p className="text-lg text-gray-700 dark:text-gray-400">Academic performance and detailed analysis</p>
       </div>
 
       {/* Student Header Card */}
@@ -243,7 +245,7 @@ export default function StudentPerformancePage() {
       </Card>
 
       {/* Performance Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-white dark:bg-black border-none">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
@@ -299,18 +301,18 @@ export default function StudentPerformancePage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="grades" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-black border-none">
-          <TabsTrigger value="grades" className="data-[state=active]:bg-[var(--customized-color-one)] data-[state=active]:text-white">
+        <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-black border-none rounded-full">
+          <TabsTrigger value="grades" className="data-[state=active]:bg-[var(--customized-color-one)] data-[state=active]:text-white rounded-full hover:bg-[var(--customized-color-five)] text-black hover:text-[var(--customized-color-one)]">
             Academic Records
           </TabsTrigger>
-          <TabsTrigger value="performance" className="data-[state=active]:bg-[var(--customized-color-one)] data-[state=active]:text-white">
+          <TabsTrigger value="performance" className="data-[state=active]:bg-[var(--customized-color-one)] data-[state=active]:text-white rounded-full hover:bg-[var(--customized-color-five)] transition-all duration-300 text-black hover:text-[var(--customized-color-one)]">
             Performance Details
           </TabsTrigger>
-          <TabsTrigger value="profile" className="data-[state=active]:bg-[var(--customized-color-one)] data-[state=active]:text-white">
+          <TabsTrigger value="profile" className="data-[state=active]:bg-[var(--customized-color-one)] data-[state=active]:text-white rounded-full hover:bg-[var(--customized-color-five)] transition-all duration-300 text-black hover:text-[var(--customized-color-one)]">
             Profile Information
           </TabsTrigger>
         </TabsList>
@@ -321,63 +323,91 @@ export default function StudentPerformancePage() {
             <CardHeader>
               <CardTitle className="text-black dark:text-white">Academic Records</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {student.grades.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    No academic records found
+            <CardContent className="space-y-4">
+              {student.grades.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">No academic records found</div>
+              ) : (
+                <>
+                  {/* Optional Filters */}
+                  <div className="flex flex-wrap gap-2">
+                    {(() => {
+                      const yearLevels = Array.from(new Set(student.grades.map(g => g.yearLevel).filter(Boolean)));
+                      const semesters = Array.from(new Set(student.grades.map(g => g.semester).filter(Boolean)));
+                      return (
+                        <>
+                          <div className="min-w-[180px]">
+                            <Select onValueChange={(val) => setYearLevelFilter(val)}>
+                              <SelectTrigger className="text-[11px] pr-[8px] pl-[8px] bg-white dark:bg-black !border-none !outline-none focus:!ring-0 focus:!outline-none">
+                                <SelectValue placeholder="All Year Levels" />
+                              </SelectTrigger>
+                              <SelectContent className="text-[11px]">
+                                <SelectItem value="__all__" className="cursor-pointer">All Year Levels</SelectItem>
+                                {yearLevels.map((yl) => (
+                                  <SelectItem key={yl} value={yl || ""} className="cursor-pointer">{yl}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="min-w-[180px]">
+                            <Select onValueChange={(val) => setSemesterFilter(val)}>
+                              <SelectTrigger className="text-[11px] pr-[8px] pl-[8px] bg-white dark:bg-black !border-none !outline-none focus:!ring-0 focus:!outline-none">
+                                <SelectValue placeholder="All Semesters" />
+                              </SelectTrigger>
+                              <SelectContent className="text-[11px]">
+                                <SelectItem value="__all__" className="cursor-pointer">All Semesters</SelectItem>
+                                {semesters.map((sem) => (
+                                  <SelectItem key={sem} value={sem || ""} className="cursor-pointer">{sem}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
-                ) : (
-                  student.grades.map((grade, index) => (
-                    <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-[var(--customized-color-one)] dark:hover:border-[var(--customized-color-one)] transition-colors">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg text-black dark:text-white">{grade.subjectName}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{grade.subjectCode} • {grade.units} units</p>
-                        </div>
-                        <div className="text-right">
-                          <Badge className={`${getGradeColor(grade.grade)} text-lg px-3 py-1 font-bold`}>
-                            {grade.grade ? grade.grade.toFixed(2) : "N/A"}
-                          </Badge>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getGradeStatus(grade.grade)}</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm mt-3">
-                        <div>
-                          <span className="text-gray-600 dark:text-gray-400 font-medium">Academic Year:</span>
-                          <p className="text-black dark:text-white">{grade.yearTaken || "N/A"}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600 dark:text-gray-400 font-medium">Semester:</span>
-                          <p className="text-black dark:text-white">{grade.semester}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600 dark:text-gray-400 font-medium">Professor:</span>
-                          <p className="text-black dark:text-white">{grade.professor || "N/A"}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600 dark:text-gray-400 font-medium">Status:</span>
-                          <Badge variant={grade.taken ? "default" : "secondary"} className={grade.taken ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}>
-                            {grade.taken ? "Taken" : "Not Taken"}
-                          </Badge>
-                        </div>
-                        <div>
-                          <span className="text-gray-600 dark:text-gray-400 font-medium">Credited:</span>
-                          <Badge variant={grade.credited ? "default" : "secondary"} className={grade.credited ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                            {grade.credited ? "Yes" : "No"}
-                          </Badge>
-                        </div>
-                      </div>
-                      {grade.remarks && (
-                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                          <span className="text-gray-600 dark:text-gray-400 font-medium">Remarks: </span>
-                          <span className="text-black dark:text-white">{grade.remarks}</span>
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
+
+                  {/* Data Table */}
+                  <div className="max-h-[600px] overflow-auto rounded-md border border-gray-200 dark:border-gray-700">
+                    <Table className="text-[12px]">
+                      <TableHeader>
+                        <TableRow className="bg-[var(--customized-color-five)]/60 dark:bg-muted/30">
+                          <TableHead className="whitespace-nowrap text-black dark:text-white">Year Level - Semester</TableHead>
+                          <TableHead className="whitespace-nowrap text-black dark:text-white">Subject Code</TableHead>
+                          <TableHead className="whitespace-nowrap text-black dark:text-white">Subject Name</TableHead>
+                          <TableHead className="whitespace-nowrap text-black dark:text-white">Units</TableHead>
+                          <TableHead className="whitespace-nowrap text-black dark:text-white">Grade of Student</TableHead>
+                          <TableHead className="whitespace-nowrap text-black dark:text-white">Year Taken</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {student.grades
+                          .filter(g => (yearLevelFilter === "__all__" || !yearLevelFilter ? true : g.yearLevel === yearLevelFilter))
+                          .filter(g => (semesterFilter === "__all__" || !semesterFilter ? true : g.semester === semesterFilter))
+                          .map((grade, idx) => {
+                            const ylSem = `${grade.yearLevel} - ${grade.semester}`
+                            const yearTakenText = typeof grade.yearTaken === "number"
+                              ? `${grade.yearTaken}-${grade.yearTaken + 1} / ${grade.semester}`
+                              : "N/A"
+                            return (
+                              <TableRow key={`${grade.subjectCode}-${idx}`}>
+                                <TableCell className="whitespace-nowrap text-black dark:text-white">{ylSem}</TableCell>
+                                <TableCell className="whitespace-nowrap text-black dark:text-white">{grade.subjectCode}</TableCell>
+                                <TableCell className="text-black dark:text-white">{grade.subjectName}</TableCell>
+                                <TableCell className="whitespace-nowrap text-black dark:text-white">{grade.units}</TableCell>
+                                <TableCell className="whitespace-nowrap">
+                                  <Badge className={`${getGradeColor(grade.grade)} font-bold`}>
+                                    {grade.grade ? grade.grade.toFixed(2) : "N/A"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="whitespace-nowrap text-black dark:text-white">{yearTakenText}</TableCell>
+                              </TableRow>
+                            )
+                          })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

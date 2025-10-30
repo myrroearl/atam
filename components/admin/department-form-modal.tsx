@@ -244,14 +244,14 @@ export default function DepartmentFormModal({
   const renderDepartmentStep = () => (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="department_name" className="text-black">Department Name <strong className="text-red-600">*</strong></Label>
+        <Label htmlFor="department_name">Department Name <strong className="text-red-600">*</strong></Label>
         <Input
           id="department_name"
           type="text"
           placeholder="e.g., College of Arts and Science"
           value={formData.department_name}
           onChange={(e) => handleInputChange('department_name', e.target.value)}
-          className={errors.department_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+          className={errors.department_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
           disabled={isSubmitting}
         />
         {errors.department_name && (
@@ -260,14 +260,14 @@ export default function DepartmentFormModal({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="dean_name" className="text-black">Department Dean <strong className="text-red-600">*</strong></Label>
+        <Label htmlFor="dean_name">Department Dean <strong className="text-red-600">*</strong></Label>
         <Input
           id="dean_name"
           type="text"
           placeholder="e.g., Dr. Carolyn A. Alvero"
           value={formData.dean_name}
           onChange={(e) => handleInputChange('dean_name', e.target.value)}
-          className={errors.dean_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"}
+          className={errors.dean_name ? "border-red-500" : "placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"}
           disabled={isSubmitting}
         />
         {errors.dean_name && (
@@ -276,7 +276,7 @@ export default function DepartmentFormModal({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description" className="text-black">Description</Label>
+        <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
           placeholder="Brief description of the department..."
@@ -284,7 +284,7 @@ export default function DepartmentFormModal({
           onChange={(e) => handleInputChange('description', e.target.value)}
           rows={3}
           disabled={isSubmitting}
-          className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+          className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
         />
       </div>
     </div>
@@ -300,12 +300,12 @@ export default function DepartmentFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader className="space-y-1">
-          <DialogTitle className="font-bold text-black text-xl">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             {getStepTitle()}
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
+          <DialogDescription className="text-sm text-gray-500">
             {getStepDescription()}
           </DialogDescription>
         </DialogHeader>
@@ -316,10 +316,10 @@ export default function DepartmentFormModal({
               <div className="flex items-center">
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors ${
                   currentStep === "department" 
-                    ? "bg-[var(--customized-color-one)] border-[var(--customized-color-one)] text-white" 
+                    ? "bg-[var(--customized-color-one)] border-[var(--customized-color-one)] dark:bg-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-one)] dark:text-black text-white" 
                     : currentStep === "grading"
-                    ? "bg-[var(--customized-color-two)] border-[var(--customized-color-two)] text-white"
-                    : "bg-gray-100 border-gray-300 text-gray-500"
+                    ? "bg-[var(--customized-color-two)] border-[var(--customized-color-two)] dark:bg-[var(--darkmode-color-two)] dark:border-[var(--darkmode-color-two)] text-white"
+                    : "bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-700 text-gray-500 dark:text-gray-400"
                 }`}>
                   {currentStep === "grading" ? (
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -330,10 +330,10 @@ export default function DepartmentFormModal({
                   )}
                 </div>
                 <span className={`ml-2 text-sm font-medium ${
-                  currentStep === "department" ? "text-[var(--customized-color-one)]"
+                  currentStep === "department" ? "text-[var(--customized-color-one)] dark:text-[var(--darkmode-color-one)]"
                     : currentStep === "grading"
-                    ? "text-[var(--customized-color-two)]"
-                    : "text-gray-500"
+                    ? "text-[var(--customized-color-two)] dark:text-[var(--darkmode-color-two)]"
+                    : "text-gray-500 dark:text-gray-400"
                 }`}>
                   Department Details
                 </span>
@@ -341,22 +341,22 @@ export default function DepartmentFormModal({
 
               {/* Connector Line */}
               <div className={`w-12 h-0.5 transition-colors ${
-                currentStep === "grading" ? "bg-[var(--customized-color-one)]" : "bg-gray-300"
+                currentStep === "grading" ? "bg-[var(--customized-color-one)] dark:bg-[var(--darkmode-color-one)]" : "bg-gray-300 dark:bg-gray-700 dark:border-gray-700"
               }`} />
 
               {/* Step 2 */}
               <div className="flex items-center">
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors ${
                   currentStep === "grading" 
-                    ? "bg-[var(--customized-color-one)] border-[var(--customized-color-one)] text-white" 
-                    : "bg-gray-100 border-gray-300 text-gray-500"
+                    ? "bg-[var(--customized-color-one)] border-[var(--customized-color-one)] dark:bg-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-one)] dark:text-black text-white" 
+                    : "bg-gray-100 border-gray-300 text-gray-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-500 dark:border-gray-700 dark:text-black"
                 }`}>
                   <span className="text-sm font-semibold">2</span>
                 </div>
                 <span className={`ml-2 text-sm font-medium ${
                   currentStep === "grading"
-                    ? "text-[var(--customized-color-one)]"
-                    : "text-gray-500"
+                    ? "text-[var(--customized-color-one)] dark:text-[var(--darkmode-color-one)]"
+                    : "text-gray-500 dark:text-gray-400"
                 }`}>
                   Grading Setup
                 </span>
@@ -382,7 +382,7 @@ export default function DepartmentFormModal({
                   variant="outline"
                   onClick={handleBack}
                   disabled={isSubmitting}
-                  className="flex items-center gap-2 hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)]"
+                  className="flex items-center gap-2 hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Back
@@ -396,7 +396,7 @@ export default function DepartmentFormModal({
                 variant="outline"
                 onClick={handleClose}
                 disabled={isSubmitting}
-                className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)]"
+                className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
               >
                 Cancel
               </Button>
@@ -406,10 +406,10 @@ export default function DepartmentFormModal({
                   type="button"
                   onClick={handleNext}
                   disabled={!isDepartmentFormValid || isSubmitting}
-                  className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2"
+                  className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-[var(--darkmode-color-one)] dark:text-black group"
                 >
                   Next
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </Button>
               ) : (
                 <Button
@@ -419,7 +419,7 @@ export default function DepartmentFormModal({
                     !isDepartmentFormValid || 
                     (mode === "add" && !isGradingComponentsValid)
                   }
-                  className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2"
+                  className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
                 >
                   {isSubmitting ? (
                     <>

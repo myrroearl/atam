@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface AddClassModalProps {
@@ -74,6 +74,21 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
   const [filteredProfessors, setFilteredProfessors] = useState<Professor[]>([]);
 
   const [loading, setLoading] = useState(false);
+  const [isFetchingData, setIsFetchingData] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Validate form whenever formData changes
+  useEffect(() => {
+    const isValid = formData.name.trim() !== "" && 
+                   formData.courseId !== "" && 
+                   formData.subjectId !== "" && 
+                   formData.sectionId !== "" && 
+                   formData.departmentId !== "" && 
+                   formData.professorId !== "" &&
+                   formData.scheduleStart !== "" &&
+                   formData.scheduleEnd !== ""
+    setIsFormValid(isValid)
+  }, [formData])
 
   useEffect(() => {
     if (!open) {
@@ -94,7 +109,7 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
 
   const fetchAllData = async () => {
     try {
-      setLoading(true);
+      setIsFetchingData(true);
       await Promise.all([
         fetchCourses(),
         fetchSubjects(),
@@ -103,7 +118,7 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
         fetchProfessors(),
       ]);
     } finally {
-      setLoading(false);
+      setIsFetchingData(false);
     }
   };
 
@@ -265,7 +280,7 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
           New Class
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-3xl dark:bg-black border-none transition-colors duration-300" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="font-bold text-black">Create Class</DialogTitle>
           <DialogDescription className="text-sm text-gray-500 dark:text-gray-400">
@@ -280,9 +295,9 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g., Programming 1 - BSIT-1A"
-              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
+              className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
               required
-              disabled={loading}
+              disabled={isFetchingData || loading}
             />
           </div>
 
@@ -292,14 +307,14 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
             <Select
               value={formData.courseId}
               onValueChange={(value) => setFormData({ ...formData, courseId: value })}
-              disabled={loading}
+              disabled={isFetchingData || loading}
             >
-              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600">
+              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600 dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                 <SelectValue placeholder="Select Course (e.g., BSIT, BSCS)" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                 {courses.map((course) => (
-                  <SelectItem key={course.course_id} value={course.course_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                  <SelectItem key={course.course_id} value={course.course_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                     {course.course_code} - {course.course_name}
                   </SelectItem>
                 ))}
@@ -314,14 +329,14 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
               <Select
                 value={formData.subjectId}
                 onValueChange={(value) => setFormData({ ...formData, subjectId: value })}
-                disabled={!formData.courseId || loading}
+                disabled={!formData.courseId || isFetchingData || loading}
               >
-                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600">
+                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600 dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                   <SelectValue placeholder={!formData.courseId ? "Select course first" : "Select Subject"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {filteredSubjects.map((subject) => (
-                    <SelectItem key={subject.subject_id} value={subject.subject_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                    <SelectItem key={subject.subject_id} value={subject.subject_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       {subject.subject_code} - {subject.subject_name}
                     </SelectItem>
                   ))}
@@ -335,14 +350,14 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
               <Select
                 value={formData.sectionId}
                 onValueChange={(value) => setFormData({ ...formData, sectionId: value })}
-                disabled={!formData.courseId || loading}
+                disabled={!formData.courseId || isFetchingData || loading}
               >
-                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600">
+                <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600 dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                   <SelectValue placeholder={!formData.courseId ? "Select course first" : "Select Section"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                   {filteredSections.map((section) => (
-                    <SelectItem key={section.section_id} value={section.section_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                    <SelectItem key={section.section_id} value={section.section_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                       {section.name}
                     </SelectItem>
                   ))}
@@ -357,14 +372,14 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
             <Select
               value={formData.departmentId}
               onValueChange={(value) => setFormData({ ...formData, departmentId: value })}
-              disabled={loading}
+              disabled={isFetchingData || loading}
             >
-              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600">
+              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600 dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                 <SelectValue placeholder="Select Department (e.g., CCS)" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
                 {departments.map((dept) => (
-                  <SelectItem key={dept.department_id} value={dept.department_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                  <SelectItem key={dept.department_id} value={dept.department_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                     {dept.department_name}
                   </SelectItem>
                 ))}
@@ -378,15 +393,15 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
             <Select
               value={formData.professorId}
               onValueChange={(value) => setFormData({ ...formData, professorId: value })}
-              disabled={!formData.departmentId || loading}
+              disabled={!formData.departmentId || isFetchingData || loading}
             >
-              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600">
+              <SelectTrigger className="border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none cursor-pointer text-black dark:text-white data-[placeholder]:text-gray-400 dark:data-[placeholder]:text-gray-600 dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]">
                 <SelectValue placeholder={!formData.departmentId ? "Select department first" : "Select Professor or leave unassigned"} />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
+              <SelectContent className="bg-white border border-[var(--customized-color-four)] shadow-lg rounded-md overflow-hidden dark:bg-black dark:border-[var(--darkmode-color-four)]">
+                <SelectItem value="unassigned" className="dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">Unassigned</SelectItem>
                 {filteredProfessors.map((professor) => (
-                  <SelectItem key={professor.prof_id} value={professor.prof_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer">
+                  <SelectItem key={professor.prof_id} value={professor.prof_id.toString()} className="hover:bg-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] focus:bg-[var(--customized-color-five)] focus:text-[var(--customized-color-one)] cursor-pointer dark:hover:bg-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:focus:bg-[var(--darkmode-color-five)] dark:focus:text-[var(--darkmode-color-one)]">
                     {professor.name}
                   </SelectItem>
                 ))}
@@ -403,8 +418,8 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
                 type="datetime-local"
                 value={formData.scheduleStart}
                 onChange={(e) => setFormData({ ...formData, scheduleStart: e.target.value })}
-                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
-                disabled={loading}
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
+                disabled={isFetchingData || loading}
               />
             </div>
 
@@ -415,8 +430,8 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
                 type="datetime-local"
                 value={formData.scheduleEnd}
                 onChange={(e) => setFormData({ ...formData, scheduleEnd: e.target.value })}
-                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none"
-                disabled={loading}
+                className="placeholder:text-gray-400 border border-[var(--customized-color-four)] !outline-none focus:!outline focus:!outline-2 focus:!outline-[var(--customized-color-two)] focus:!outline-offset-0 focus:!ring-0 focus:!border-none dark:focus:!outline-[var(--darkmode-color-two)] dark:placeholder:text-gray-600 dark:bg-black bg-white dark:border-[var(--darkmode-color-four)]"
+                disabled={isFetchingData || loading}
               />
             </div>
           </div>
@@ -426,17 +441,24 @@ export function AddClassModal({ onAdd }: AddClassModalProps) {
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              disabled={loading}
-              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%]"
+              disabled={isFetchingData || loading}
+              className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%] dark:hover:bg-[var(--darkmode-color-five)] dark:hover:border-[var(--darkmode-color-five)] dark:hover:text-[var(--darkmode-color-one)] dark:border-[var(--darkmode-color-four)] dark:bg-black"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isDisabled || loading}
-              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 w-[50%]"
+              disabled={!isFormValid || isFetchingData || loading}
+              className="bg-[var(--customized-color-one)] hover:bg-[var(--customized-color-two)] text-white border-none flex items-center gap-2 w-[50%] dark:bg-[var(--darkmode-color-one)] dark:hover:bg-[var(--darkmode-color-two)] dark:text-black"
             >
-              {loading ? "Adding..." : "Add Class"}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Adding Class...
+                </>
+              ) : (
+                "Add Class"
+              )}
             </Button>
           </div>
         </form>

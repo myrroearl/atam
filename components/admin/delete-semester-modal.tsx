@@ -11,9 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { AlertTriangle } from "lucide-react"
-import { Alert } from "../ui/alert"
-import { AlertDescription } from "../ui/alert"
+import { Loader2 } from "lucide-react"
 
 interface Semester {
   semester_id: number
@@ -81,18 +79,30 @@ export default function DeleteSemesterModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-black font-bold">
+      <DialogContent className="sm:max-w-[500px] dark:bg-black border-none" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="font-bold text-black text-xl dark:text-white">
             Delete Semester
           </DialogTitle>
-          <DialogDescription className="text-gray-500 text-sm">
+          <DialogDescription className="text-sm text-gray-500 dark:text-gray-600">
             Are you sure you want to proceed with deleting <strong>"{semester?.semester_name}"</strong>?
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div>
+          <div className="space-y-2 p-0">
+            <div className="border-none p-0">
+              <p className="text-red-900 dark:text-orange-400 font-semibold text-sm">
+                This action will permanently delete the semester and all associated data.
+              </p>
+            </div>
+            {/* Year Level info */}
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">Semester Name:</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{semester?.semester_name}</span>
+            </div>
+          </div>
+          {/* <div>
             <span className="text-sm">Noted: Make sure you have deleted all subjects first, or this action will be blocked.</span>
           </div>
 
@@ -116,7 +126,7 @@ export default function DeleteSemesterModal({
                 <span>All subjects in this semester</span>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
         
         <DialogFooter className="w-full">
@@ -128,16 +138,21 @@ export default function DeleteSemesterModal({
               disabled={isLoading}
               className="hover:bg-[var(--customized-color-five)] hover:border hover:border-[var(--customized-color-five)] hover:text-[var(--customized-color-one)] border border-[var(--customized-color-four)] w-[50%]"
             >
-              Cancel
+              No, keep it
             </Button>
             <Button 
-              type="button"
-              variant="outline"
               onClick={handleDelete}
               disabled={isLoading}
-              className="bg-red-600 hover:bg-red-500 text-white border-none w-[50%] hover:text-white"
+              className="bg-red-600 hover:bg-red-500 text-white border-none w-[50%]"
             >
-                {isLoading ? "Deleting..." : "Delete Semester"}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Yes, Delete it"
+                )}
             </Button>
           </div>
         </DialogFooter>

@@ -20,7 +20,7 @@ export default function Department(){
     }
     
     return (
-        <div className="min-h-screen bg-[var(--customized-color-five)] dark:bg-[var(--try-five)] transition-colors">
+        <div className="min-h-screen bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)] transition-colors">
             <div className="p-5 w-full space-y-6">
                 {/* Header */}
                 <div className="space-y-2">

@@ -114,25 +114,44 @@ body {
   --customized-color-three: #80AF81;  /* Light Green - Subtle highlights, Success states */
   --customized-color-four: #D6EFD8;   /* Very Light Green - Backgrounds, Subtle areas */
   --customized-color-five: #f0f5f0;   /* Main Background - Page backgrounds, Cards */
+
+  --darkmode-color-one: #ade6ad;      
+  --darkmode-color-two: #74b172;      
+  --darkmode-color-three: #518151;    
+  --darkmode-color-four: #102812;     
+  --darkmode-color-five: #121612;
+  /* --darkmode-color-five: #0a0f0a;      */
+
+  --delete-color-one: #1e0101;
   
-  /* Dark Mode Colors */
-  --darkmode-color-one: #102812;      /* Dark Card Background */
-  --darkmode-color-two: #518151;      /* Dark Page Background */
-  --darkmode-color-three: #74b172;    /* Dark Element Background */
-  --darkmode-color-four: #ade6ad;     /* Dark Border/Separator */
-  --darkmode-color-five: #0a0f0a;
-  /* E9EDE9 */
   /* Status Colors */
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --error-color: #ef4444;
   --info-color: #3b82f6;
 
-  --try-one: #319d30;
+  --try-one: #1A5319;
   --try-two: #69b766;
   --try-three: #9ad39b;
   --try-four: #D6EFD8;
-  --try-five: #0b0b0b;
+  --try-five: #131313;
+}
+
+/* Custom Tooltip Styling */
+div[role="tooltip"],
+.bg-popover.rounded-md {
+  border: 1px solid var(--customized-color-four) !important;
+  background-color: white !important;
+  background: white !important;
+  border-color: var(--customized-color-four) !important;
+}
+
+.dark div[role="tooltip"],
+.dark .bg-popover.rounded-md {
+  border-color: var(--darkmode-color-four) !important;
+  background-color: black !important;
+  background: black !important;
+  color: white !important;
 }
 
 /* For Chrome, Safari, Edge */

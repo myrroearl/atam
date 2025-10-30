@@ -145,14 +145,14 @@ export function AppSidebar() {
         <SidebarHeader className={state === "collapsed" ? "p-2 mt-2" : "p-4"}>
           <div className="flex items-center justify-center gap-2">
             <Image
-              src="/logo.jpg"
+              src="/plp.png"
               alt="Logo"
               width={50}
               height={50}
-              className="rounded-full transition-all duration-200"
+              className="rounded-full transition-all duration-200 bg-transparent border-none dark:bg-transparent"
             />
             <span
-              className={`ml-2 text-4xl font-black text-[var(--customized-color-one)] ${state === "collapsed" ? "hidden" : "block transition-opacity duration-200 text-center dark:text-white"}`}
+              className={`ml-2 text-4xl font-black text-[var(--customized-color-one)] dark:text-[var(--darkmode-color-one)] ${state === "collapsed" ? "hidden" : "block transition-opacity duration-200 text-center dark:text-white"}`}
             >
               PLP
             </span>
@@ -168,7 +168,7 @@ export function AppSidebar() {
                   className={cn(
                     "text-black rounded-lg mb-1 ripple transition-all duration-200 ease-in-out active:scale-[0.97]",
                     isActive(item.href)
-                    ? "bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-one)] hover:text-white font-black dark:bg-[var(--darkmode-color-four)] dark:!text-black"
+                    ? "bg-[var(--customized-color-one)] text-white hover:bg-[var(--customized-color-one)] hover:text-white font-black dark:bg-[var(--darkmode-color-one)] dark:text-black"
                     : "text-black hover:ml-2 hover:transition-all hover:duration-300 hover:text-black hover:bg-transparent dark:hover:bg-[var(--customized-color-one)] dark:text-white dark:hover:bg-transparent"
                   )}
                   tooltip={item.title}

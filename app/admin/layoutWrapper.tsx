@@ -19,7 +19,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <div className="flex-1 flex flex-col">
           <TopNavigation />
-          <main className="flex-1 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-two)]">{children}</main>
+          <main className="flex-1 bg-[var(--customized-color-five)] dark:bg-[var(--darkmode-color-five)]">{children}</main>
         </div>
       </div>
     </SidebarProvider>
