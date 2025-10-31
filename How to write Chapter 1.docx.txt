@@ -1,0 +1,69 @@
+﻿How to write Chapter 1 (VERY IMPORTANT BECAUSE THIS WILL BE THE BASIS FOR YOUR JUSTIFICATION AND CONCLUSION IN CHAPTER 5)
+Topic Title : E-Commerce Site (THIS IS JUST GENERIC, your title should be complete with business name)
+        Ex. An Online Shopping Site for Huba Ranmoko Inc. (A B2C E-Commerce)
+                      
+1 Introduction and Its background
+        First part:
+        A general discussion that does not include the main focus of the study but merely introduces it.        
+Based on the article What is Ecommerce (2019), Ecommerce is something you conduct using the internet, whether you buy or sell something online. Etc etc…
+        
+        Second part:
+        Supporting statements for your first part and key arguments why technology can help
+        Research by Zhou et al. (2007) revealed that Online shopping has become increasingly popular. And that, Online retail sales have grown from $172 billion in 2005 to $329 billion in 2010. The potential benefits of online shopping for consumers include convenience, various selection, low price, original services, personal attention, and easy access to information, among others.
+Further, Khan A.G. (2016) mentioned that E-commerce has changed how businesses interacts with each other, its consumers, and the government. E-commerce  is  now  growing   rapidly   in   several   emerging   markets   and   developing     economies because of ICT.
+        
+Third part:   YOUR OWN WORDS
+        Discuss the business and the type of industry
+        Discuss the products or services rendered
+        
+        Fourth part:  YOUR OWN WORDS
+Discuss how your system will help the business or the industry. Highlight the impact of the research/system to each beneficiary.
+        Discuss why technology is important and the reason for your research
+
+
+
+
+1.1 Significance of the study (This can be in paragraph form or enumerated)
+        * Start with the institution, downwards to individual contributions
+* Use your problems and objectives, as well as, the scope of the study – who or what will benefit from it
+        - Country or City or Organization or the Business
+        The result of this study will benefit the ORG NAME to better manage their Ordering and Inventory Processes – include the features that will have impact to the business. Through this system, the ORG NAME will have online presence that can translate to better consumer traffic and market share.
+        - The Clients or Consumers or Users or Students
+Online shopping convenience will attract more consumers. With this system, not only will the consumer be able to buy products, but also experience an anywhere-anytime transaction – include features that will have direct impact to consumers.
+        - The Researchers
+Focus on enhancing your knowledge and skills, both technical and managerial (business)
+        - Future Researchers
+This can be used as basis for future development – include discussion for re-engineering your system to be better.
+
+
+1.2 Statement of the Problem (This could be in paragraph or enumerated and focus on the business process)
+With the advent of online shopping, ORG NAME is venturing towards the development of an E-Commerce site, particularly, Business to Consumer (B2C), in pursuit of expanding and improving its sales and market share.    (this is a general statement)
+Specifically: (Identify at least 4)
+* How to provide ORG NAME with a facility that will allow the management and owners the capability to feature their products (or services) ……(add more)... ?
+* Make sure that you follow the business process when writing your problems, more like writing a story
+* Use the requirements list provided (AREA OF RESEARCH), you can define a problem for each feature identified.
+        1.3 Scope and Limitation of the study
+                The development of an E-Commerce site for ORG NAME will include:
+                Personalization. ... (include short definition for each)
+                  Search. ...
+                   Buying and Browsing. ...
+Content Management to handle the wealth of information accessible to customers.
+                    Account Management...
+                    Product/Order Configuration.
+It will however not provide direct link to social media sites, as well as, receive payments through credit card or mobile payments. Data Analytics and Sentiment Analysis have been considered but are not included.
+
+
+
+
+Reference List (Alphabetically arranged, this will be part of your bibliography)
+Khan A.G. (2016).  Electronic Commerce:  A Study on Benefits and Challenges  in  an Emerging 
+Economy. Global Journal of Management and Business Research: Economics and Commerce Volume 16 Issue 1 Version 1.0. https://globaljournals.org/GJMBR_Volume16/3-Electronic-Commerce-A-Study.pdf
+
+
+What is ecommerce? (2019, July 12). Retrieved from https://ecommerceguide.com/guides/what-is-
+        ecommerce/
+
+
+Zhou L., Dai L., & Zhang D. (2007). ONLINE SHOPPING ACCEPTANCE MODEL — A CRITICAL SURVEY OF 
+        CONSUMER FACTORS IN ONLINE SHOPPING. Journal of Electronic Commerce Research, VOL 8, 
+        NO.1. https://pdfs.semanticscholar.org/98aa/8c77557707244c1b1ebe300d735146b77298.pdf
