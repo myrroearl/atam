@@ -2,15 +2,23 @@
 
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { StatsCard } from "@/components/ui/stats-card"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useRouter } from "next/navigation"
-import { BookOpen, Users, Star, TrendingUp, Award, ChevronDown, FileText, AlertTriangle, BarChart } from "lucide-react"
+import { BookOpen, Users, TrendingUp, ChevronDown, FileText, BarChart, GraduationCap } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
-import { convertPercentageToGPA, calculateGPA } from "@/lib/student/grade-calculations"
+
+// Unique color schemes for each subject card
+const cardThemes = [
+  { gradient: 'from-blue-500 to-cyan-500', bg: 'bg-blue-50 dark:bg-blue-950/20', border: 'border-blue-200 dark:border-blue-800', iconBg: 'bg-blue-500', text: 'text-blue-600 dark:text-blue-400' },
+  { gradient: 'from-purple-500 to-pink-500', bg: 'bg-purple-50 dark:bg-purple-950/20', border: 'border-purple-200 dark:border-purple-800', iconBg: 'bg-purple-500', text: 'text-purple-600 dark:text-purple-400' },
+  { gradient: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-50 dark:bg-emerald-950/20', border: 'border-emerald-200 dark:border-emerald-800', iconBg: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400' },
+  { gradient: 'from-orange-500 to-red-500', bg: 'bg-orange-50 dark:bg-orange-950/20', border: 'border-orange-200 dark:border-orange-800', iconBg: 'bg-orange-500', text: 'text-orange-600 dark:text-orange-400' },
+  { gradient: 'from-indigo-500 to-blue-500', bg: 'bg-indigo-50 dark:bg-indigo-950/20', border: 'border-indigo-200 dark:border-indigo-800', iconBg: 'bg-indigo-500', text: 'text-indigo-600 dark:text-indigo-400' },
+  { gradient: 'from-pink-500 to-rose-500', bg: 'bg-pink-50 dark:bg-pink-950/20', border: 'border-pink-200 dark:border-pink-800', iconBg: 'bg-pink-500', text: 'text-pink-600 dark:text-pink-400' },
+]
 type ApiClass = {
   class_id: number
   subjects: { subject_id: number; subject_code: string; subject_name: string; units: number | null } | null
@@ -169,34 +177,6 @@ export function SubjectsList() {
   const filteredSubjects: Subject[] = subjects.filter(subject => 
     subject && subject.id != null && subject.id !== 0
   )
-  
-  // Calculate KPI stats with error handling
-  // A work is considered completed if it has both score and max_score (even if failing)
-  const totalCompletedWorks = subjects.reduce((sum, subject) => {
-    try {
-      return sum + (subject.works || []).filter(w => w && w.score != null && w.max_score != null).length
-    } catch {
-      return sum
-    }
-  }, 0)
-  
-  const totalWorks = subjects.reduce((sum, subject) => {
-    try {
-      return sum + (subject.works || []).length
-    } catch {
-      return sum
-    }
-  }, 0)
-  
-  // Calculate weighted average grade by units using grade-calculations.ts
-  const avgGrade = subjects.length > 0 
-    ? Math.round(calculateGPA(subjects.map(subject => ({
-        percentage: subject.grade || 0,
-        units: subject.units || 3
-      }))))
-    : 0
-  
-  const overallProgress = totalWorks > 0 ? Math.round((totalCompletedWorks / totalWorks) * 100) : 0
 
   const handleViewReport = () => {
     router.push(`/student/subjects/grades?subject=overall`);
@@ -220,17 +200,17 @@ export function SubjectsList() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             My Subjects
           </h1>
-          <p className="text-muted-foreground">Track your courses and academic progress</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Track your courses and academic progress</p>
         </div>
-        <div className="flex items-center gap-2">
-         <div className="relative flex items-center">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
+         <div className="relative flex items-center w-full sm:w-auto">
            <select
-             className="appearance-none px-4 py-2 pr-8 rounded-md border border-input text-foreground bg-background text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors cursor-pointer"
+             className="appearance-none w-full sm:w-auto px-4 py-2 pr-8 rounded-md border border-input text-foreground bg-background text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors cursor-pointer"
              value={selectedSemester}
              onChange={e => setSelectedSemester(e.target.value)}
            >
@@ -244,7 +224,7 @@ export function SubjectsList() {
          </div>
           <AlertDialog open={showViewReportDialog} onOpenChange={setShowViewReportDialog}>
             <AlertDialogTrigger asChild>
-              <Button variant="outline">View Report</Button>
+              <Button variant="outline" className="w-full sm:w-auto">View Report</Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="sm:max-w-md">
               <AlertDialogHeader className="space-y-4">
@@ -274,9 +254,10 @@ export function SubjectsList() {
 
           <AlertDialog open={showGradeReportsDialog} onOpenChange={setShowGradeReportsDialog}>
             <AlertDialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg">
+              <Button className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg">
                 <FileText className="w-4 h-4 mr-2" />
-                Grade Reports
+                <span className="hidden sm:inline">Grade Reports</span>
+                <span className="sm:hidden">Reports</span>
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="sm:max-w-md">
@@ -328,34 +309,20 @@ export function SubjectsList() {
       {!loading && !error && (
         <>
           {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StatsCard
           title="Active Courses"
           value={filteredSubjects.length}
-          description="Active courses"
+          description="Enrolled this semester"
           icon={BookOpen}
           iconColor="text-blue-500"
         />
         <StatsCard
-          title="Avg Grade"
-          value={`${avgGrade}%`}
-          description="Average grade"
-          icon={Award}
-          iconColor="text-emerald-500"
-        />
-        <StatsCard
-          title="Progress"
-          value={`${overallProgress}%`}
-          description="Overall progress"
+          title="Total Units"
+          value={filteredSubjects.reduce((sum, s) => sum + (s.units || 0), 0)}
+          description="Credit units enrolled"
           icon={TrendingUp}
           iconColor="text-purple-500"
-        />
-        <StatsCard
-          title="Completed"
-          value={totalCompletedWorks}
-          description="Completed works"
-          icon={Star}
-          iconColor="text-yellow-500"
         />
       </div>
 
@@ -370,46 +337,59 @@ export function SubjectsList() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSubjects.map((subject, index) => (
+        {filteredSubjects.map((subject, index) => {
+          const theme = cardThemes[index % cardThemes.length];
+          
+          return (
           <div key={subject.id || `subject-${index}`} className="no-underline">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg dark:shadow-card-lg rounded-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-card-lg dark:hover:shadow-card-lg h-full cursor-pointer hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
-              <CardHeader>
-                <div className="flex-1">
-                    <CardTitle className="text-lg">{subject.name}</CardTitle>
-                    <CardDescription className="flex items-center space-x-2 mt-1">
-                      <span>{subject.code}</span>
-                      <Badge variant="secondary">{subject.units} units</Badge>
+                <Card className={`group relative overflow-hidden border-2 ${theme.border} ${theme.bg} shadow-lg rounded-2xl flex flex-col justify-between transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-2xl h-full cursor-pointer`}>
+              
+              {/* Gradient Header Bar */}
+              <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${theme.gradient}`} />
+              
+              <CardHeader className="pb-4 pt-6">
+                <div className="flex items-start gap-4">
+                  {/* Icon */}
+                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${theme.gradient} flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <BookOpen className="w-7 h-7 text-white" />
+                  </div>
+                  
+                  {/* Title and Code */}
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-lg font-bold mb-1 line-clamp-2 group-hover:text-foreground transition-colors">
+                      {subject.name}
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-2 text-sm flex-wrap">
+                      <span className={`font-semibold ${theme.text}`}>{subject.code}</span>
                     </CardDescription>
                   </div>
-              </CardHeader>
-              <CardContent className="p-4 flex flex-col space-y-4 flex-grow">
-                <p className="text-sm text-muted-foreground flex-grow">{subject.description}</p>
-
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Progress</span>
-                    <span className="text-sm font-bold">{subject.progress}%</span>
-                  </div>
-                  <Progress value={subject.progress} className="h-2" />
                 </div>
-
+              </CardHeader>
+              
+              <CardContent className="pt-0 pb-6 space-y-4">
+                {/* Grade Badge */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">{subject.instructor}</span>
-                  </div>
-                  <Badge className={getGradeBadgeClass(subject.grade)}>
+                  <span className="text-sm font-medium text-muted-foreground">Current Grade</span>
+                  <Badge className={`${getGradeBadgeClass(subject.grade)} text-base font-bold px-3 py-1.5 shadow-sm`}>
                     {subject.grade}%
                   </Badge>
                 </div>
-
-                <div className="pt-2 border-t">
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">Works</span>
-                    <span>{subject.works.filter(w => w && w.score != null && w.max_score != null).length}/{subject.works.length}</span>
+                
+                {/* Divider */}
+                <div className="border-t border-border/50" />
+                
+                {/* Footer Info */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Users className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{subject.instructor}</span>
                   </div>
-                  <Progress value={subject.progress} className="h-1" />
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <GraduationCap className="w-4 h-4 flex-shrink-0" />
+                    <span>{subject.units} {subject.units === 1 ? 'unit' : 'units'}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -417,7 +397,7 @@ export function SubjectsList() {
               <AlertDialogContent className="sm:max-w-md">
                 <AlertDialogHeader className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                  <div className={`w-10 h-10 bg-gradient-to-br ${theme.gradient} rounded-lg flex items-center justify-center shadow-lg`}>
                     <BookOpen className="w-5 h-5 text-white" />
                   </div>
                   <AlertDialogTitle className="text-xl font-bold">View {subject.name} Details</AlertDialogTitle>
@@ -432,7 +412,7 @@ export function SubjectsList() {
                   </AlertDialogCancel>
                   <AlertDialogAction 
                     onClick={() => router.push(`/student/subjects/grades?subject=${subject.id}`)} 
-                    className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                    className={`w-full sm:w-auto order-1 sm:order-2 bg-gradient-to-r ${theme.gradient} hover:opacity-90 text-white shadow-lg`}
                   >
                     Yes, View Details
                   </AlertDialogAction>
@@ -440,7 +420,7 @@ export function SubjectsList() {
               </AlertDialogContent>
             </AlertDialog>
           </div>
-        ))}
+        )})}
         </div>
       )}
         </>

@@ -146,6 +146,7 @@ export function PerformanceSummary() {
   const [availableYears, setAvailableYears] = useState<string[]>([])
   const [availableSemesters, setAvailableSemesters] = useState<string[]>([])
   const [hoveredPoint, setHoveredPoint] = useState<any>(null)
+  const [subjectFilter, setSubjectFilter] = useState<'all' | 'best' | 'lowest'>('all')
 
   // Legacy state for compatibility
   const [weekly, setWeekly] = useState<WeeklyRow[]>([])
@@ -949,20 +950,20 @@ export function PerformanceSummary() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="space-y-2">
-              <h1 className="text-4xl font-bold text-foreground">
+              <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
                 Performance Summary
               </h1>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-base lg:text-lg text-muted-foreground">
                 AI-powered insights into your academic performance and growth opportunities 
               </p>
-          </div>
+            </div>
 
             {/* Filter Controls */}
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Academic Year" />
                 </SelectTrigger>
                 <SelectContent>
@@ -974,7 +975,7 @@ export function PerformanceSummary() {
               </Select>
               
               <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Semester" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1042,25 +1043,39 @@ export function PerformanceSummary() {
             {performanceData?.trendData && performanceData.trendData.subjects.length > 0 ? (
               <div className="space-y-6">
                 {/* Chart */}
-                <div className="h-96">
+                <div className="h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={performanceData.trendData.allDataPoints}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <defs>
+                        <style>
+                          {`
+                            .recharts-cartesian-grid-horizontal line,
+                            .recharts-cartesian-grid-vertical line {
+                              stroke: rgb(226 232 240);
+                            }
+                            @media (prefers-color-scheme: dark) {
+                              .recharts-cartesian-grid-horizontal line,
+                              .recharts-cartesian-grid-vertical line {
+                                stroke: rgb(51 65 85);
+                              }
+                            }
+                          `}
+                        </style>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" />
                       <XAxis 
                         dataKey="formattedDate" 
-                        tick={{ fontSize: 10, fill: '#64748b' }}
-                        axisLine={{ stroke: '#cbd5e1' }}
-                        label={{ value: 'Date', position: 'insideBottom', offset: -10, style: { textAnchor: 'middle', fill: '#64748b' } }}
+                        tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                        axisLine={{ stroke: 'hsl(var(--border))' }}
                         angle={-45}
                         textAnchor="end"
                         height={80}
                       />
                       <YAxis 
                         domain={[0, 100]}
-                        tick={{ fontSize: 12, fill: '#64748b' }}
-                        axisLine={{ stroke: '#cbd5e1' }}
+                        tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                        axisLine={{ stroke: 'hsl(var(--border))' }}
                         tickFormatter={(value) => `${value}%`}
-                        label={{ value: 'Percentage Score', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#64748b' } }}
                       />
                       <Tooltip 
                         formatter={(value, name, props) => {
@@ -1081,10 +1096,14 @@ export function PerformanceSummary() {
                           return label;
                         }}
                         contentStyle={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                          border: '1px solid #e2e8f0',
+                          backgroundColor: 'hsl(var(--popover))',
+                          borderColor: 'hsl(var(--border))',
                           borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                          color: 'hsl(var(--popover-foreground))'
+                        }}
+                        labelStyle={{
+                          color: 'hsl(var(--popover-foreground))'
                         }}
                       />
                       {performanceData.trendData.subjects.map((subject, index) => (
@@ -1106,7 +1125,16 @@ export function PerformanceSummary() {
 
                 {/* Detailed Metrics Table */}
                 <div className="space-y-4">
-                  <h4 className="text-lg font-semibold text-foreground">Subject Performance Summary</h4>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h4 className="text-lg font-semibold text-foreground">Subject Performance Summary</h4>
+                    <Tabs value={subjectFilter} onValueChange={(value: any) => setSubjectFilter(value)} className="w-full sm:w-auto">
+                      <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                        <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
+                        <TabsTrigger value="best" className="text-xs sm:text-sm">Best</TabsTrigger>
+                        <TabsTrigger value="lowest" className="text-xs sm:text-sm">Lowest</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
@@ -1114,21 +1142,46 @@ export function PerformanceSummary() {
                           <th className="text-left py-3 px-4 font-medium text-muted-foreground">Subject</th>
                           <th className="text-center py-3 px-4 font-medium text-muted-foreground">Total Entries</th>
                           <th className="text-center py-3 px-4 font-medium text-muted-foreground">Avg %</th>
-                          <th className="text-center py-3 px-4 font-medium text-muted-foreground">Best %</th>
-                          <th className="text-center py-3 px-4 font-medium text-muted-foreground">Worst %</th>
+                          <th className="text-center py-3 px-4 font-medium text-muted-foreground">Best Score</th>
+                          <th className="text-center py-3 px-4 font-medium text-muted-foreground">Worst Score</th>
                           <th className="text-center py-3 px-4 font-medium text-muted-foreground">Trend</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {performanceData.trendData.subjects.map((subject, index) => {
+                        {(() => {
+                          // Calculate avg percentage for each subject and sort
+                          const subjectsWithAvg = performanceData.trendData.subjects.map((subject, index) => {
+                            const allPercentages = subject.dataPoints.map(p => p.percentage);
+                            const avgPercentage = allPercentages.length > 0 
+                              ? allPercentages.reduce((sum, percentage) => sum + percentage, 0) / allPercentages.length 
+                              : 0;
+                            return { subject, index, avgPercentage };
+                          });
+
+                          // Filter based on selected filter
+                          let filteredSubjects = subjectsWithAvg;
+                          if (subjectFilter === 'best') {
+                            // Top 50% performing subjects
+                            filteredSubjects = subjectsWithAvg
+                              .sort((a, b) => b.avgPercentage - a.avgPercentage)
+                              .slice(0, Math.ceil(subjectsWithAvg.length / 2));
+                          } else if (subjectFilter === 'lowest') {
+                            // Bottom 50% performing subjects
+                            filteredSubjects = subjectsWithAvg
+                              .sort((a, b) => a.avgPercentage - b.avgPercentage)
+                              .slice(0, Math.ceil(subjectsWithAvg.length / 2));
+                          }
+
+                          return filteredSubjects.map(({ subject, index, avgPercentage: calculatedAvg }) => {
                           const allPercentages = subject.dataPoints.map(p => p.percentage);
+                          const allDataPoints = subject.dataPoints;
                           
-                          const avgPercentage = allPercentages.length > 0 
-                            ? allPercentages.reduce((sum, percentage) => sum + percentage, 0) / allPercentages.length 
-                            : 0;
-                          
-                          const bestPercentage = allPercentages.length > 0 ? Math.max(...allPercentages) : 0;
-                          const worstPercentage = allPercentages.length > 0 ? Math.min(...allPercentages) : 0;
+                          const bestPoint = allDataPoints.length > 0 
+                            ? allDataPoints.reduce((best, current) => current.percentage > best.percentage ? current : best)
+                            : null;
+                          const worstPoint = allDataPoints.length > 0 
+                            ? allDataPoints.reduce((worst, current) => current.percentage < worst.percentage ? current : worst)
+                            : null;
                           
                           // Calculate trend (comparing first half vs second half)
                           const midPoint = Math.floor(allPercentages.length / 2);
@@ -1164,13 +1217,13 @@ export function PerformanceSummary() {
                                 {allPercentages.length}
                               </td>
                               <td className="text-center py-3 px-4 font-medium text-foreground">
-                                {avgPercentage.toFixed(1)}%
+                                {calculatedAvg.toFixed(1)}%
                               </td>
                               <td className="text-center py-3 px-4 text-green-600 font-medium">
-                                {bestPercentage.toFixed(1)}%
+                                {bestPoint ? `${bestPoint.score}/${bestPoint.maxScore}` : 'N/A'}
                               </td>
                               <td className="text-center py-3 px-4 text-red-600 font-medium">
-                                {worstPercentage.toFixed(1)}%
+                                {worstPoint ? `${worstPoint.score}/${worstPoint.maxScore}` : 'N/A'}
                               </td>
                               <td className="text-center py-3 px-4">
                                 <div className="flex items-center justify-center space-x-1">
@@ -1180,7 +1233,8 @@ export function PerformanceSummary() {
                               </td>
                             </tr>
                           );
-                        })}
+                        });
+                        })()}
                       </tbody>
                     </table>
                   </div>

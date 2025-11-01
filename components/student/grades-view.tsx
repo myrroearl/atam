@@ -46,7 +46,6 @@ type Subject = {
   name: string
   code: string
   progress: number
-  target: number
   grade: number
   classRank: number
   works: any[]
@@ -93,7 +92,6 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, 
     const gradeData = subjects.map(s => ({
       name: s.name,
       grade: s.grade,
-      target: s.target,
     }));
     
     // Calculate additional statistics for visualizations
@@ -111,57 +109,49 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, 
       { range: 'Below 60%', count: subjects.filter(s => s.grade < 60).length, color: '#dc2626' },
     ];
     
-    // Progress vs Target comparison
-    const progressData = subjects.map(s => ({
-      name: s.name,
-      progress: s.progress,
-      target: s.target,
-      grade: s.grade,
-    }));
-    
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <Button variant="outline" onClick={onBack} className="flex items-center justify-center gap-2 w-full sm:w-auto">
             <ArrowLeft className="w-4 h-4" />
-            Back to Subjects
+            <span>Back to Subjects</span>
           </Button>
           <Button 
             onClick={handleGradeReports}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg"
+            className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg"
           >
             <GraduationCap className="w-4 h-4 mr-2" />
-            Grade Reports
+            <span>Grade Reports</span>
           </Button>
         </div>
         
         {/* Overall Performance Summary */}
         <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
           <CardHeader>
-            <CardTitle className="text-2xl">Overall Academic Performance</CardTitle>
-            <CardDescription>A comprehensive summary of your grades across all subjects.</CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">Overall Academic Performance</CardTitle>
+            <CardDescription className="text-sm">A comprehensive summary of your grades across all subjects.</CardDescription>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div className="p-6 rounded-lg bg-muted/50">
-                <p className="text-sm text-muted-foreground font-medium">Average Grade</p>
-                <p className="text-3xl font-bold">{convertPercentToGradeScale(overallAverage)}</p>
-                <p className="text-sm text-muted-foreground">{Number.isFinite(overallAverage) ? overallAverage.toFixed(2) : '0.00'}%</p>
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 text-center">
+              <div className="p-3 sm:p-6 rounded-lg bg-muted/50">
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Average Grade</p>
+                <p className="text-2xl sm:text-3xl font-bold">{convertPercentToGradeScale(overallAverage)}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{Number.isFinite(overallAverage) ? overallAverage.toFixed(2) : '0.00'}%</p>
               </div>
-              <div className="p-6 rounded-lg bg-muted/50">
-                <p className="text-sm text-muted-foreground font-medium">Overall Progress</p>
-                <p className="text-3xl font-bold">{Number.isFinite(totalProgress) ? totalProgress.toFixed(2) : '0.00'}%</p>
+              <div className="p-3 sm:p-6 rounded-lg bg-muted/50">
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Overall Progress</p>
+                <p className="text-2xl sm:text-3xl font-bold">{Number.isFinite(totalProgress) ? totalProgress.toFixed(2) : '0.00'}%</p>
                 <Progress value={totalProgress} className="mt-2 h-2" />
               </div>
-              <div className="p-6 rounded-lg bg-muted/50">
-                <p className="text-sm text-muted-foreground font-medium">Works Completion</p>
-                <p className="text-3xl font-bold">{Number.isFinite(completionRate) ? completionRate.toFixed(2) : '0.00'}%</p>
-                <p className="text-sm text-muted-foreground">{completedAssignments}/{totalAssignments}</p>
+              <div className="p-3 sm:p-6 rounded-lg bg-muted/50">
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Works Completion</p>
+                <p className="text-2xl sm:text-3xl font-bold">{Number.isFinite(completionRate) ? completionRate.toFixed(2) : '0.00'}%</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{completedAssignments}/{totalAssignments}</p>
               </div>
-              <div className="p-6 rounded-lg bg-muted/50">
-                <p className="text-sm text-muted-foreground font-medium">Subjects</p>
-                <p className="text-3xl font-bold">{subjects.length}</p>
-                <p className="text-sm text-muted-foreground">Total</p>
+              <div className="p-3 sm:p-6 rounded-lg bg-muted/50">
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Subjects</p>
+                <p className="text-2xl sm:text-3xl font-bold">{subjects.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
               </div>
             </div>
           </CardContent>
@@ -233,40 +223,42 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, 
         </Card>
 
 
-        {/* Subject Achievement Analysis */}
+        {/* Subject Performance Analysis */}
         <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Award className="w-5 h-5 text-blue-500" />
-              Subject Achievement Analysis
+              Subject Performance Analysis
             </CardTitle>
-            <CardDescription>Detailed analysis of your performance across all subjects with achievement insights</CardDescription>
+            <CardDescription>Detailed analysis of your performance across all subjects</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {/* Achievement Status Grid */}
+              {/* Performance Status Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {gradeData.map((subject, index) => {
-                  const achievement = subject.grade >= subject.target ? 'exceeded' : 
-                                   subject.grade >= subject.target * 0.9 ? 'on-track' : 'needs-improvement';
-                  const achievementColor = achievement === 'exceeded' ? 'emerald' : 
-                                         achievement === 'on-track' ? 'blue' : 'orange';
+                  const performance = subject.grade >= 90 ? 'excellent' : 
+                                   subject.grade >= 80 ? 'good' : 
+                                   subject.grade >= 70 ? 'satisfactory' : 'needs-improvement';
                   
                   return (
                     <div key={subject.name} className={`p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-lg ${
-                      achievement === 'exceeded' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' :
-                      achievement === 'on-track' ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' :
+                      performance === 'excellent' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' :
+                      performance === 'good' ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' :
+                      performance === 'satisfactory' ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800' :
                       'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
                     }`}>
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="font-semibold text-sm text-foreground truncate">{subject.name}</h4>
                         <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          achievement === 'exceeded' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' :
-                          achievement === 'on-track' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
+                          performance === 'excellent' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' :
+                          performance === 'good' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
+                          performance === 'satisfactory' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' :
                           'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
                         }`}>
-                          {achievement === 'exceeded' ? 'Exceeded' : 
-                           achievement === 'on-track' ? 'On Track' : 'Needs Focus'}
+                          {performance === 'excellent' ? 'Excellent' : 
+                           performance === 'good' ? 'Good' : 
+                           performance === 'satisfactory' ? 'Satisfactory' : 'Needs Focus'}
                         </div>
                       </div>
                       
@@ -277,20 +269,11 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, 
                         </div>
                         <Progress value={subject.grade} className="h-2" />
                         
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">Target Grade</span>
-                          <span className="font-bold text-sm">{subject.target.toFixed(1)}%</span>
-                        </div>
-                        <Progress value={subject.target} className="h-2" />
-                        
                         <div className="pt-2 border-t border-border/50">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">Gap</span>
-                            <span className={`font-medium ${
-                              subject.grade >= subject.target ? 'text-emerald-600 dark:text-emerald-400' : 
-                              'text-orange-600 dark:text-orange-400'
-                            }`}>
-                              {subject.grade >= subject.target ? '+' : ''}{(subject.grade - subject.target).toFixed(1)}%
+                            <span className="text-muted-foreground">GPA Equivalent</span>
+                            <span className="font-medium">
+                              {convertPercentToGradeScale(subject.grade)}
                             </span>
                           </div>
                         </div>
@@ -300,31 +283,44 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, 
                 })}
               </div>
               
-              {/* Achievement Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-border">
+              {/* Performance Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-border">
                 <div className="text-center p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Trophy className="w-5 h-5 text-emerald-600" />
-                    <span className="font-semibold text-emerald-700 dark:text-emerald-300">Exceeded Goals</span>
+                    <span className="font-semibold text-emerald-700 dark:text-emerald-300">Excellent</span>
                   </div>
                   <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                    {gradeData.filter(s => s.grade >= s.target).length}
+                    {gradeData.filter(s => s.grade >= 90).length}
                   </p>
                   <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                    {gradeData.length > 0 ? Math.round((gradeData.filter(s => s.grade >= s.target).length / gradeData.length) * 100) : 0}% of subjects
+                    90%+ (A)
                   </p>
                 </div>
                 
                 <div className="text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <Target className="w-5 h-5 text-blue-600" />
-                    <span className="font-semibold text-blue-700 dark:text-blue-300">On Track</span>
+                    <Star className="w-5 h-5 text-blue-600" />
+                    <span className="font-semibold text-blue-700 dark:text-blue-300">Good</span>
                   </div>
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {gradeData.filter(s => s.grade >= s.target * 0.9 && s.grade < s.target).length}
+                    {gradeData.filter(s => s.grade >= 80 && s.grade < 90).length}
                   </p>
                   <p className="text-sm text-blue-600 dark:text-blue-400">
-                    {gradeData.length > 0 ? Math.round((gradeData.filter(s => s.grade >= s.target * 0.9 && s.grade < s.target).length / gradeData.length) * 100) : 0}% of subjects
+                    80-89% (B)
+                  </p>
+                </div>
+                
+                <div className="text-center p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Target className="w-5 h-5 text-amber-600" />
+                    <span className="font-semibold text-amber-700 dark:text-amber-300">Satisfactory</span>
+                  </div>
+                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                    {gradeData.filter(s => s.grade >= 70 && s.grade < 80).length}
+                  </p>
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                    70-79% (C)
                   </p>
                 </div>
                 
@@ -334,10 +330,10 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, 
                     <span className="font-semibold text-orange-700 dark:text-orange-300">Needs Focus</span>
                   </div>
                   <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                    {gradeData.filter(s => s.grade < s.target * 0.9).length}
+                    {gradeData.filter(s => s.grade < 70).length}
                   </p>
                   <p className="text-sm text-orange-600 dark:text-orange-400">
-                    {gradeData.length > 0 ? Math.round((gradeData.filter(s => s.grade < s.target * 0.9).length / gradeData.length) * 100) : 0}% of subjects
+                    Below 70%
                   </p>
                 </div>
               </div>
@@ -369,41 +365,36 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, 
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <Button variant="outline" onClick={onBack} className="flex items-center justify-center gap-2 w-full sm:w-auto">
           <ArrowLeft className="w-4 h-4" />
-          Back to Subjects
+          <span>Back to Subjects</span>
         </Button>
         <Button 
           onClick={handleGradeReports}
-          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg"
+          className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-card hover:shadow-card-lg"
         >
           <GraduationCap className="w-4 h-4 mr-2" />
-          Grade Reports
+          <span>Grade Reports</span>
         </Button>
       </div>
       
       <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300 overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-          <CardTitle className="text-2xl flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-              <Book className="w-5 h-5 text-white" />
+          <CardTitle className="text-lg sm:text-2xl flex items-center space-x-2 sm:space-x-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Book className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span>{subject.name}</span>
+            <span className="break-words">{subject.name}</span>
           </CardTitle>
-          <CardDescription>Detailed breakdown of your performance in this subject.</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Detailed breakdown of your performance in this subject.</CardDescription>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="p-6 rounded-lg bg-muted/50 text-center">
               <p className="text-sm text-muted-foreground font-medium">Overall Grade</p>
               <p className="text-3xl font-bold">{convertPercentToGradeScale(subject.grade)}</p>
               <p className="text-sm text-muted-foreground">{Number.isFinite(subject.grade) ? subject.grade.toFixed(2) : '0.00'}%</p>
-            </div>
-            <div className="p-6 rounded-lg bg-muted/50 text-center">
-              <p className="text-sm text-muted-foreground font-medium">Goal Grade</p>
-              <p className="text-3xl font-bold">{convertPercentToGradeScale(subject.target)}</p>
-              <p className="text-sm text-muted-foreground">{Number.isFinite(subject.target) ? subject.target.toFixed(2) : '0.00'}%</p>
             </div>
             <div className="p-6 rounded-lg bg-muted/50 text-center">
               <p className="text-sm text-muted-foreground font-medium">Class Rank</p>
@@ -447,9 +438,10 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, 
         <TabsContent value="overview">
           <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-2xl dark:shadow-card-2xl rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
             <CardHeader>
-              <CardTitle>Works</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Works</CardTitle>
             </CardHeader>
             <CardContent>
+              <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -473,6 +465,7 @@ function GradesPanel({ subjects, selectedSubjectId, onBack, handleGradeReports, 
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -496,6 +489,7 @@ export function GradesView() {
   const searchParams = useSearchParams();
   const [selectedSemester, setSelectedSemester] = useState('1st Sem');
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | 'overall' | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const subjectId = searchParams.get('subject');
@@ -611,12 +605,11 @@ export function GradesView() {
       name: subj?.subject_name || 'Subject',
       code: subj?.subject_code || 'N/A',
       progress: Math.round(progress),
-      target: 85,
       grade: calculatedGrade.percentage,
       classRank: sectionRankings[subjectId] || 0,
       works: worksForSubject,
       icon: BookOpen,
-      units: subj?.units || 3, // Store actual units for consistency
+      units: subj?.units || 3, 
     }
   })
 
@@ -626,9 +619,85 @@ export function GradesView() {
   const filteredSubjects = subjects.filter(subject => semesterMap[selectedSemester].includes(subject.id));
 
   return (
-    <div className="px-6 pb-8 max-w-[1400px] mx-auto">
+    <div className="px-4 sm:px-6 pb-8 max-w-[1400px] mx-auto">
       {loading && <p className="text-sm text-muted-foreground">Loading subjects...</p>}
       {error && <p className="text-sm text-red-500">{error}</p>}
+      
+      {/* Mobile Navigation Card */}
+      <Card className="md:hidden mb-6 bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg rounded-2xl">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center space-x-2">
+              <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-3 h-3 text-white" />
+              </div>
+              <span>Subjects</span>
+            </CardTitle>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-muted-foreground"
+            >
+              <ChevronDown className={`w-5 h-5 transition-transform ${mobileMenuOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </div>
+        </CardHeader>
+        {mobileMenuOpen && (
+          <CardContent className="pt-0">
+            <div className="mb-4 relative">
+              <select
+                className="w-full appearance-none px-4 py-3 pr-10 rounded-lg border border-input text-foreground bg-background text-sm font-medium shadow-card focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200 cursor-pointer"
+                value={selectedSemester}
+                onChange={e => setSelectedSemester(e.target.value)}
+              >
+                {semesterOptions.map(option => (
+                  <option key={option} value={option} className="text-foreground bg-background">
+                    {option}{option === '1st Sem' ? ' (Current)' : ''}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </div>
+            </div>
+            <nav className="flex flex-col gap-2">
+              <Link
+                href={`/student/subjects/grades?subject=overall`}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  selectedSubjectId === 'overall'
+                    ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-card-lg"
+                    : "hover:bg-muted text-foreground"
+                }`}
+              >
+                <BarChart className="w-5 h-5" />
+                <span className="font-medium">Overall</span>
+              </Link>
+              <Separator className="my-2" />
+              {filteredSubjects.map((subject) => {
+                const Icon = subject.icon;
+                return (
+                  <Link
+                    href={`/student/subjects/grades?subject=${subject.id}`}
+                    key={subject.id}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                      selectedSubjectId === subject.id
+                        ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-card-lg"
+                        : "hover:bg-muted text-foreground"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium text-sm">{subject.name}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </CardContent>
+        )}
+      </Card>
+      
       <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
       <aside className="hidden md:flex flex-col gap-4 sticky top-20">
         <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg dark:shadow-card-lg rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300 p-4">

@@ -136,23 +136,23 @@ export function GradeReports() {
       {loading && <p className="text-sm text-muted-foreground">Loading grades...</p>}
       {error && <p className="text-sm text-red-500">{error}</p>}
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold text-foreground flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-white" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center space-x-2 sm:space-x-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span>Overall Grade Reports</span>
+            <span className="break-words">Overall Grade Reports</span>
           </h1>
-          <p className="text-muted-foreground">Complete academic transcript from 1st Year to Current</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Complete academic transcript from 1st Year to Current</p>
         </div>
         <Button 
           variant="outline" 
           onClick={() => router.push('/student/subjects')} 
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Subjects
+          <span>Back to Subjects</span>
         </Button>
       </div>
 
@@ -206,9 +206,9 @@ export function GradeReports() {
         </CardHeader>
         <CardContent>
           <Tabs value={selectedYear} onValueChange={setSelectedYear} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 gap-2">
               {academicYears.map((year) => (
-                <TabsTrigger key={year.year} value={year.year} className="flex items-center space-x-2">
+                <TabsTrigger key={year.year} value={year.year} className="flex items-center justify-center space-x-2">
                   <GraduationCap className="w-4 h-4" />
                   <span>{year.year}</span>
                 </TabsTrigger>
@@ -217,12 +217,12 @@ export function GradeReports() {
 
             {academicYears.map((year) => (
               <TabsContent key={year.year} value={year.year} className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <h3 className="text-2xl font-bold">{year.year}</h3>
-                    <p className="text-muted-foreground">{year.yearRange}</p>
+                    <h3 className="text-xl sm:text-2xl font-bold">{year.year}</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">{year.yearRange}</p>
                   </div>
-                  <Badge variant="outline" className="text-sm">
+                  <Badge variant="outline" className="text-xs sm:text-sm w-fit">
                     {year.semesters.length} Semesters
                   </Badge>
                 </div>
@@ -254,30 +254,31 @@ export function GradeReports() {
                   {year.semesters.map((semester: any, index: number) => (
                     <Card key={index} className="bg-card border border-slate-200 dark:border-slate-700 shadow-card-lg dark:shadow-card-lg rounded-2xl hover:shadow-xl dark:hover:shadow-xl transition-all duration-300">
                       <CardHeader>
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div>
-                            <CardTitle className="flex items-center space-x-2">
-                              <FileText className="w-5 h-5" />
+                            <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
+                              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
                               <span>{semester.name}</span>
                             </CardTitle>
-                            <CardDescription>{semester.yearRange}</CardDescription>
+                            <CardDescription className="text-xs sm:text-sm">{semester.yearRange}</CardDescription>
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">Semester GPA</p>
-                            <p className="text-xl font-bold">{calculateGPACorrect(semester.courses).toFixed(2)}</p>
+                          <div className="text-left sm:text-right">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Semester GPA</p>
+                            <p className="text-lg sm:text-xl font-bold">{calculateGPACorrect(semester.courses).toFixed(2)}</p>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
+                        <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Course Code</TableHead>
-                              <TableHead>Description</TableHead>
-                              <TableHead className="text-center">Units</TableHead>
-                              <TableHead className="text-center">Grade</TableHead>
-                              <TableHead className="text-center">Status</TableHead>
-                              <TableHead className="text-center">Remarks</TableHead>
+                              <TableHead className="min-w-[100px]">Course Code</TableHead>
+                              <TableHead className="min-w-[200px]">Description</TableHead>
+                              <TableHead className="text-center min-w-[60px]">Units</TableHead>
+                              <TableHead className="text-center min-w-[80px]">Grade</TableHead>
+                              <TableHead className="text-center min-w-[80px]">Status</TableHead>
+                              <TableHead className="text-center min-w-[100px]">Remarks</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -320,11 +321,12 @@ export function GradeReports() {
                             ))}
                           </TableBody>
                         </Table>
+                        </div>
                         
                         <div className="mt-4 pt-4 border-t">
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">Total Units: {semester.totalUnits}</span>
-                            <div className="flex space-x-4 text-sm text-muted-foreground">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <span className="font-medium text-sm sm:text-base">Total Units: {semester.totalUnits}</span>
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm text-muted-foreground">
                               <span>Completed: {semester.courses.filter((c: any) => c.completed).length}</span>
                               <span>Taken: {semester.courses.filter((c: any) => c.taken).length}</span>
                               <span>Credited: {semester.courses.filter((c: any) => c.credited).length}</span>

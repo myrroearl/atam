@@ -561,10 +561,31 @@ export function ProfileSettings() {
         })
       });
 
-      const result = await response.json();
+      // Safely parse the response
+      let result: any = {};
+      const contentType = response.headers.get('content-type');
+      
+      // Only parse JSON if the response has JSON content
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text) {
+          try {
+            result = JSON.parse(text);
+          } catch (parseError) {
+            console.error('Failed to parse JSON response:', parseError);
+            result = { error: 'Invalid server response' };
+          }
+        }
+      } else {
+        // If not JSON, get the text response
+        const text = await response.text();
+        if (text) {
+          result = { message: text };
+        }
+      }
 
       if (!response.ok) {
-        setPasswordMsg(result.error || "Failed to update password.");
+        setPasswordMsg(result.error || result.message || "Failed to update password.");
         return;
       }
 
@@ -595,7 +616,7 @@ export function ProfileSettings() {
 
     } catch (error) {
       console.error('Password update error:', error);
-      setPasswordMsg("An error occurred while updating password.");
+      setPasswordMsg("An error occurred while updating password. Please try again.");
     }
   };
 
