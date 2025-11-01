@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Calendar, GraduationCap, Camera, Save, Shield, Bell, Globe, Eye, EyeOff, BookOpen, Mail, Phone, MapPin, Edit3, Upload, X, Loader2, CheckCircle, TrendingUp } from "lucide-react"
+import { User, Calendar, GraduationCap, Camera, Save, Shield, Bell, Globe, Eye, EyeOff, BookOpen, Mail, Phone, MapPin, Edit3, Upload, X, Loader2, CheckCircle } from "lucide-react"
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/contexts/profile-context";
@@ -56,13 +56,10 @@ const privacySettingsConfig = [
   },
 ]
 
-const notificationPreferences = [
-  { label: "Email Notifications", description: "Receive notifications via email", enabled: true },
-  { label: "Push Notifications", description: "Receive push notifications on your device", enabled: true },
-  { label: "Grade Updates", description: "Get notified when new grades are posted", enabled: true },
-  { label: "Assignment Reminders", description: "Receive reminders for upcoming deadlines", enabled: true },
-  { label: "Scholarship Alerts", description: "Get notified about scholarship opportunities", enabled: true },
-  { label: "Weekly Summary", description: "Receive weekly performance summaries", enabled: false },
+const defaultNotificationPreferences = [
+  { id: "emailNotifications", label: "Email Notifications", description: "Receive notifications via email", enabled: true },
+  { id: "pushNotifications", label: "Push Notifications", description: "Receive push notifications on your device", enabled: true },
+  { id: "gradeUpdates", label: "Grade Updates", description: "Get notified when new grades are posted", enabled: true },
 ]
 
 // Current subjects data - will be fetched from API
@@ -155,7 +152,9 @@ export function ProfileSettings() {
   const [currentSemester, setCurrentSemester] = useState<any>(null)
   const [academicInfo, setAcademicInfo] = useState<any>(null)
   const [dashboardData, setDashboardData] = useState<any>(null)
-  const [performanceData, setPerformanceData] = useState<any>(null)
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
+  const [notificationPreferences, setNotificationPreferences] = useState(defaultNotificationPreferences)
+  const [loadingNotifications, setLoadingNotifications] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -204,9 +203,6 @@ export function ProfileSettings() {
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [passwordMsg, setPasswordMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
 
   // Fetch activity logs when component mounts
@@ -215,7 +211,7 @@ export function ProfileSettings() {
       fetchActivityLogs();
       fetchSubjects();
       fetchDashboardData();
-      fetchPerformanceData();
+      fetchNotificationPreferences();
     }
   }, [hydrated]);
 
@@ -298,9 +294,10 @@ export function ProfileSettings() {
     }
   };
 
-  const fetchPerformanceData = async () => {
+  const fetchNotificationPreferences = async () => {
     try {
-      const response = await fetch('/api/student/performance', { 
+      setLoadingNotifications(true);
+      const response = await fetch('/api/student/notification-preferences', { 
         cache: 'no-store',
         method: 'GET',
         headers: {
@@ -310,16 +307,60 @@ export function ProfileSettings() {
       
       if (response.ok) {
         const data = await response.json();
-        setPerformanceData(data);
+        if (data.preferences) {
+          // Merge with default preferences to ensure all preferences exist
+          const mergedPreferences = defaultNotificationPreferences.map(defaultPref => {
+            const savedPref = data.preferences.find((p: any) => p.id === defaultPref.id);
+            return savedPref || defaultPref;
+          });
+          setNotificationPreferences(mergedPreferences);
+        }
       } else {
-        console.error('Failed to fetch performance data:', response.status);
+        console.error('Failed to fetch notification preferences:', response.status);
       }
     } catch (error) {
-      console.error('Error fetching performance data:', error);
+      console.error('Error fetching notification preferences:', error);
+    } finally {
+      setLoadingNotifications(false);
     }
   };
 
+  const updateNotificationPreference = async (preferenceId: string, enabled: boolean) => {
+    try {
+      // Optimistically update UI
+      setNotificationPreferences(prev =>
+        prev.map(pref => pref.id === preferenceId ? { ...pref, enabled } : pref)
+      );
 
+      const response = await fetch('/api/student/notification-preferences', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferenceId,
+          enabled
+        })
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setNotificationPreferences(prev =>
+          prev.map(pref => pref.id === preferenceId ? { ...pref, enabled: !enabled } : pref)
+        );
+        throw new Error('Failed to update notification preference');
+      }
+
+      const data = await response.json();
+      showNotification('success', `Notification preference updated successfully`);
+      
+      return data;
+    } catch (error: any) {
+      console.error('Error updating notification preference:', error);
+      showNotification('error', error.message || 'Failed to update notification preference');
+      throw error;
+    }
+  };
 
   const showNotification = (type: 'success' | 'error' | 'info', message: string, autoHideMs = 3000) => {
     setNotification({ type, message });
@@ -632,104 +673,6 @@ export function ProfileSettings() {
     return `${Math.floor(diffInSeconds / 31536000)}y ago`;
   };
 
-  const generateResume = async () => {
-    setConfirmOpen(true);
-  };
-
-  const generateResumeConfirmed = async () => {
-    setConfirmOpen(false);
-
-    // Create resume content in document format
-    const resumeContent = `
-${formData.firstName} ${formData.middleName} ${formData.lastName}
-Information Technology Student
-________________________________________________________________________________
-
-CONTACT INFORMATION
---------------------------------------------------------------------------------
-Email: ${formData.email}
-Phone: ${formData.phone}
-Address: ${formData.address}
-
-ACADEMIC INFORMATION
---------------------------------------------------------------------------------
-Major: ${formData.major}
-Academic Year: ${formData.year}
-Section: ${formData.section}
-Current GPA: ${dashboardData?.overallGPA ? dashboardData.overallGPA.toFixed(2) : 'N/A'}
-Academic Standing: ${dashboardData?.overallGPA >= 3.5 ? 'Excellent' :
-                   dashboardData?.overallGPA >= 3.0 ? 'Very Good' :
-                   dashboardData?.overallGPA >= 2.5 ? 'Good' :
-                   dashboardData?.overallGPA >= 2.0 ? 'Satisfactory' :
-                   'Needs Improvement'}
-
-CURRENT SUBJECTS
---------------------------------------------------------------------------------
-${subjects
-  .filter(subject => subject.status === 'Enrolled')
-  .map(subject => `• ${subject.subjectCode} - ${subject.subjectName} (${subject.units} units)`)
-  .join('\n')}
-
-PROFILE SUMMARY
---------------------------------------------------------------------------------
-Dedicated Information Technology student with a strong foundation in programming, web development, and database management. 
-
-EDUCATION
---------------------------------------------------------------------------------
-${formData.major} - ${formData.year} (Section: ${formData.section})
-Current GPA: ${dashboardData?.overallGPA ? dashboardData.overallGPA.toFixed(2) : 'N/A'}
-Academic Standing: ${dashboardData?.overallGPA >= 3.5 ? 'Excellent' :
-                   dashboardData?.overallGPA >= 3.0 ? 'Very Good' :
-                   dashboardData?.overallGPA >= 2.5 ? 'Good' :
-                   dashboardData?.overallGPA >= 2.0 ? 'Satisfactory' :
-                   'Needs Improvement'}
-Progress: ${performanceData?.completionRate ? `${performanceData.completionRate}%` : 'N/A'} (${performanceData?.subjectsPassed || 0} of ${performanceData?.totalSubjects || 0} subjects passed)
-
-ACADEMIC PROGRESS
---------------------------------------------------------------------------------
-${subjects
-  .filter(subject => subject.status === 'Enrolled')
-  .map(subject => `${subject.subjectCode} - ${subject.subjectName} (${subject.semester}, ${subject.year})`)
-  .join('\n')}
-
-================================================================================
-Generated on: ${new Date().toLocaleDateString()}
-    `;
-
-    try {
-      setIsGenerating(true);
-      showNotification('info', 'Creating your resume in Google Docs…');
-      const title = `${formData.firstName} ${formData.lastName} Resume`;
-      const r = await fetch('/api/docs/resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: resumeContent, title })
-      });
-      if (r.status === 401) {
-        showNotification('error', 'Please sign in with Google first. Redirecting to login...', 2500);
-        router.push('/');
-        return;
-      }
-      if (!r.ok) {
-        const text = await r.text();
-        console.error('Docs API error:', text);
-        showNotification('error', 'Failed to create Google Doc.');
-        return;
-      }
-      const data = await r.json();
-      if (data?.documentUrl) {
-        showNotification('success', 'Resume created! Opening Google Docs…');
-        window.open(data.documentUrl, '_blank');
-      } else {
-        showNotification('error', 'Document created, but no URL returned.');
-      }
-    } catch (e) {
-      showNotification('error', 'Unexpected error creating Google Doc');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   // Show error state
   if (error) {
     return (
@@ -798,21 +741,6 @@ Generated on: ${new Date().toLocaleDateString()}
         </div>
       )}
 
-      {confirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl p-6">
-            <h3 className="text-xl font-bold mb-2">Generate Resume</h3>
-            <p className="text-sm text-muted-foreground mb-6">Do you want to generate a resume with your current profile information?</p>
-            <div className="flex items-center justify-end space-x-3">
-              <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
-              <Button onClick={generateResumeConfirmed} disabled={isGenerating}>
-                {isGenerating ? 'Creating…' : 'Generate'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Upload Confirmation Modal */}
       <UploadConfirmationModal
         isOpen={showUploadModal}
@@ -848,18 +776,6 @@ Generated on: ${new Date().toLocaleDateString()}
                 </span>
               </div>
             )}
-          </div>
-          
-          {/* Make Resume Button */}
-          <div className="flex items-center space-x-3">
-            <Button 
-              onClick={() => generateResume()}
-              disabled={isGenerating}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 h-12"
-            >
-              <BookOpen className="w-5 h-5 mr-2" />
-              {isGenerating ? 'Creating…' : 'Make Resume'}
-            </Button>
           </div>
         </div>
       </div>
@@ -1339,7 +1255,7 @@ Generated on: ${new Date().toLocaleDateString()}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 <div className="p-6 bg-card border border-slate-200 dark:border-slate-700  rounded-2xl">
                   <div className="flex items-center justify-between">
                     <div>
@@ -1354,63 +1270,18 @@ Generated on: ${new Date().toLocaleDateString()}
                       )}
                     </div>
                     <Badge className={`shadow-md px-3 py-1 text-sm font-semibold ${
-                      dashboardData?.overallGPA >= 3.5 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                      dashboardData?.overallGPA >= 3.0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                      dashboardData?.overallGPA >= 2.5 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                      dashboardData?.overallGPA >= 2.0 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                      dashboardData?.overallGPA <= 1.5 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                      dashboardData?.overallGPA <= 2.0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                      dashboardData?.overallGPA <= 2.5 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                      dashboardData?.overallGPA <= 3.0 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
                       'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                     }`}>
-                      {dashboardData?.overallGPA >= 3.5 ? 'Excellent' :
-                       dashboardData?.overallGPA >= 3.0 ? 'Very Good' :
-                       dashboardData?.overallGPA >= 2.5 ? 'Good' :
-                       dashboardData?.overallGPA >= 2.0 ? 'Satisfactory' :
+                      {dashboardData?.overallGPA <= 1.5 ? 'Excellent' :
+                       dashboardData?.overallGPA <= 2.0 ? 'Very Good' :
+                       dashboardData?.overallGPA <= 2.5 ? 'Good' :
+                       dashboardData?.overallGPA <= 3.0 ? 'Satisfactory' :
                        'Needs Improvement'}
                     </Badge>
-                  </div>
-                </div>
-                <div className="p-6 bg-card border border-slate-200 dark:border-slate-700  rounded-2xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-2">Academic Progress</p>
-                      <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                        {performanceData?.completionRate ? `${performanceData.completionRate}%` : 'Loading...'}
-                      </p>
-                      {performanceData?.subjectsPassed && performanceData?.totalSubjects && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {performanceData.subjectsPassed} of {performanceData.totalSubjects} subjects passed
-                        </p>
-                      )}
-                      {performanceData?.riskLevel && (
-                        <div className="mt-1">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Risk Level: <span className={`font-semibold ${
-                              performanceData.riskLevel === 'Excellent' ? 'text-green-600 dark:text-green-400' :
-                              performanceData.riskLevel === 'Low' ? 'text-blue-600 dark:text-blue-400' :
-                              performanceData.riskLevel === 'Moderate' ? 'text-yellow-600 dark:text-yellow-400' :
-                              'text-red-600 dark:text-red-400'
-                            }`}>
-                              {performanceData.riskLevel}
-                            </span>
-                            {performanceData?.riskScore !== undefined && (
-                              <span className="ml-2 text-gray-400">(Score: {performanceData.riskScore})</span>
-                            )}
-                          </p>
-                          {performanceData?.riskFactors && performanceData.riskFactors.length > 0 && (
-                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                              Factors: {performanceData.riskFactors.join(', ')}
-                            </p>
-                          )}
-                          {performanceData?.completionRate >= 100 && performanceData?.riskLevel === 'High' && (
-                            <p className="text-xs text-orange-500 dark:text-orange-400 mt-1">
-                              ⚠️ High risk despite 100% completion - check GPA and performance
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg">
-                      <TrendingUp className="w-6 h-6 text-white" />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1429,10 +1300,7 @@ Generated on: ${new Date().toLocaleDateString()}
                   <CardDescription className="text-base">Your enrolled subjects for this semester</CardDescription>
                   {sectionInfo && (
                     <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-                      <span className="flex items-center space-x-1">
-                        <GraduationCap className="w-4 h-4" />
-                        <span>{sectionInfo.course} ({sectionInfo.courseCode})</span>
-                      </span>
+                      
                       <span className="flex items-center space-x-1">
                         <User className="w-4 h-4" />
                         <span>{sectionInfo.yearLevel} - {sectionInfo.sectionName}</span>
@@ -1440,7 +1308,7 @@ Generated on: ${new Date().toLocaleDateString()}
                       {currentSemester && (
                         <span className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4" />
-                          <span>{currentSemester.semesterName}</span>
+                          <span>{currentSemester.semesterName} - {currentSemester.schoolYear}</span>
                         </span>
                       )}
                     </div>
@@ -1479,7 +1347,7 @@ Generated on: ${new Date().toLocaleDateString()}
                             <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                               <p><span className="font-medium">Professor:</span> {subject.professor}</p>
                               <p><span className="font-medium">Units:</span> {subject.units} units</p>
-                              <p><span className="font-medium">Semester:</span> {subject.semester}, {subject.year}</p>
+                        
                             </div>
                           </div>
                         </div>
@@ -1633,36 +1501,50 @@ Generated on: ${new Date().toLocaleDateString()}
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {notificationPreferences.map((pref, index) => (
-                <div key={index} className="flex items-center justify-between p-6 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-200">
-                  <div>
-                    <h4 className="font-semibold text-lg">{pref.label}</h4>
-                    <p className="text-muted-foreground">{pref.description}</p>
-                  </div>
-                  <Switch 
-                    defaultChecked={false} 
-                    className="shadow-md" 
-                    onCheckedChange={async (checked) => {
-                      // Log notification preference change
-                      try {
-                        await fetch('/api/student/log-activity', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify({
-                            action: 'Notification Preferences',
-                            description: `${pref.label} ${checked ? 'enabled' : 'disabled'}`
-                          })
-                        });
-                        fetchActivityLogs();
-                      } catch (error) {
-                        console.error('Failed to log notification change:', error);
-                      }
-                    }}
-                  />
+              {loadingNotifications ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Loading notification preferences...</span>
                 </div>
-              ))}
+              ) : (
+                notificationPreferences.map((pref, index) => (
+                  <div key={pref.id || index} className="flex items-center justify-between p-6 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-200">
+                    <div>
+                      <h4 className="font-semibold text-lg">{pref.label}</h4>
+                      <p className="text-muted-foreground">{pref.description}</p>
+                    </div>
+                    <Switch 
+                      checked={pref.enabled}
+                      className="shadow-md" 
+                      onCheckedChange={async (checked) => {
+                        try {
+                          // Update notification preference
+                          await updateNotificationPreference(pref.id, checked);
+                          
+                          // Log notification preference change
+                          try {
+                            await fetch('/api/student/log-activity', {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                action: 'Notification Preferences',
+                                description: `${pref.label} ${checked ? 'enabled' : 'disabled'}`
+                              })
+                            });
+                            fetchActivityLogs();
+                          } catch (error) {
+                            console.error('Failed to log notification change:', error);
+                          }
+                        } catch (error) {
+                          console.error('Failed to update notification preference:', error);
+                        }
+                      }}
+                    />
+                  </div>
+                ))
+              )}
 
              
             </CardContent>
