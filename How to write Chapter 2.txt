@@ -1,0 +1,44 @@
+﻿Writing Chapter 2: Methodology for a thesis or research paper involves clearly describing the  research methods and procedures you followed in your study.  
+The aim is to provide enough detail for someone else to replicate your research.  1. Introduction 
+• Begin by introducing the chapter and its importance in your research. 
+• State the purpose of the methodology chapter—providing clarity on how the study was  conducted. 
+The purpose of this chapter is to present the assumptions, methods, and techniques  underpinning this study on the lexicon-based approach as means in getting students’ insights,  structuring, and visualizing the data that can impact the design of learning materials in an LMS. 
+2. Research Design 
+• Define and explain the type of research design you used (e.g., experimental, descriptive,  qualitative, quantitative, mixed methods). 
+• Justify your choice of design. Explain why it is suitable for your study. 
+(Mäntylä et al., 2017) notes, though, that one of the challenges of analyzing textual data is  that it requires categorization. This can be difficult, especially when working with data that needs  context to be interpreted. One way to add some of that missing qualitative context is by applying  sentiment analysis to your data, using lexical descriptors of emotion, to determine if the data leans  towards positive or negative. (Sadhasivam & Kalivaradhan, 2017) Elaborated that an essential  task in opinion mining is to categorize the polarity of a given content in the document or sentence.  And thus, (Gascón et al., 2016) mentioned sentiment analysis as a key qualitative methodological tool to interpret choice.
+3. Population and Sampling 
+• Population: Describe the population targeted by your study. 
+• Sampling Method: Explain the method you used to select participants (random sampling,  purposive sampling, etc.). 
+• Sample Size: Indicate how many participants were involved and justify the sample size. 
+Participants of the study came from Pamantasan ng Lungsod ng Pasig (PLPasig). In this  study, participants are aged between 18-21 years old and are taking up either the BSIT or BSCS  program of the College of Computer Studies (CCS). Students from different year levels will be  represented; 3 sections for 1st year, 3 sections for 2nd year, and 3 sections for 3rd year. The PLPasig  – CCS currently does not have 4th-year level students as admission was suspended during the 2  years transition period when senior high school was introduced to our school system. 
+…… 
+The researcher developed an online Learning Management System with a content  evaluation system that can capture the sentiments of students per learning material. It includes a  Likert scale style interface to measure sentiments directly and an open, free-for-all feedback  section for students to type in their comments. Although (Burge, 2019) shared three key things to  think about when designing successful learning materials and courses; the researcher expanded  these features to five (5) to include common criteria used in the evaluation of learning materials,  which includes: 
+(1) Clarity of objectives 
+(2) Alignment of content 
+(3) Organization of content 
+(4) Clarity of instructions and 
+(5) Alignment of activities to content
+4. Data Collection Methods 
+• Instruments: Describe the tools or instruments used for data collection (questionnaires,  interviews, surveys, tests, etc.). 
+• Procedure: Explain step by step how you collected the data. 
+• Pilot Study (if applicable): If you conducted a pilot study before your actual research,  describe it here, along with its purpose and findings. 
+Figure 3 Provides the design for the student feedback on learning materials. It is designed  specifically to simplify the learning material evaluation process and provide a structure for Data  Collection based on categories essential to learning material design, as well as a free and open  Feedback Details section for students’ sentiments. This same material is used as an instrument to  gather sentiments from students.
+  
+
+Figure 3. Student Feedback Section Screenshot 
+Students’ sentiments will then proceed to Data cleansing and Processing through string  manipulation; and Tokenization, dividing the paragraph into different statements and dividing the  statement into different words - breaking down chunks of text into smaller pieces.  
+5. Data Analysis Procedures 
+• Describe how the data was analyzed (e.g., statistical methods, qualitative coding, software  used like SPSS, NVivo). 
+• Explain any specific analysis techniques (e.g., t-tests, regression analysis, thematic  analysis). 
+The results of the sentiment analysis are provided as a report, which includes the  categorization of sentiments into Positive, Negative, Neutral, Compound scores and the actual  count per category, per learning material.  
+These sentiment results will be compared with the results manually annotated to illustrate  the accuracy of VADER as a lexicon-based model and thus, proving that automation with high  accuracy is achievable. A confusion matrix is generated to check the accuracy of the results  provided by the system - by showing the results in a 3-class classification problem to observe the  relations between the “classifier outputs” and the true ones. The use of T-Test, on the other hand,  is a method that determines if there is no statistical difference that exists in the results of human 
+annotated sentiment results and lexicon-based approach.
+6. Ethical Considerations 
+• Discuss how you ensured the ethical integrity of your research. 
+• Mention confidentiality, informed consent, and how participants' rights were protected. 
+Ethics are the moral principles that govern the conduct of a person. The researcher has a  responsibility to his professor, student-respondents, and the academe and must adhere to the high  ethical research standards of LCUP to ensure that the information related to the research is not  brought to disrepute.  
+Ethical considerations must always be at the forefront and an integral aspect of this  research. Ethical standard is therefore given the premium on different levels: 
+7. Summary 
+• Summarize the key points of the methodology. 
+• Restate why your chosen methods are appropriate for achieving the research objectives.

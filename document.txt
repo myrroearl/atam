@@ -1,0 +1,362 @@
+Chapter 1 (bold, center-justified) - Past tense
+1.1 The Problem and Its Background
+
+First Part: General Introduction
+The rapid digitalization of education reshaped how institutions organize teaching, assessment, and student support. As classrooms blended physical and virtual interactions, expectations shifted toward timely feedback, transparent progress monitoring, and access to relevant learning resources—anytime and on any device. Stakeholders increasingly demanded coherent systems that unify academic tasks rather than scatter them across disconnected tools. These pressures magnified in higher education, where diverse learner needs require flexibility and data-informed guidance. Within this broader context, academic management systems emerged as critical infrastructure for modern universities.
+
+Second Part: Supporting Statements and Key Arguments
+Research in learning analytics demonstrates that harvested student data—engagement logs, grades, and interaction histories—can inform evidence-based interventions and improve outcomes (Siemens & Gasevic, 2012; Duval, 2011). However, traditional platforms often underdeliver on adaptivity and automation, limiting timely feedback and personalization (Sclater et al., 2016; Brown et al., 2019). Advances in AI and natural language processing now enable automated content generation and structured feedback, provided the input data are consistently extracted and normalized (Romero & Ventura, 2010; Chen et al., 2021). Studies also highlight clustering and recommendation mechanisms to align resources with learner profiles, reducing redundancy and improving relevance (Chatti et al., 2012; Kloft et al., 2014). Across this literature, scholars stress that robust pipelines for data collection, preprocessing, and ethical governance are prerequisites for dependable AI-enhanced academic management (Ifenthaler & Yau, 2020; Nguyen et al., 2020).
+
+Third Part: Business and Industry Context (in our own words)
+The project is situated in the higher education sector and addresses the institutional needs of Pamantasan ng Lungsod ng Pasig (PLP). It operates within the EdTech industry as a role-based academic management system supporting administrators, professors, and students. Core services include grade and attendance handling, AI-assisted quiz and lesson generation, resource upload and extraction (PDF, DOCX, TXT), analytics dashboards, and Google Classroom integration. The platform’s technical design emphasizes data harvesting, normalization, and privacy-aware processing to convert raw inputs into actionable insights. In practical terms, it streamlines routine academic workflows while enabling data-driven teaching and learning.
+
+Fourth Part: System Impact, Beneficiaries, and Rationale (in our own words)
+For administrators, the system consolidates oversight through analytics and reporting, enabling early identification of trends and risks. Professors benefit from automated extraction and AI generation that reduce manual work and support differentiated instruction with timely, structured outputs. Students gain real-time visibility into performance and personalized resource recommendations that align with their evolving needs. The approach closes a feedback loop—harvested data inform AI tools, generated outputs shape learning behaviors, and new interactions enrich subsequent analyses—while maintaining privacy controls and user agency (Ifenthaler & Yau, 2020; Nguyen et al., 2020). Collectively, these impacts justify the research: to demonstrate a responsible, scalable model for AI-enhanced academic management that measurably improves educational quality.
+
+1.2 Review of Related Literature
+
+Theme 1: Learning Analytics and Data Harvesting in Education
+A principal driver of innovation in educational technology has been the growth of learning analytics and strategic data harvesting. According to Siemens and Gasevic (2012), learning analytics frameworks provide systematic approaches for aggregating and employing student data to guide instructional decisions. Early adopters demonstrated that by leveraging collected data—such as participation logs, grades, and interaction records—educators and administrators can proactively support at-risk students (Duval, 2011). As platforms have evolved, the necessity for systems able to combine multiple data streams in real-time has only increased, substantiating the role of robust analytics engines within academic management (Tempelaar et al., 2015).
+
+Theme 2: Adaptive Learning and Artificial Intelligence
+A second major theme in digital education is the rise of adaptive learning systems, driven by the integration of artificial intelligence and machine learning. Brown et al. (2019) underscore the value of adaptive tools, which employ harvested behavioral and performance data to tailor the learning experience to each student’s current profile. Ifenthaler and Yau (2020) provide evidence that AI-powered personalization can significantly boost motivation and academic achievement. Advances in natural language processing enable systems to transform raw, uploaded content into quizzes and lessons, as documented by Romero and Ventura (2010). Chen et al. (2021) highlight how AI-driven content generation is revolutionizing traditional teaching paradigms.
+
+Theme 3: Resource Recommendation, Clustering, and Grouping
+The personalization of educational content through recommender systems and clustering algorithms represents another major development. Kloft et al. (2014) and Chatti et al. (2012) discuss approaches by which grouping students and materials—using clustering or classification—helps recommend appropriate resources for different learner segments. This is also observed in the practices of large-scale online platforms such as Coursera, Khan Academy, and Google Classroom (Griffiths, 2022; Rosé et al., 2019), where such strategies ensure students receive material matched to their ability and learning history.
+
+Theme 4: Integration and Interoperability
+Effective analytics and recommendation systems rely on interoperability—the seamless integration of data, modules, and external resources. Rosé et al. (2019) and Sclater et al. (2016) argue that the educational impact of data-driven platforms is maximized when disparate tools and data sources are unified. Interoperable systems allow for the aggregation of instructional content, administrative logs, and third-party resources, which in turn increases the comprehensiveness and accuracy of learning analytics.
+
+Theme 5: Real-Time Analytics and Predictive Modeling
+A growing body of research has focused on real-time analytics and the forecasting of student outcomes. Tempelaar et al. (2015) and Gasevic et al. (2015) show that by employing predictive modeling, institutions can anticipate student needs and implement timely, targeted interventions. The effectiveness of such interventions is heightened by the rapid collection and analysis of multimodal data—academic, behavioral, and even social indicators (Duval, 2011; Griffiths, 2022).
+
+Theme 6: Feedback Loops and Continuous Improvement
+Successful academic management depends on effective feedback mechanisms that close the analytic loop. Gasevic et al. (2015) and Tempelaar et al. (2015) demonstrate that when analytic insights are promptly communicated to both learners and educators, self-regulation and institutional accountability improve. Platforms that systematically integrate feedback into instruction are better equipped to foster ongoing learning gains at both the student and systems level.
+
+Theme 7: Ethics, Privacy, and User Agency
+The pursuit of learning analytics and data-driven education brings with it significant ethical and privacy concerns. Papamitsiou and Economides (2014) and Nguyen et al. (2020) warn that unchecked data mining can lead to infringements on student autonomy, surveillance, and bias. Research now emphasizes the centrality of privacy-by-design, transparency in algorithmic processes, and user empowerment to ensure trust and fairness (Ifenthaler & Yau, 2020). EdTech systems that incorporate robust privacy controls and user-centric data policies are considered models of best practice.
+
+Theme 8: Collaborative Filtering and Peer Learning
+Recent work has seen the application of collaborative filtering—an algorithmic technique originally used for product recommendations—to support peer learning in education. Romero and Ventura (2010) show that identifying patterns among student cohorts enables more effective group work, resource sharing, and social learning experiences. This technique augments clustering methods and supports more holistic approaches to academic support and engagement.
+
+Theme 9: Organizational Change and Data Literacy
+The literature also addresses the organizational shifts required to fully implement data-driven academic management. Sclater et al. (2016) and Griffiths (2022) argue that beyond technology, successful adoption depends on cultivating a culture of data literacy among faculty and administrators, fostering interdisciplinary collaboration, and enacting sustainable policies to support long-term technological innovation.
+
+Thematic Conclusion:
+Through these major themes—analytics and data harvesting; adaptive AI; recommendation and clustering; interoperability; predictive modeling; feedback loops; privacy/ethics; collaborative filtering; and organizational change—the current literature offers a comprehensive framework for the design and assessment of modern academic management systems. The PLP Academic Management System, as designed and implemented, is grounded in these best practices, seeking not only technological advancement but also responsible, impactful transformation of the educational experience.
+
+1.3 Significance of the study
+
+The development of this study on Cross-Platform PLP Academic Management System Using Hybrid Approach of Machine Learning Algorithms for Smart Grading Tools and Real-Time Student Performance Analysis at Pamantasan ng Lungsod ng Pasig (PLP) will make significant contributions to the following groups:
+
+Pamantasan Lungsod ng Pasig
+This project will benefit Pamantasan ng Lungsod ng Pasig (PLP) by giving academic performance analysis of each student throughout the school year. By generating these reports, Pamantasan ng Lungsod ng Pasig (PLP) can quickly know in an efficient way who are the outstanding students and at-risk students.
+
+Professors
+This project will benefit professors by helping them to reduce the time on manual grade encoding and provide actionable insights for students. By automating the grades computation, it significantly enhances the efficiency and accuracy of evaluating student performance. Professors can ensure that no student is left behind while helping them enhance their productivity by analyzing detailed student performance data.
+
+Students
+This project will benefit Students by ensuring they will actively participate and be involved in their academic journey. As their professor inputs a grade, students will immediately track their grades in real time. Also, the students can track their attendance records in real time. The instant notification empowers students to stay on top of their academic performance and encourages them to take action in the results if needed. The system not only tracks grades and attendance but also provides personalized learning recommendations and can foster positive competition through features like leaderboards, which cooperate to keep students motivated and engaged.
+
+Future Researchers
+The framework shall, in return, serve as a strong foundation upon which future researchers would build. Findings and methods could be taken as a guide in further research about how AI, real-time data, and analytics can give an approach to solving educational challenges in the long term. Successive studies may go further by applying the system to varying educational contexts or by finding more features to optimize teaching and learning processes.
+
+1.4 Statement of the Problem
+
+This research addresses the following core problems regarding data harvesting in the PLP Academic Management System for AI-powered educational generation:
+
+1. How can data harvesting be systematically integrated into the educational management workflow to maximize the quality and utility of data collected from students, teachers, and external educational sources?
+
+2. In what ways does the quality and structure of harvested data influence the outputs generated by the Coguro AI tools (e.g., quiz generator, lesson planner, analytics modules)?
+
+3. How should harvested data be pre-processed and normalized to support optimal AI model performance and reliable outcome generation?
+
+4. What are the ethical, privacy, and fairness considerations inherent in harvesting and utilizing user data within an educational management system that leverages AI?
+
+5. How does the feedback loop generated by AI outputs—such as quizzes and adaptive recommendations—influence subsequent data harvesting and iterative system improvement?
+
+6. What metrics and evaluation strategies can be used to assess the effectiveness of data harvesting in supporting educational goals and improving student outcomes?
+
+7. How can harvested student performance and engagement data be effectively utilized to deliver personalized learning resource recommendations—potentially leveraging clustering, profiling, or grouping techniques—to enhance individual learning outcomes within the academic management system?
+
+1.5 Scope and Limitation of the study
+
+Scope
+The PLP Academic Management System encompasses the following major features:
+
+A. User Roles and Core Modules:
+- Administrator Dashboard: User/system management, analytics access, and data oversight.
+- Professor Portal: Gradebook, attendance, AI quiz generation, lesson planning, resource upload/extraction, student tracking, and analytics.
+- Student Portal: Real-time grades, performance dashboard, leaderboard, quiz access, and resource recommendations.
+
+B. Data Harvesting and AI Integration:
+- Systematic collection (harvesting) of user activity, uploads, performance, and engagement metrics
+- Pre-processing, normalization, and feeding to AI modules for: quiz/lesson generation, resource clustering/grouping, and predictive analytics
+
+C. Learning Resource Management:
+- Upload, extraction, and organization of materials (PDF, DOCX, TXT)
+- Deduplication and intelligent grouping of resources
+- Personalized resource recommendations based on performance data
+
+D. Analytics and Reporting:
+- Automated activity/performance logging
+- Visualization of progress, leaderboards, engagement
+- Reports for administrative and instructional use
+
+E. Integrations, Security, Privacy:
+- Google Classroom integration
+- Secure authentication and session management
+- Privacy settings and user controls
+
+Limitations
+- Uses rule-based clustering for recommendations; advanced ML/AI clustering is not yet implemented
+- AI-generated content quality depends on user data
+- Some features depend on third-party APIs
+- Data privacy aligns with best practices but broader compliance may require further enhancements
+- Real-time features may depend on available hardware/cloud services
+- Some learning resources is not working because of old links from the internet
+- forgot password
+
+---
+
+References
+Bato, B. E., & Pomperada, J. R. (2025). Automated grading system with student performance analytics. Technium: Romanian Journal of Applied Sciences and Technology, 30, 58–75. https://doi.org/10.47577/technium.v30i.12871
+
+Brown, M., McCormack, M., Reeves, J., Brooks, D. C., & Grajek, S. (2019). The revised NMC Horizon Report: 2019 Higher Education Edition. EDUCAUSE. https://library.educause.edu/resources/2019/4/2019-horizon-report
+
+Chatti, M. A., Dyckhoff, A. L., Schroeder, U., & Thüs, H. (2012). A reference model for learning analytics. International Journal of Technology Enhanced Learning, 4(5/6), 318–331. https://doi.org/10.1504/IJTEL.2012.051815
+
+Chen, C., Chen, X., & Wang, J. (2021). Adaptive learning and artificial intelligence in education: Towards personalized learning and assessment. Computers & Education: Artificial Intelligence, 2, 100004. https://doi.org/10.1016/j.caeai.2021.100004
+
+Duval, E. (2011). Attention please! Learning analytics for visualization and recommendation. In Proceedings of the 1st International Conference on Learning Analytics and Knowledge (pp. 9–17). https://doi.org/10.1145/2090116.2090118
+
+Gasevic, D., Dawson, S., & Siemens, G. (2015). Let’s not forget: Learning analytics are about learning. TechTrends, 59(1), 64–71. https://doi.org/10.1007/s11528-014-0822-x
+
+Griffiths, R. (2022). Analytics in higher education: Advancing personalized learning and improving student outcomes. Educational Technology, 62(4), 20–29. https://www.jstor.org/stable/48625782
+
+Ifenthaler, D., & Yau, J. Y.-K. (2020). Utilising learning analytics to support study success in higher education: A focus on ethical and privacy issues. Educational Technology Research and Development, 68, 293–306. https://doi.org/10.1007/s11423-019-09699-2
+
+Kloft, M., Stiehler, F., Zheng, Z., & Pinkwart, N. (2014). Predicting MOOC dropout over weeks using machine learning methods. In Proceedings of the EMNLP 2014 Workshop on Analysis of Large Scale Social Interaction in MOOCs (pp. 60–65). https://www.aclweb.org/anthology/W14-4112
+
+Nguyen, H., Gardner, L., & Sheridan, D. (2020). A review of ethical concerns in learning analytics practice and research. Australasian Journal of Educational Technology, 36(2), 1–15. https://doi.org/10.14742/ajet.4934
+
+Papamitsiou, Z., & Economides, A. A. (2014). Learning analytics and educational data mining in practice: A systematic literature review of empirical evidence. Educational Technology & Society, 17(4), 49–64. https://www.jstor.org/stable/jeductechsoci.17.4.49
+
+Romero, C., & Ventura, S. (2010). Educational data mining: A review of the state of the art. IEEE Transactions on Systems, Man, and Cybernetics, Part C (Applications and Reviews), 40(6), 601–618. https://doi.org/10.1109/TSMCC.2010.2053532
+
+Rosé, C. P., McLaughlin, E. A., Liu, R., Koedinger, K. R., & Stamper, J. (2019). Adapting to deepen learning: Scaffolding student self-regulation with learning analytics. Educational Psychologist, 54(3), 194–211. https://doi.org/10.1080/00461520.2019.1637207
+
+Sclater, N., Peasgood, A., & Mullan, J. (2016). Learning analytics in higher education: A review of UK and international practice. JISC. https://www.jisc.ac.uk/reports/learning-analytics-in-higher-education
+
+Siemens, G., & Gasevic, D. (2012). Learning analytics and educational data mining: Towards communication and collaboration. In Proceedings of the 2nd International Conference on Learning Analytics & Knowledge (pp. 252–254). https://doi.org/10.1145/2330601.2330661
+
+Tempelaar, D., Rienties, B., & Giesbers, B. (2015). In search for the most informative data for feedback generation: Learning analytics in a data-rich context. Computers in Human Behavior, 47, 157–167. https://doi.org/10.1016/j.chb.2014.05.038
+
+
+Chapter 2
+2.1 Introduction
+
+
+2.2 Research design
+    - Architectural framework
+ ┌─────────────┐      ┌────────────────┐      ┌─────────────┐
+ │             │      │                │      │             │
+ │   FRONTEND  │<====>│   API ROUTES   │<====>│   DATABASE  │
+ │             │      │   (Business    │      │   &         │
+ └─────────────┘      │   Logic)       │      │   STORAGE   │
+                       │                │      └─────────────┘
+           ▲           │                │           ▲
+ UI       │           └────────────────┘           │
+ Contexts │            ▲     ▲       ▲             │
+           │           │     │       │             │
+ ┌────────┴────────┐   │     │       │             │
+ │ Component (UI)  │   │     │       │             │
+ │ (Upload,        │---┘     │       │ Gen. Data   │
+ │ Dashboard,      │         │       │ Harvested   │
+ │ Reports, etc.)  │         │       │ User Data   │
+ └─────────────────┘         │       │ & Logs      │
+                             │       │ (Analytics,
+ ┌───────────────────────┐   │       │ Profiles,
+ │ AI/Recommendation     │<──┘       │ Performance)
+ │ Services              │           │
+ │  (prompt assembly,    │           │
+ │   quiz gen,           │           │
+ │   resource rec.,      │           │
+ │   clustering/grouping)│<──────────┘
+ └───────────────────────┘
+
+    - Level 0 DFD
+
+      External Entities:
+      E1 Admin      E2 Professor      E3 Student      E4 Google Classroom API      E5 Generative AI (Coguro/Gemini)
+
+      Data Stores:
+      D1 Supabase Database (users, classes, grades, subjects, resources, logs)
+      D2 Temp Text Store (ephemeral extracted .txt from uploads)
+      D3 AI Tools Usage Log (usage/events)
+
+      Processes (Level 0):
+      P1 Authentication & Session (NextAuth + middleware)
+      P2 File Upload & Text Extraction (/api/professor/extract-file-text)
+      P3 AI Content Generation (/api/professor/create-quiz, lesson, presentation)
+      P4 Student Records & Grades Management (/api/student/subjects, grade-reports)
+      P5 Learning Resource Harvesting & Recommendation (/api/student/personalized-resources, resource-stats, bookmarks)
+      P6 Analytics & Activity Logging (/api/*/analytics, /api/student/activity-logs, ai-tools-usage)
+
+      ASCII Diagram (Level 0):
+
+      E1 Admin        E2 Professor        E3 Student                 E4 Google Classroom           E5 Generative AI
+        │                   │                   │                               │                               │
+        │                   │                   │                               │                               │
+        ├───── creds ───► P1 ◄──── creds ───────┤                               │                               │
+        │        tokens ◄────── sessions ───────┤                               │                               │
+        │                   │                   │                               │                               │
+        │         uploads/file ▶ P2 ◀ uploads/file                               │                               │
+        │                   │       │                                              │                               │
+        │                   │   extract text ▶ D2                                   │                               │
+        │                   │       │                                              │                               │
+        │                   │  cleaned text ───► P3 ─── prompts/data ─────────────►│                               │
+        │                   │                   │                                    │  AI outputs ◄───────────────┘
+        │                   │                   │                                    │
+        │                   │           questions/lessons ◄─────── P3 ──────────────┘
+        │                   │                   │
+        │          grades/updates ───► P4 ◄───── submissions/progress ────────┐
+        │                   │                   │                              │
+        │                   │                   │                              │
+        │                   │      resource views/opens ──► P5 ◄── profile/perf │
+        │                   │                   │            │                  │
+        │                   │                   │            ├─► recs          │
+        │                   │                   │            └─► counts/stats   │
+        │                   │                   │                              │
+        │                   │                   │                              │
+        │                   │                   │                activity/events │
+        │                   │                   └──────────────► P6 ────────────┤
+        │                   │                                   │               │
+        │                   │                        logs/metrics/usage ───► D3 │
+        │                   │                                   │               │
+        │                   │                            read/write ◄─────── D1 │
+        │                   │                                                   │
+
+      Data Flow Mapping:
+      1) E1/E2/E3 → P1 → D1: login credentials; sessions/tokens returned.
+      2) E2 uploads PDF/DOCX/TXT → P2: text extracted, normalized; ephemeral write to D2; cleaned text to P3.
+      3) P3 builds prompts from cleaned text/user params → E5 (Gemini/Coguro); returns questions/lessons; P3 writes outputs to D1 and logs usage to D3.
+      4) E2/E3 grade and subject interactions → P4: manage/read grades, subjects, reports; P4 persists to D1.
+      5) E3 activity and profile/performance → P5: compute personalized resource recommendations; reads resources/usage from D1; returns recommendations and stats; optional bookmarking endpoints.
+      6) E1/E2 analytics views and student activity → P6: aggregates from D1, logs events to D3; produces dashboards and audit trails.
+      7) E4 Google Classroom integration (when enabled): P4/P6 sync classes/assignments/grades with D1 for analytics and reporting.
+
+    - Algorithms discussion
+
+      A. Data Harvesting Algorithm (Collection → Cleaning → Normalization → Featureization)
+      Goal: transform raw user actions and uploaded materials into structured, high‑quality signals for analytics, generation, and recommendations.
+
+      1) Collection
+         - Sources: grade updates, subject/section membership, resource opens, dwell time, bookmarks, quiz attempts, and file uploads (PDF/DOCX/TXT).
+         - Capture: API routes persist events and entities (users, resources, classes, logs) to D1; uploads are parsed server‑side and transiently written to D2 (text), then discarded.
+
+      2) Cleaning
+         - Text normalization: strip control chars; unify newlines; collapse whitespace; remove boilerplate (headers/footers) when detected.
+         - PII‑aware truncation for prompts (policy dependent); token‑length guards before generation.
+
+      3) Normalization
+         - Min–max scaling for numeric signals (per student and global baselines):
+           x_norm = (x − min_domain) / (max_domain − min_domain + ε)
+         - Time‑decay for recency (λ > 0): w_recency = exp(−λ · Δt)
+         - Jaccard/overlap for deduplication of near‑duplicate resources:
+           J(A,B) = |tokens(A) ∩ tokens(B)| / |tokens(A) ∪ tokens(B)|; mark duplicate if J ≥ τ
+
+      4) Featureization
+         - Profile features per student: recentGrades, masteryByTopic, openCount, meanDwell, bookmarkRate, lastActive, device/time‑of‑day patterns.
+         - Resource features: topic tags, difficulty, length, historic CTR, completionRate, freshness, instructor quality score.
+         - Optional semantic vectors (embeddings) for topic similarity (cosine):
+           sim(u,r) = (e_u · e_r) / (||e_u|| · ||e_r||)
+
+      Output: a consistent, schema‑validated record suitable for generation prompts and recommender scoring.
+
+      B. Content Generation Flow (Text Extraction → Prompting → Post‑processing)
+      1) Text Extraction (P2)
+         - PDF via text extractor, DOCX via Mammoth, TXT as‑is; normalized as above; length threshold enforced.
+      2) Prompt Construction (P3)
+         - Template combines: normalizedText + instructor parameters (numQuestions, difficulty, types) + formatting constraints.
+         - Chunking if text length > context window; sliding‑window with overlap to preserve coherence.
+      3) Generation & Validation
+         - Send prompt to the model; parse JSON or structured sections; basic schema checks (presence of question, choices, answer); regenerate on failure.
+      4) Post‑processing
+         - De‑dup questions (Jaccard on stems); balance by type/difficulty; persist output and log usage (D3).
+
+      C. Learning Resource Recommendation (Harvested‑Data → Scoring → Ranking → Feedback)
+      Objective: recommend resources r to student u that maximize mastery gains while maintaining engagement and novelty.
+
+      1) Candidate Set
+         - Filter by course/subject; exclude seen duplicates (J ≥ τ); include fresh or high‑quality items.
+      2) Scoring Function (linear ensemble with bounded terms in [0,1])
+         - R(u,r) = w₁·sim_topic(u,r) + w₂·match_difficulty(u,r) + w₃·engagement_boost(u) + w₄·recency(r) + w₅·quality(r)
+           where:
+           • sim_topic(u,r) = cosine(e_u, e_r) or tag overlap
+           • match_difficulty = 1 − |level_u − level_r| / maxLevel
+           • engagement_boost(u) = f(bookmarkRate, meanDwell) (saturating)
+           • recency(r) = exp(−λ · age_days)
+           • quality(r) = normalized historical CTR/completion
+         - Cold‑start/back‑off: fall back to popularity·recency blend when e_u is missing.
+      3) Ranking & Diversification
+         - Sort by R; apply category‑wise round‑robin to avoid topical monotony; cap per‑topic.
+      4) Exploration vs Exploitation
+         - ε‑greedy: with prob ε surface a high‑quality, low‑exposure item; decay ε over time.
+      5) Feedback Loop
+         - Log opens, dwell, completion, bookmarks → update features → re‑score; A/B test weight vector w.
+
+      D. How our Generating Content Works (General Overview)
+      1) Pretraining & Objective (high level)
+         - The model is a multimodal transformer trained with next‑token prediction. Given a sequence of tokens x₁…xₙ, it learns p(xₖ | x₁…xₖ₋₁) and minimizes cross‑entropy:
+           L = −Σₖ log pθ(xₖ | x<ₖ)
+         - Instruction‑tuning and preference optimization (e.g., RLHF/SFT variants) further align outputs to follow task instructions.
+
+      2) Tokenization & Embedding (inference starts)
+         Step D2.1: Normalize input prompt (system instructions + user text + constraints), then tokenize into ids t₁…tₘ.
+         Step D2.2: Convert to embeddings E = [e₁…eₘ], with positional encodings added: h₀ = E + P.
+
+      3) Transformer Blocks (Self‑Attention + MLP)
+         For each layer ℓ and head i:
+           Q = hℓWQ,  K = hℓWK,  V = hℓWV
+           Attention_i(hℓ) = softmax((QKᵀ)/√d_k + M) V   (M = causal mask)
+           MultiHead(hℓ) = concat_i Attention_i(hℓ) WO
+           hℓ′ = LayerNorm(hℓ + MultiHead(hℓ))
+           hℓ₊₁ = LayerNorm(hℓ′ + MLP(hℓ′))
+         After L layers: z = hL (context representation).
+
+      4) Logits, Temperature and Top‑p (Nucleus) Decoding
+         Step D4.1: Compute logits y = zWᵒ + b (one vector per time step).
+         Step D4.2 (temperature): p̃ = softmax(y / T), T > 1 = more diverse; T < 1 = more deterministic.
+         Step D4.3 (top‑p): sort tokens by probability, keep smallest set S with Σ_{t∈S} p̃(t) ≥ p, renormalize, sample next token from S.
+         Step D4.4: Append sampled token to context; repeat D2–D4 until end condition (max length, stop tokens, or JSON schema filled).
+
+      5) Structured Generation & Schema Validation
+         - When producing quizzes/lessons, the prompt requests a strict JSON/section format. After each decode pass, validate:
+           • field presence (e.g., question, choices, answer)
+           • type/length constraints
+           • de‑duplication of stems (pairwise Jaccard)
+         - On validation failure, either repair (few‑shot correction prompt) or regenerate specific sections.
+
+      6) Data Handling (context & chunking)
+         - If source text exceeds context window, apply sliding‑window chunking with overlap ω. Each chunk cᵢ yields partial outputs which are later merged with de‑duplication and difficulty balancing.
+         - Guard input with token limits; strip PII and boilerplate per policy before prompting.
+
+      7) Safety & Quality Filters (score‑based gates)
+         Step D7.1: Toxicity/unsafe patterns → score s_tox; block if s_tox ≥ τ_tox.
+         Step D7.2: Hallucination/grounding checks by regex/rules; re‑ask the model to cite or rephrase when needed.
+         Step D7.3: Consistency checks vs. extracted text (optional semantic similarity threshold τ_sim for rationales).
+
+      8) Output Post‑processing & Logging
+         - Balance question types and difficulties; paginate for UI/docx.
+         - Persist final artifacts to D1; record model usage metadata (prompt tokens, output tokens, latency, success flag) to D3 for analytics and continuous improvement.
+
+     E. Connecting Data Harvesting to Recommendations & Generation
+      1) Harvested interactions and performance features shape both prompt construction (selecting salient excerpts, difficulty, and 
+      scope) and recommender inputs (profile vectors, mastery gaps).
+      2) Improved input quality (cleaned, deduplicated, recent) → higher fidelity prompts → more relevant quiz/lesson outputs.
+      3) Recommender closes the loop: model outputs (e.g., quiz topics missed) update masteryByTopic, which increases weights on 
+      prerequisite resources in R(u,r).
+      4) Analytics (P6) monitors downstream impact (CTR, completion, grade delta) to recalibrate weights w and exploration rate ε 
+      for sustained gains.
+
