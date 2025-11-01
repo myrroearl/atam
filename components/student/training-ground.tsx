@@ -29,6 +29,8 @@ import {
   Sparkles,
   Download,
   Loader2,
+  ArrowUp,
+  ChevronDown,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
@@ -196,6 +198,7 @@ export function TrainingGround() {
   const [generatedReviewer, setGeneratedReviewer] = useState<any>(null)
   const [showReviewerPreview, setShowReviewerPreview] = useState(false)
   const [reviewerTab, setReviewerTab] = useState("text")
+  const [showScrollTop, setShowScrollTop] = useState(false)
 
   // Function to handle resource link clicks and track them
   const handleResourceClick = async (resourceId: string, resourceTitle: string) => {
@@ -485,18 +488,34 @@ export function TrainingGround() {
     setCurrentPage(1)
   }, [searchQuery, filterType, showBookmarksOnly])
 
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1)
+  // Handle scroll to show/hide scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400)
     }
+    
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const goToPreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1)
+      scrollToTop()
     }
   }
 
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+      scrollToTop()
+    }
+  }
 
   const toggleBookmarkView = () => {
     setShowBookmarksOnly(!showBookmarksOnly)
@@ -1082,23 +1101,23 @@ export function TrainingGround() {
 
       {/* Header */}
       <div className="flex flex-col space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-2 flex-1">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               {showBookmarksOnly ? "My Bookmarks" : "Learning Feed"}
         </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-sm sm:text-lg">
               {showBookmarksOnly 
                 ? "Your saved learning resources" 
                 : "Personalized learning resources based on your academic performance"
               }
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               onClick={() => setShowReviewerDialog(true)}
               variant="outline"
-              className="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
             >
               <Sparkles className="w-4 h-4" />
               <span>Generate Reviewer</span>
@@ -1106,7 +1125,7 @@ export function TrainingGround() {
             <Button
               onClick={toggleBookmarkView}
               variant={showBookmarksOnly ? "default" : "outline"}
-              className="flex items-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
             >
               <BookmarkCheck className="w-4 h-4" />
               <span>{showBookmarksOnly ? "Show All" : "My Bookmarks"}</span>
@@ -1188,37 +1207,37 @@ export function TrainingGround() {
       {/* Learning Progress Overview */}
       {!loading && !error && (
         <Card className="glass-card shadow-card-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
               <BookOpen className="w-5 h-5 text-green-500" />
               <span>Learning Progress</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
+                <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
                   {resources.length}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Resources</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Total Resources</div>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
+                <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
                   {bookmarkedResources.size}
                 </div>
-                <div className="text-sm text-muted-foreground">Bookmarked</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Bookmarked</div>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg">
-                <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg">
+                <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   {userTotalOpens}
                 </div>
-                <div className="text-sm text-muted-foreground">Your Total Opens</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Your Total Opens</div>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
+                <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {uniqueResourcesOpened}
                 </div>
-                <div className="text-sm text-muted-foreground">Unique Resources</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Unique Resources</div>
               </div>
             </div>
           </CardContent>
@@ -1264,8 +1283,8 @@ export function TrainingGround() {
 
       {/* Results Summary */}
       {!loading && !error && resources.length > 0 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm text-muted-foreground">
+          <span className="text-xs sm:text-sm">
             Showing {startIndex + 1}-{Math.min(endIndex, filteredResources.length)} of {filteredResources.length} resources
             {showBookmarksOnly && ` (${bookmarkedResources.size} bookmarked)`}
             {totalPages > 1 && ` • Page ${currentPage} of ${totalPages}`}
@@ -1278,11 +1297,80 @@ export function TrainingGround() {
                 setSearchQuery("")
                 setFilterType("all")
               }}
-              className="text-xs"
+              className="text-xs w-full sm:w-auto"
             >
               Clear filters
             </Button>
           )}
+        </div>
+      )}
+
+      {/* Pagination Controls - Top */}
+      {!loading && !error && totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Previous</span>
+            </Button>
+            
+            {/* Desktop: Show page buttons if <= 10 pages */}
+            {totalPages <= 10 && (
+              <div className="hidden md:flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => {
+                      setCurrentPage(page)
+                      scrollToTop()
+                    }}
+                    className="w-8 h-8 p-0"
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            {/* Desktop with >10 pages OR Mobile/Tablet: Show dropdown */}
+            <select
+              value={currentPage}
+              onChange={(e) => {
+                setCurrentPage(Number(e.target.value))
+                scrollToTop()
+              }}
+              className={`${totalPages > 10 ? 'block' : 'md:hidden'} px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring flex-1 min-w-[80px]`}
+            >
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <option key={page} value={page}>
+                  {page}
+                </option>
+              ))}
+            </select>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className="hidden sm:block text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </div>
         </div>
       )}
 
@@ -1343,12 +1431,12 @@ export function TrainingGround() {
           ) : (
             paginatedResources.map((resource) => (
               <Card key={resource.id} className="glass-card shadow-card-lg hover:shadow-card-xl transition-all duration-300 group">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        <Avatar className="w-12 h-12 ring-2 ring-green-100 dark:ring-green-900/20 group-hover:ring-green-200 dark:group-hover:ring-green-800/40 transition-all duration-300">
-                          <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-500 text-white text-lg">
+                <CardHeader className="pb-3 p-4 sm:p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start sm:items-center space-x-3 flex-1 min-w-0">
+                      <div className="relative flex-shrink-0">
+                        <Avatar className="w-10 h-10 sm:w-12 sm:h-12 ring-2 ring-green-100 dark:ring-green-900/20 group-hover:ring-green-200 dark:group-hover:ring-green-800/40 transition-all duration-300">
+                          <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-500 text-white text-base sm:text-lg">
                           {getResourceTypeIcon(resource.type)}
                         </AvatarFallback>
                       </Avatar>
@@ -1358,27 +1446,28 @@ export function TrainingGround() {
                           </div>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <span className="font-semibold text-foreground">{resource.author}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                          <span className="font-semibold text-foreground text-sm sm:text-base truncate">{resource.author}</span>
                           {resource.isLowPerformance && (
-                            <Badge variant="destructive" className="text-xs px-2 py-0.5">
+                            <Badge variant="destructive" className="text-xs px-2 py-0.5 w-fit">
                               <AlertCircle className="w-3 h-3 mr-1" />
-                              Focus Area
+                              <span className="hidden sm:inline">Focus Area</span>
+                              <span className="sm:hidden">Focus</span>
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center space-x-3 text-sm text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                           <div className="flex items-center space-x-1">
                             <span>{getSourceIcon(resource.source)}</span>
                             <span className="font-medium">{resource.source}</span>
                           </div>
-                          <div className="w-1 h-1 bg-muted-foreground rounded-full"></div>
+                          <div className="w-1 h-1 bg-muted-foreground rounded-full hidden sm:block"></div>
                           <div className="flex items-center space-x-1">
                           <Clock className="w-3 h-3" />
                           <span>Just now</span>
                           </div>
-                          <div className="w-1 h-1 bg-muted-foreground rounded-full"></div>
+                          <div className="w-1 h-1 bg-muted-foreground rounded-full hidden sm:block"></div>
                           <div className="flex items-center space-x-1">
                             <Star className="w-3 h-3 text-yellow-500" />
                             <span>{resource.likes}</span>
@@ -1390,7 +1479,7 @@ export function TrainingGround() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleBookmark(resource.id)}
-                      className={`p-2 rounded-full transition-all duration-200 ${
+                      className={`p-2 rounded-full transition-all duration-200 flex-shrink-0 ${
                         bookmarkedResources.has(resource.id) 
                           ? 'text-green-600 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30' 
                           : 'text-muted-foreground hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
@@ -1401,11 +1490,11 @@ export function TrainingGround() {
                   </div>
                 </CardHeader>
                 
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 p-4 sm:p-6">
                   {/* Resource Content */}
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h3 className="text-xl font-bold leading-tight text-foreground group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
+                      <h3 className="text-lg sm:text-xl font-bold leading-tight text-foreground group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
                         {resource.title}
                       </h3>
                       <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
@@ -1443,21 +1532,23 @@ export function TrainingGround() {
                     </div>
 
                     {/* Resource Stats */}
-                    <div className="flex items-center justify-between pt-2 border-t border-muted/50">
-                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-muted/50">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                         <div className="flex items-center space-x-1">
                           <Eye className="w-3 h-3" />
                           <span>Relevance: {Math.round(resource.relevanceScore)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <TrendingUp className="w-3 h-3" />
-                          <span>{resource.likes - resource.dislikes} net likes</span>
+                          <span className="hidden sm:inline">{resource.likes - resource.dislikes} net likes</span>
+                          <span className="sm:hidden">{resource.likes - resource.dislikes} likes</span>
                         </div>
                         {resourceClickCounts[resource.id] > 0 && (
                           <div className="flex items-center space-x-1">
                             <ExternalLink className="w-3 h-3" />
                             <span className="text-green-600 dark:text-green-400 font-medium">
-                              You opened {resourceClickCounts[resource.id]} time{resourceClickCounts[resource.id] > 1 ? 's' : ''}
+                              <span className="hidden sm:inline">You opened {resourceClickCounts[resource.id]} time{resourceClickCounts[resource.id] > 1 ? 's' : ''}</span>
+                              <span className="sm:hidden">{resourceClickCounts[resource.id]}x opened</span>
                             </span>
                           </div>
                         )}
@@ -1465,7 +1556,8 @@ export function TrainingGround() {
                           <div className="flex items-center space-x-1">
                             <TrendingUp className="w-3 h-3" />
                             <span className="text-muted-foreground text-xs">
-                              {resourceStats[resource.id].totalOpens} total opens by all students
+                              <span className="hidden sm:inline">{resourceStats[resource.id].totalOpens} total opens by all students</span>
+                              <span className="sm:hidden">{resourceStats[resource.id].totalOpens} total</span>
                             </span>
                           </div>
                         )}
@@ -1479,28 +1571,29 @@ export function TrainingGround() {
                   </div>
 
                   {/* Resource Link */}
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl border border-green-200/50 dark:border-green-800/50 group-hover:from-green-100 group-hover:to-emerald-100 dark:group-hover:from-green-950/30 dark:group-hover:to-emerald-950/30 transition-all duration-300">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <div className="p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl border border-green-200/50 dark:border-green-800/50 group-hover:from-green-100 group-hover:to-emerald-100 dark:group-hover:from-green-950/30 dark:group-hover:to-emerald-950/30 transition-all duration-300">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 flex-shrink-0">
                           {getResourceTypeIcon(resource.type)}
                         </div>
-                        <div>
-                          <p className="font-semibold text-sm text-foreground">{resource.title}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-sm text-foreground truncate">{resource.title}</p>
                           <p className="text-xs text-muted-foreground flex items-center space-x-1">
                             <span>{getSourceIcon(resource.source)}</span>
-                            <span>{resource.source}</span>
+                            <span className="truncate">{resource.source}</span>
                           </p>
                         </div>
                       </div>
                       <Button 
                         size="sm" 
-                        className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105"
+                        className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105 w-full sm:w-auto"
                         onClick={() => handleResourceClick(resource.id, resource.title)}
                       >
-                        <a href={resource.url} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
+                        <a href={resource.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center space-x-2 w-full">
                           <ExternalLink className="w-4 h-4" />
-                          <span>Open Resource</span>
+                          <span className="hidden sm:inline">Open Resource</span>
+                          <span className="sm:hidden">Open</span>
                           {resourceClickCounts[resource.id] > 0 && (
                             <span className="ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs font-medium">
                               {resourceClickCounts[resource.id]}
@@ -1517,51 +1610,84 @@ export function TrainingGround() {
         </div>
       )}
 
-      {/* Pagination Controls */}
+      {/* Pagination Controls - Bottom */}
       {!loading && !error && totalPages > 1 && (
-        <div className="flex items-center justify-between pt-6">
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={goToPreviousPage}
               disabled={currentPage === 1}
-              className="flex items-center space-x-1"
+              className="flex items-center gap-1"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>Previous</span>
+              <span className="hidden sm:inline">Previous</span>
             </Button>
             
-            <div className="flex items-center space-x-1">
+            {/* Desktop: Show page buttons if <= 10 pages */}
+            {totalPages <= 10 && (
+              <div className="hidden md:flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => {
+                      setCurrentPage(page)
+                      scrollToTop()
+                    }}
+                    className="w-8 h-8 p-0"
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            {/* Desktop with >10 pages OR Mobile/Tablet: Show dropdown */}
+            <select
+              value={currentPage}
+              onChange={(e) => {
+                setCurrentPage(Number(e.target.value))
+                scrollToTop()
+              }}
+              className={`${totalPages > 10 ? 'block' : 'md:hidden'} px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring flex-1 min-w-[80px]`}
+            >
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  className="w-8 h-8 p-0"
-                >
+                <option key={page} value={page}>
                   {page}
-                </Button>
+                </option>
               ))}
-            </div>
+            </select>
             
             <Button
               variant="outline"
               size="sm"
               onClick={goToNextPage}
               disabled={currentPage === totalPages}
-              className="flex items-center space-x-1"
+              className="flex items-center gap-1"
             >
-              <span>Next</span>
+              <span className="hidden sm:inline">Next</span>
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
           
-          <div className="text-sm text-muted-foreground">
+          <div className="hidden sm:block text-sm text-muted-foreground">
             Page {currentPage} of {totalPages}
           </div>
         </div>
+      )}
+
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 p-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
       )}
     </div>
   )
